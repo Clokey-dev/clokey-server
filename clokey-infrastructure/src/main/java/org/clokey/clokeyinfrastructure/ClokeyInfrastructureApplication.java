@@ -9,5 +9,4 @@ public class ClokeyInfrastructureApplication {
     public static void main(String[] args) {
         SpringApplication.run(ClokeyInfrastructureApplication.class, args);
     }
-
 }

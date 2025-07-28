@@ -9,5 +9,4 @@ public class ClokeyBatchApplication {
     public static void main(String[] args) {
         SpringApplication.run(ClokeyBatchApplication.class, args);
     }
-
 }
