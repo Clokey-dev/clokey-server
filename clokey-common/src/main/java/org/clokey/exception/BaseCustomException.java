@@ -10,7 +10,7 @@ public class BaseCustomException extends RuntimeException {
 
     private BaseErrorCode code;
 
-    public ErrorReasonDto getErrorReasonHttpStatus() {
+    public ErrorReasonDto getErrorReasonDto() {
         return this.code.getErrorReason();
     }
 }
