@@ -114,7 +114,7 @@ CREATE TABLE comment (
                          member_id BIGINT NOT NULL,
                          history_id BIGINT NOT NULL,
                          parent_id BIGINT,
-                         banned BOOLEAN NOT NULL DEFAULT FALSE,
+                         banned BOOLEAN NOT NULL,
                          created_at DATETIME(6),
                          updated_at DATETIME(6),
                          CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),
@@ -122,8 +122,19 @@ CREATE TABLE comment (
                          CONSTRAINT fk_comment_parent FOREIGN KEY (parent_id) REFERENCES comment(id)
 );
 
-CREATE INDEX idx_history_created ON comment(history_id, created_at);
-CREATE INDEX idx_comment_member_id ON comment(member_id);
+CREATE TABLE reply (
+                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                         content VARCHAR(50) NOT NULL,
+                         banned BOOLEAN NOT NULL,
+                         member_id BIGINT NOT NULL,
+                         comment_id BIGINT NOT NULL,
+                         created_at DATETIME(6),
+                         updated_at DATETIME(6),
+                         CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),
+                         CONSTRAINT fk_comment_comment FOREIGN KEY (comment_id) REFERENCES comment(id)
+);
+
+
 
 CREATE TABLE cloth_folder (
                               id BIGINT AUTO_INCREMENT PRIMARY KEY,

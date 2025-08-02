@@ -1,6 +1,9 @@
 package org.clokey.comment.entitiy;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.history.entity.History;
@@ -9,53 +12,47 @@ import org.clokey.member.entity.Member;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        indexes = {
-            @Index(name = "idx_history_created", columnList = "history_id, created_at"),
-            @Index(name = "idx_comment_member_id", columnList = "member_id")
-        })
 public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @NotNull
+    @Column(length = 50)
     private String content;
 
-    @Column(nullable = false)
-    private boolean banned = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @NotNull
+    @JoinColumn(name = "member_id")
     private Member member;
 
+    @NotNull private boolean banned;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id", nullable = false)
+    @NotNull
+    @JoinColumn(name = "history_id")
     private History history;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Comment parent;
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reply> replies = new ArrayList<>();
 
-    @Builder(access = AccessLevel.PRIVATE)
-    private Comment(
-            String content, Member member, History history, Comment parent, boolean banned) {
-        this.content = content;
-        this.member = member;
-        this.history = history;
-        this.parent = parent;
-        this.banned = banned;
-    }
-
-    public static Comment createComment(
-            String content, Member member, History history, Comment parent) {
-        return Comment.builder()
-                .content(content)
-                .member(member)
-                .history(history)
-                .parent(parent)
-                .banned(false)
-                .build();
-    }
+    //    @Builder(access = AccessLevel.PRIVATE)
+    //    private Comment(
+    //            String content, Member member, History history, boolean banned) {
+    //        this.content = content;
+    //        this.member = member;
+    //        this.history = history;
+    //        this.banned = banned;
+    //    }
+    //
+    //    public static Comment createComment(
+    //            String content, Member member, History history) {
+    //        return Comment.builder()
+    //                .content(content)
+    //                .member(member)
+    //                .history(history)
+    //                .banned(false)
+    //                .build();
+    //    }
 }
