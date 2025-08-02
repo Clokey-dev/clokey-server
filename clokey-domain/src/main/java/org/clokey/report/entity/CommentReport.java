@@ -2,8 +2,8 @@ package org.clokey.report.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.clokey.comment.entitiy.Comment;
 import org.clokey.common.model.BaseEntity;
-import org.clokey.history.entity.Comment;
 import org.clokey.history.enums.CommentReportType;
 import org.clokey.member.entity.Member;
 import org.clokey.report.enums.ReportStatus;

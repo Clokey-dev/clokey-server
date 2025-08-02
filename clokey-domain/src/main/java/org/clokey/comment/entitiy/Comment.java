@@ -1,8 +1,9 @@
-package org.clokey.history.entity;
+package org.clokey.comment.entitiy;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
+import org.clokey.history.entity.History;
 import org.clokey.member.entity.Member;
 
 @Entity

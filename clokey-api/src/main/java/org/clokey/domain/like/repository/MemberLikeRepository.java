@@ -1,6 +1,6 @@
-package org.clokey.domain.history.repository;
+package org.clokey.domain.like.repository;
 
-import org.clokey.history.entity.MemberLike;
+import org.clokey.like.entity.MemberLike;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberLikeRepository extends JpaRepository<MemberLike, Long> {}

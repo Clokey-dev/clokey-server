@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.history.entity.History;
-import org.clokey.history.entity.MemberLike;
+import org.clokey.like.entity.MemberLike;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.RegisterStatus;
 import org.clokey.member.enums.SocialType;
