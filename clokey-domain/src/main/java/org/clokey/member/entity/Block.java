@@ -28,9 +28,6 @@ public class Block {
     }
 
     public static Block createBlock(Member blocker, Member blocked) {
-        return Block.builder()
-                .blocker(blocker)
-                .blocked(blocked)
-                .build();
+        return Block.builder().blocker(blocker).blocked(blocked).build();
     }
 }

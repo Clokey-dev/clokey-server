@@ -2,21 +2,17 @@ package org.clokey.history.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import java.time.LocalDate;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.member.entity.Member;
-
-import java.time.LocalDate;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "history",
-        indexes = {
-                @Index(name = "idx_member_date", columnList = "member_id, history_date")
-        }
-)
+        indexes = {@Index(name = "idx_member_date", columnList = "member_id, history_date")})
 public class History extends BaseEntity {
 
     @Id
@@ -41,7 +37,8 @@ public class History extends BaseEntity {
     private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private History(LocalDate historyDate, int likes, String content, boolean banned, Member member) {
+    private History(
+            LocalDate historyDate, int likes, String content, boolean banned, Member member) {
         this.historyDate = historyDate;
         this.likes = likes;
         this.content = content;
@@ -58,5 +55,4 @@ public class History extends BaseEntity {
                 .member(member)
                 .build();
     }
-
 }

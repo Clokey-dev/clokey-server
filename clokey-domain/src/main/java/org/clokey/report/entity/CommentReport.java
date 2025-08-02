@@ -1,6 +1,5 @@
 package org.clokey.report.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
@@ -38,10 +37,8 @@ public class CommentReport extends BaseEntity {
     private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private CommentReport(CommentReportType commentReportType,
-                          Comment comment,
-                          Member member,
-                          String content) {
+    private CommentReport(
+            CommentReportType commentReportType, Comment comment, Member member, String content) {
         this.commentReportType = commentReportType;
         this.comment = comment;
         this.member = member;
@@ -49,10 +46,8 @@ public class CommentReport extends BaseEntity {
         this.reportStatus = ReportStatus.UNCHECKED; // 기본값
     }
 
-    public static CommentReport createCommentReport(CommentReportType commentReportType,
-                                       Comment comment,
-                                       Member member,
-                                       String content) {
+    public static CommentReport createCommentReport(
+            CommentReportType commentReportType, Comment comment, Member member, String content) {
         return CommentReport.builder()
                 .commentReportType(commentReportType)
                 .comment(comment)
@@ -60,5 +55,4 @@ public class CommentReport extends BaseEntity {
                 .content(content)
                 .build();
     }
-
 }

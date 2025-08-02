@@ -7,11 +7,7 @@ import org.clokey.common.model.BaseEntity;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        indexes = {
-                @Index(name = "idx_cloth_image_cloth_id", columnList = "cloth_id")
-        }
-)
+@Table(indexes = {@Index(name = "idx_cloth_image_cloth_id", columnList = "cloth_id")})
 public class ClothImage extends BaseEntity {
 
     @Id
@@ -32,10 +28,6 @@ public class ClothImage extends BaseEntity {
     }
 
     public static ClothImage createClothImage(String imageUrl, Cloth cloth) {
-        return ClothImage.builder()
-                .imageUrl(imageUrl)
-                .cloth(cloth)
-                .build();
+        return ClothImage.builder().imageUrl(imageUrl).cloth(cloth).build();
     }
-
 }

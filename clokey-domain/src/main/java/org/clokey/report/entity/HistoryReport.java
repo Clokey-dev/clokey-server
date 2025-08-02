@@ -37,10 +37,8 @@ public class HistoryReport extends BaseEntity {
     private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private HistoryReport(HistoryReportType historyReportType,
-                          History history,
-                          Member member,
-                          String content) {
+    private HistoryReport(
+            HistoryReportType historyReportType, History history, Member member, String content) {
         this.historyReportType = historyReportType;
         this.history = history;
         this.member = member;
@@ -48,10 +46,8 @@ public class HistoryReport extends BaseEntity {
         this.reportStatus = ReportStatus.UNCHECKED; // 기본값 지정
     }
 
-    public static HistoryReport createHistoryReport(HistoryReportType historyReportType,
-                                       History history,
-                                       Member member,
-                                       String content) {
+    public static HistoryReport createHistoryReport(
+            HistoryReportType historyReportType, History history, Member member, String content) {
         return HistoryReport.builder()
                 .historyReportType(historyReportType)
                 .history(history)
@@ -59,5 +55,4 @@ public class HistoryReport extends BaseEntity {
                 .content(content)
                 .build();
     }
-
 }

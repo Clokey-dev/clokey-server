@@ -1,6 +1,5 @@
 package org.clokey.history.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
@@ -10,13 +9,14 @@ import org.clokey.common.model.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         indexes = {
-                @Index(name = "idx_history_id", columnList = "history_id"),
-                @Index(name = "idx_hashtag_id", columnList = "hashtag_id")
+            @Index(name = "idx_history_id", columnList = "history_id"),
+            @Index(name = "idx_hashtag_id", columnList = "hashtag_id")
         },
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_history_hashtag", columnNames = {"history_id", "hashtag_id"})
-        }
-)
+            @UniqueConstraint(
+                    name = "uk_history_hashtag",
+                    columnNames = {"history_id", "hashtag_id"})
+        })
 public class HashtagHistory extends BaseEntity {
 
     @Id
@@ -38,9 +38,6 @@ public class HashtagHistory extends BaseEntity {
     }
 
     public static HashtagHistory createHashtagHistory(Hashtag hashtag, History history) {
-        return HashtagHistory.builder()
-                .hashtag(hashtag)
-                .history(history)
-                .build();
+        return HashtagHistory.builder().hashtag(hashtag).history(history).build();
     }
 }

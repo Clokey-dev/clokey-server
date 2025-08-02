@@ -6,7 +6,9 @@ import lombok.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"following_user_id", "followed_user_id"}))
+@Table(
+        uniqueConstraints =
+                @UniqueConstraint(columnNames = {"following_user_id", "followed_user_id"}))
 public class Follow {
 
     @Id
@@ -19,7 +21,7 @@ public class Follow {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "followed_user_id", nullable = false)
-    private Member followed;  // 팔로우 하는 사람
+    private Member followed; // 팔로우 하는 사람
 
     @Builder(access = AccessLevel.PRIVATE)
     private Follow(Member following, Member followed) {
@@ -28,9 +30,6 @@ public class Follow {
     }
 
     public static Follow createFollow(Member following, Member followed) {
-        return Follow.builder()
-                .following(following)
-                .followed(followed)
-                .build();
+        return Follow.builder().following(following).followed(followed).build();
     }
 }

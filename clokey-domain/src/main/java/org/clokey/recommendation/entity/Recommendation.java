@@ -15,14 +15,12 @@ public class Recommendation extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private Long contentId;
+    @Column private Long contentId;
 
     @Column(length = 500)
     private String imageUrl;
 
-    @Column
-    private Double temperature;
+    @Column private Double temperature;
 
     @Column(length = 1000)
     private String clothesIds;
@@ -42,14 +40,15 @@ public class Recommendation extends BaseEntity {
     private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Recommendation(Long contentId,
-                           String imageUrl,
-                           Double temperature,
-                           String clothesIds,
-                           String hashtag,
-                           String subTitle,
-                           NewsType newsType,
-                           Member member) {
+    private Recommendation(
+            Long contentId,
+            String imageUrl,
+            Double temperature,
+            String clothesIds,
+            String hashtag,
+            String subTitle,
+            NewsType newsType,
+            Member member) {
         this.contentId = contentId;
         this.imageUrl = imageUrl;
         this.temperature = temperature;
@@ -60,14 +59,15 @@ public class Recommendation extends BaseEntity {
         this.member = member;
     }
 
-    public static Recommendation createRecommendation(Long contentId,
-                                        String imageUrl,
-                                        Double temperature,
-                                        String clothesIds,
-                                        String hashtag,
-                                        String subTitle,
-                                        NewsType newsType,
-                                        Member member) {
+    public static Recommendation createRecommendation(
+            Long contentId,
+            String imageUrl,
+            Double temperature,
+            String clothesIds,
+            String hashtag,
+            String subTitle,
+            NewsType newsType,
+            Member member) {
         return Recommendation.builder()
                 .contentId(contentId)
                 .imageUrl(imageUrl)

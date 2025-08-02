@@ -9,10 +9,7 @@ import org.clokey.common.model.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "history_image",
-        indexes = {
-                @Index(name = "idx_history_created_at", columnList = "history_id, created_at")
-        }
-)
+        indexes = {@Index(name = "idx_history_created_at", columnList = "history_id, created_at")})
 public class HistoryImage extends BaseEntity {
 
     @Id
@@ -33,9 +30,6 @@ public class HistoryImage extends BaseEntity {
     }
 
     public static HistoryImage createHistoryImage(String imageUrl, History history) {
-        return HistoryImage.builder()
-                .imageUrl(imageUrl)
-                .history(history)
-                .build();
+        return HistoryImage.builder().imageUrl(imageUrl).history(history).build();
     }
 }

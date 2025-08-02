@@ -27,9 +27,6 @@ public class Category extends BaseEntity {
     }
 
     public static Category createCategory(String name, Category parent) {
-        return Category.builder()
-                .name(name)
-                .parent(parent)
-                .build();
+        return Category.builder().name(name).parent(parent).build();
     }
 }

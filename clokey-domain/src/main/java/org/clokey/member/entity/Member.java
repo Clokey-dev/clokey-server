@@ -1,6 +1,9 @@
 package org.clokey.member.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,18 +20,12 @@ import org.clokey.term.entity.MemberTerm;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DynamicUpdate
 @DynamicInsert
-@Table(indexes = {
-        @Index(name = "idx_member_clokey_id", columnList = "clokeyId")
-})
+@Table(indexes = {@Index(name = "idx_member_clokey_id", columnList = "clokeyId")})
 public class Member extends BaseEntity {
 
     @Id
@@ -46,7 +43,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private SocialType socialType; //이넘으로 나중에 관리하기
+    private SocialType socialType; // 이넘으로 나중에 관리하기
 
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(15) DEFAULT 'ACTIVE'", nullable = false)
@@ -87,13 +84,25 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<History> historyList = new ArrayList<>();
 
-
     @Builder(access = AccessLevel.PRIVATE)
-    private Member(String email, String nickname, String clokeyId,
-                   SocialType socialType, MemberStatus status, RegisterStatus registerStatus,
-                   Visibility visibility, String profileImageUrl, String profileBackImageUrl,
-                   String bio, String refreshToken, String accessToken, String deviceToken,
-                   String appleRefreshToken, String kakaoId, boolean banned, LocalDate inactiveDate) {
+    private Member(
+            String email,
+            String nickname,
+            String clokeyId,
+            SocialType socialType,
+            MemberStatus status,
+            RegisterStatus registerStatus,
+            Visibility visibility,
+            String profileImageUrl,
+            String profileBackImageUrl,
+            String bio,
+            String refreshToken,
+            String accessToken,
+            String deviceToken,
+            String appleRefreshToken,
+            String kakaoId,
+            boolean banned,
+            LocalDate inactiveDate) {
         this.email = email;
         this.nickname = nickname;
         this.clokeyId = clokeyId;
@@ -114,11 +123,24 @@ public class Member extends BaseEntity {
     }
 
     // ✅ 정적 팩토리 메서드
-    public static Member createMember(String email, String nickname, String clokeyId,
-                                      SocialType socialType, MemberStatus status, RegisterStatus registerStatus,
-                                      Visibility visibility, String profileImageUrl, String profileBackImageUrl,
-                                      String bio, String refreshToken, String accessToken, String deviceToken,
-                                      String appleRefreshToken, String kakaoId, boolean banned, LocalDate inactiveDate) {
+    public static Member createMember(
+            String email,
+            String nickname,
+            String clokeyId,
+            SocialType socialType,
+            MemberStatus status,
+            RegisterStatus registerStatus,
+            Visibility visibility,
+            String profileImageUrl,
+            String profileBackImageUrl,
+            String bio,
+            String refreshToken,
+            String accessToken,
+            String deviceToken,
+            String appleRefreshToken,
+            String kakaoId,
+            boolean banned,
+            LocalDate inactiveDate) {
         return Member.builder()
                 .email(email)
                 .nickname(nickname)
@@ -139,5 +161,4 @@ public class Member extends BaseEntity {
                 .inactiveDate(inactiveDate)
                 .build();
     }
-
-    }
+}

@@ -8,7 +8,7 @@ public enum ThicknessLevel {
     LEVEL_4(4, "코트, 무스탕 등"),
     LEVEL_5(5, "패딩 등 두꺼운 아우터");
 
-    private final int value;          // 값 (숫자)
+    private final int value; // 값 (숫자)
     private final String description; // 한국어 설명
 
     // 생성자

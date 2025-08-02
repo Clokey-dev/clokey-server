@@ -5,4 +5,3 @@ public enum ReportStatus {
     DISAPPROVED,
     UNCHECKED
 }
-

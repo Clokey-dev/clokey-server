@@ -32,9 +32,6 @@ public class MemberTerm extends BaseEntity {
     }
 
     public static MemberTerm createMemberTerm(Member member, Term term) {
-        return MemberTerm.builder()
-                .member(member)
-                .term(term)
-                .build();
+        return MemberTerm.builder().member(member).term(term).build();
     }
 }

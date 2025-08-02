@@ -22,8 +22,6 @@ public class Hashtag extends BaseEntity {
     }
 
     public static Hashtag createHashtag(String name) {
-        return Hashtag.builder()
-                .name(name)
-                .build();
+        return Hashtag.builder().name(name).build();
     }
 }

@@ -7,7 +7,6 @@ import org.clokey.member.entity.Member;
 import org.clokey.notification.enums.ReadStatus;
 import org.clokey.notification.enums.RedirectType;
 
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -40,12 +39,13 @@ public class ClokeyNotification extends BaseEntity {
     private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private ClokeyNotification(Member member,
-                               String content,
-                               String notificationImageUrl,
-                               String redirectInfo,
-                               RedirectType redirectType,
-                               ReadStatus readStatus) {
+    private ClokeyNotification(
+            Member member,
+            String content,
+            String notificationImageUrl,
+            String redirectInfo,
+            RedirectType redirectType,
+            ReadStatus readStatus) {
         this.member = member;
         this.content = content;
         this.notificationImageUrl = notificationImageUrl;
@@ -54,11 +54,12 @@ public class ClokeyNotification extends BaseEntity {
         this.readStatus = readStatus;
     }
 
-    public static ClokeyNotification createClokeyNotification(Member member,
-                                            String content,
-                                            String notificationImageUrl,
-                                            String redirectInfo,
-                                            RedirectType redirectType) {
+    public static ClokeyNotification createClokeyNotification(
+            Member member,
+            String content,
+            String notificationImageUrl,
+            String redirectInfo,
+            RedirectType redirectType) {
         return ClokeyNotification.builder()
                 .member(member)
                 .content(content)
@@ -68,5 +69,4 @@ public class ClokeyNotification extends BaseEntity {
                 .readStatus(ReadStatus.NOT_READ)
                 .build();
     }
-
 }

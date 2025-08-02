@@ -37,10 +37,8 @@ public class ProfileReport extends BaseEntity {
     private Member reported;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private ProfileReport(Member reporter,
-                          Member reported,
-                          ProfileReportType profileReportType,
-                          String content) {
+    private ProfileReport(
+            Member reporter, Member reported, ProfileReportType profileReportType, String content) {
         this.reporter = reporter;
         this.reported = reported;
         this.profileReportType = profileReportType;
@@ -48,10 +46,8 @@ public class ProfileReport extends BaseEntity {
         this.reportStatus = ReportStatus.UNCHECKED; // 기본값 지정
     }
 
-    public static ProfileReport createProfileReport(Member reporter,
-                                       Member reported,
-                                       ProfileReportType profileReportType,
-                                       String content) {
+    public static ProfileReport createProfileReport(
+            Member reporter, Member reported, ProfileReportType profileReportType, String content) {
         return ProfileReport.builder()
                 .reporter(reporter)
                 .reported(reported)
@@ -59,5 +55,4 @@ public class ProfileReport extends BaseEntity {
                 .content(content)
                 .build();
     }
-
 }

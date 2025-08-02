@@ -8,11 +8,7 @@ import org.clokey.common.model.BaseEntity;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(
-        indexes = {
-                @Index(name = "idx_history_cloth_history_id", columnList = "history_id")
-        }
-)
+@Table(indexes = {@Index(name = "idx_history_cloth_history_id", columnList = "history_id")})
 public class HistoryCloth extends BaseEntity {
 
     @Id
@@ -34,9 +30,6 @@ public class HistoryCloth extends BaseEntity {
     }
 
     public static HistoryCloth createHistoryCloth(History history, Cloth cloth) {
-        return HistoryCloth.builder()
-                .history(history)
-                .cloth(cloth)
-                .build();
+        return HistoryCloth.builder().history(history).cloth(cloth).build();
     }
 }

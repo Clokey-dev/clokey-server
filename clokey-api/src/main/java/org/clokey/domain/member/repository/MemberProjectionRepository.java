@@ -1,7 +1,3 @@
 package org.clokey.domain.member.repository;
 
-
-
-public interface MemberProjectionRepository {
-
-}
+public interface MemberProjectionRepository {}

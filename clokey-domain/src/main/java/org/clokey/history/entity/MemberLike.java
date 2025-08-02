@@ -10,13 +10,14 @@ import org.clokey.member.entity.Member;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_member_history", columnNames = {"member_id", "history_id"})
+            @UniqueConstraint(
+                    name = "uk_member_history",
+                    columnNames = {"member_id", "history_id"})
         },
         indexes = {
-                @Index(name = "idx_member_like_member_id", columnList = "member_id"),
-                @Index(name = "idx_member_like_history_id", columnList = "history_id")
-        }
-)
+            @Index(name = "idx_member_like_member_id", columnList = "member_id"),
+            @Index(name = "idx_member_like_history_id", columnList = "history_id")
+        })
 public class MemberLike extends BaseEntity {
 
     @Id
@@ -38,9 +39,6 @@ public class MemberLike extends BaseEntity {
     }
 
     public static MemberLike createMemberLike(Member member, History history) {
-        return MemberLike.builder()
-                .member(member)
-                .history(history)
-                .build();
+        return MemberLike.builder().member(member).history(history).build();
     }
 }

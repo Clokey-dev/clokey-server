@@ -10,10 +10,9 @@ import org.clokey.member.entity.Member;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         indexes = {
-                @Index(name = "idx_history_created", columnList = "history_id, created_at"),
-                @Index(name = "idx_comment_member_id", columnList = "member_id")
-        }
-)
+            @Index(name = "idx_history_created", columnList = "history_id, created_at"),
+            @Index(name = "idx_comment_member_id", columnList = "member_id")
+        })
 public class Comment extends BaseEntity {
 
     @Id
@@ -39,7 +38,8 @@ public class Comment extends BaseEntity {
     private Comment parent;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Comment(String content, Member member, History history, Comment parent, boolean banned) {
+    private Comment(
+            String content, Member member, History history, Comment parent, boolean banned) {
         this.content = content;
         this.member = member;
         this.history = history;
@@ -47,7 +47,8 @@ public class Comment extends BaseEntity {
         this.banned = banned;
     }
 
-    public static Comment createComment(String content, Member member, History history, Comment parent) {
+    public static Comment createComment(
+            String content, Member member, History history, Comment parent) {
         return Comment.builder()
                 .content(content)
                 .member(member)
@@ -56,5 +57,4 @@ public class Comment extends BaseEntity {
                 .banned(false)
                 .build();
     }
-
 }

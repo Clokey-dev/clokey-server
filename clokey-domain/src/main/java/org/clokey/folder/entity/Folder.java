@@ -32,15 +32,10 @@ public class Folder extends BaseEntity {
     }
 
     public static Folder createFolder(Member member, String name, Long itemCount) {
-        return Folder.builder()
-                .member(member)
-                .name(name)
-                .itemCount(itemCount)
-                .build();
+        return Folder.builder().member(member).name(name).itemCount(itemCount).build();
     }
 
     public static Folder createFolder(Member member, String name) {
         return createFolder(member, name, 0L);
     }
-
 }

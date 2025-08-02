@@ -29,9 +29,6 @@ public class ClothFolder extends BaseEntity {
     }
 
     public static ClothFolder createClothFolder(Cloth cloth, Folder folder) {
-        return ClothFolder.builder()
-                .cloth(cloth)
-                .folder(folder)
-                .build();
+        return ClothFolder.builder().cloth(cloth).folder(folder).build();
     }
 }

@@ -1,6 +1,6 @@
 package org.clokey.member.enums;
 
 public enum SocialType {
-    KAKAO, APPLE
+    KAKAO,
+    APPLE
 }
-

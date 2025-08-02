@@ -3,6 +3,8 @@ package org.clokey.cloth.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.enums.Season;
@@ -10,9 +12,6 @@ import org.clokey.cloth.enums.ThicknessLevel;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.member.entity.Member;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -31,10 +30,7 @@ public class Cloth extends BaseEntity {
     private int wearNum;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-            name = "cloth_season",
-            joinColumns = @JoinColumn(name = "cloth_id")
-    )
+    @CollectionTable(name = "cloth_season", joinColumns = @JoinColumn(name = "cloth_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "season", nullable = false)
     private List<Season> seasons = new ArrayList<>();
@@ -71,15 +67,16 @@ public class Cloth extends BaseEntity {
     private ClothImage image;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Cloth(String name,
-                  List<Season> seasons,
-                  int tempUpperBound,
-                  int tempLowerBound,
-                  ThicknessLevel thicknessLevel,
-                  String clothUrl,
-                  String brand,
-                  Category category,
-                  Member member) {
+    private Cloth(
+            String name,
+            List<Season> seasons,
+            int tempUpperBound,
+            int tempLowerBound,
+            ThicknessLevel thicknessLevel,
+            String clothUrl,
+            String brand,
+            Category category,
+            Member member) {
         this.name = name;
         this.seasons = seasons != null ? seasons : new ArrayList<>();
         this.tempUpperBound = tempUpperBound;
@@ -92,15 +89,16 @@ public class Cloth extends BaseEntity {
         this.wearNum = 0;
     }
 
-    public static Cloth createCloth(String name,
-                                    List<Season> seasons,
-                                    int tempUpperBound,
-                                    int tempLowerBound,
-                                    ThicknessLevel thicknessLevel,
-                                    String clothUrl,
-                                    String brand,
-                                    Category category,
-                                    Member member) {
+    public static Cloth createCloth(
+            String name,
+            List<Season> seasons,
+            int tempUpperBound,
+            int tempLowerBound,
+            ThicknessLevel thicknessLevel,
+            String clothUrl,
+            String brand,
+            Category category,
+            Member member) {
         return Cloth.builder()
                 .name(name)
                 .seasons(seasons)
@@ -113,5 +111,4 @@ public class Cloth extends BaseEntity {
                 .member(member)
                 .build();
     }
-
 }

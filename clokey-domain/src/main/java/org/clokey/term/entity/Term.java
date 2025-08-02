@@ -1,5 +1,6 @@
 package org.clokey.term.entity;
 
+import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,7 +10,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.clokey.common.model.BaseEntity;
-import jakarta.persistence.*;
 
 @Entity
 @Getter
@@ -37,10 +37,6 @@ public class Term extends BaseEntity {
     }
 
     public static Term createTerm(String title, String body, Boolean optional) {
-        return Term.builder()
-                .title(title)
-                .body(body)
-                .optional(optional)
-                .build();
+        return Term.builder().title(title).body(body).optional(optional).build();
     }
 }
