@@ -109,9 +109,9 @@ CREATE TABLE history (
                          created_at DATETIME(6),
                          updated_at DATETIME(6),
 
-                         CONSTRAINT fk_history_member FOREIGN KEY (member_id) REFERENCES member(id),
-                         INDEX idx_member_date (member_id, history_date)
+                         CONSTRAINT fk_history_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
+CREATE INDEX idx_member_date ON history (member_id, history_date);
 
 CREATE TABLE hashtag (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -154,9 +154,10 @@ CREATE TABLE cloth_image (
                              cloth_id BIGINT NOT NULL,
                              created_at DATETIME(6),
                              updated_at DATETIME(6),
-                             CONSTRAINT fk_cloth_image_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id),
-                             INDEX idx_cloth_image_cloth_id (cloth_id)
+                             CONSTRAINT fk_cloth_image_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
 );
+CREATE INDEX idx_cloth_image_cloth_id ON cloth_image (cloth_id);
+
 
 CREATE TABLE cloth_folder (
                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -178,9 +179,9 @@ CREATE TABLE history_cloth (
                                updated_at DATETIME(6),
 
                                CONSTRAINT fk_history_cloth_history FOREIGN KEY (history_id) REFERENCES history(id),
-                               CONSTRAINT fk_history_cloth_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id),
-                               INDEX idx_history_cloth_history_id (history_id)
+                               CONSTRAINT fk_history_cloth_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
 );
+CREATE INDEX idx_history_cloth_history_id ON history_cloth (history_id);
 
 
 CREATE TABLE history_image (
@@ -190,9 +191,9 @@ CREATE TABLE history_image (
                                created_at DATETIME(6),
                                updated_at DATETIME(6),
 
-                               CONSTRAINT fk_history_image_history FOREIGN KEY (history_id) REFERENCES history(id),
-                               INDEX idx_history_created_at (history_id, created_at)
+                               CONSTRAINT fk_history_image_history FOREIGN KEY (history_id) REFERENCES history(id)
 );
+CREATE INDEX idx_history_created_at ON history_image (history_id, created_at);
 
 
 CREATE TABLE member_like (
@@ -204,11 +205,10 @@ CREATE TABLE member_like (
 
                              CONSTRAINT fk_member_like_member FOREIGN KEY (member_id) REFERENCES member(id),
                              CONSTRAINT fk_member_like_history FOREIGN KEY (history_id) REFERENCES history(id),
-                             CONSTRAINT uk_member_history UNIQUE (member_id, history_id),
-
-                             INDEX idx_member_like_member_id (member_id),
-                             INDEX idx_member_like_history_id (history_id)
+                             CONSTRAINT uk_member_history UNIQUE (member_id, history_id)
 );
+CREATE INDEX idx_member_like_member_id ON member_like (member_id);
+CREATE INDEX idx_member_like_history_id ON member_like (history_id);
 
 
 CREATE TABLE hashtag_history (
@@ -220,12 +220,10 @@ CREATE TABLE hashtag_history (
 
                                  CONSTRAINT fk_hashtag_history_hashtag FOREIGN KEY (hashtag_id) REFERENCES hashtag(id),
                                  CONSTRAINT fk_hashtag_history_history FOREIGN KEY (history_id) REFERENCES history(id),
-                                 CONSTRAINT uk_history_hashtag UNIQUE (history_id, hashtag_id),
-
-                                 INDEX idx_history_id (history_id),
-                                 INDEX idx_hashtag_id (hashtag_id)
+                                 CONSTRAINT uk_history_hashtag UNIQUE (history_id, hashtag_id)
 );
-
+CREATE INDEX idx_history_id ON hashtag_history (history_id);
+CREATE INDEX idx_hashtag_id ON hashtag_history (hashtag_id);
 
 
 CREATE TABLE block (
