@@ -74,21 +74,8 @@ CREATE TABLE folder (
 
 CREATE TABLE cloth (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                       name VARCHAR(50) NOT NULL,
-                       wear_num INT NOT NULL DEFAULT 0,
-                       temp_upper_bound INT NOT NULL CHECK (temp_upper_bound BETWEEN -20 AND 40),
-                       temp_lower_bound INT NOT NULL CHECK (temp_lower_bound BETWEEN -20 AND 40),
-                       thickness_level VARCHAR(255) CHECK (
-                           thickness_level IN (
-                                               'LEVEL_0',
-                                               'LEVEL_1',
-                                               'LEVEL_2',
-                                               'LEVEL_3',
-                                               'LEVEL_4',
-                                               'LEVEL_5'
-                               )
-                           ),
-                       cloth_url VARCHAR(1000),
+                       cloth_image_url VARCHAR(255) NOT NULL ,
+                       cloth_url VARCHAR(255),
                        brand VARCHAR(255),
                        category_id BIGINT NOT NULL,
                        member_id BIGINT NOT NULL,
@@ -137,27 +124,6 @@ CREATE TABLE comment (
 
 CREATE INDEX idx_history_created ON comment(history_id, created_at);
 CREATE INDEX idx_comment_member_id ON comment(member_id);
-
-
-CREATE TABLE cloth_season (
-                              cloth_id BIGINT NOT NULL,
-                              season VARCHAR(255) NOT NULL CHECK (
-                                  season IN ('SPRING', 'SUMMER', 'FALL', 'WINTER', 'ALL')
-                                  ),
-                              PRIMARY KEY (cloth_id, season),
-                              CONSTRAINT fk_cloth_season_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
-);
-
-CREATE TABLE cloth_image (
-                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                             image_url VARCHAR(255) NOT NULL,
-                             cloth_id BIGINT NOT NULL,
-                             created_at DATETIME(6),
-                             updated_at DATETIME(6),
-                             CONSTRAINT fk_cloth_image_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
-);
-CREATE INDEX idx_cloth_image_cloth_id ON cloth_image (cloth_id);
-
 
 CREATE TABLE cloth_folder (
                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
