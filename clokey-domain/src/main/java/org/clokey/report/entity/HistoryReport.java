@@ -25,6 +25,9 @@ public class HistoryReport extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(15) DEFAULT 'UNCHECKED'", nullable = false)
     private ReportStatus reportStatus;
 
+    @Column(length = 200)
+    private String content;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "history_id", nullable = false)
     private History history;
@@ -32,9 +35,6 @@ public class HistoryReport extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-
-    @Column(length = 200)
-    private String content;
 
     @Builder(access = AccessLevel.PRIVATE)
     private HistoryReport(HistoryReportType historyReportType,

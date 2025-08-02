@@ -10,7 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.clokey.common.model.BaseEntity;
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Getter

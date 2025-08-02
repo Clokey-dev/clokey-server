@@ -17,14 +17,6 @@ public class ProfileReport extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter_id", nullable = false)
-    private Member reporter;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reported_id", nullable = false)
-    private Member reported;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProfileReportType profileReportType;
@@ -35,6 +27,14 @@ public class ProfileReport extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(15) DEFAULT 'UNCHECKED'", nullable = false)
     private ReportStatus reportStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reporter_id", nullable = false)
+    private Member reporter;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_id", nullable = false)
+    private Member reported;
 
     @Builder(access = AccessLevel.PRIVATE)
     private ProfileReport(Member reporter,

@@ -23,6 +23,9 @@ public class Comment extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String content;
 
+    @Column(nullable = false)
+    private boolean banned = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -34,9 +37,6 @@ public class Comment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Comment parent;
-
-    @Column(nullable = false)
-    private boolean banned = false;
 
     @Builder(access = AccessLevel.PRIVATE)
     private Comment(String content, Member member, History history, Comment parent, boolean banned) {

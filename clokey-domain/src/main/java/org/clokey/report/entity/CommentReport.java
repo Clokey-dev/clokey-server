@@ -26,6 +26,9 @@ public class CommentReport extends BaseEntity {
     @Column(columnDefinition = "VARCHAR(15) DEFAULT 'UNCHECKED'", nullable = false)
     private ReportStatus reportStatus;
 
+    @Column(length = 200)
+    private String content;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", nullable = false)
     private Comment comment;
@@ -33,9 +36,6 @@ public class CommentReport extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
-
-    @Column(length = 200)
-    private String content;
 
     @Builder(access = AccessLevel.PRIVATE)
     private CommentReport(CommentReportType commentReportType,

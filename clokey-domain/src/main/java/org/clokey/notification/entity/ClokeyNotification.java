@@ -17,10 +17,6 @@ public class ClokeyNotification extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
-
     @Column(nullable = false, length = 50)
     private String content;
 
@@ -38,6 +34,10 @@ public class ClokeyNotification extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "VARCHAR(15) DEFAULT 'NOT_READ'", nullable = false)
     private ReadStatus readStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
     private ClokeyNotification(Member member,
