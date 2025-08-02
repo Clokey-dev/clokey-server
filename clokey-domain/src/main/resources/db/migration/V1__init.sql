@@ -1,5 +1,3 @@
-
-
 CREATE TABLE member (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         email VARCHAR(255) NOT NULL,
@@ -35,10 +33,9 @@ CREATE TABLE member (
                         inactive_date DATE,
 
                         created_at DATETIME(6),
-                        updated_at DATETIME(6),
-
-                        INDEX idx_member_clokey_id (clokey_id)
+                        updated_at DATETIME(6)
 );
+CREATE INDEX idx_member_clokey_id ON member (clokey_id);
 
 
 CREATE TABLE term (
