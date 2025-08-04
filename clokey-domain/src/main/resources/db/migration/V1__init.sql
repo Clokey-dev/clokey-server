@@ -111,7 +111,7 @@ CREATE TABLE hashtag (
 
 CREATE TABLE comment (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         content VARCHAR(50) NOT NULL,
+                         content VARCHAR(100) NOT NULL,
                          member_id BIGINT NOT NULL,
                          history_id BIGINT NOT NULL,
                          parent_id BIGINT,
@@ -125,7 +125,7 @@ CREATE TABLE comment (
 
 CREATE TABLE reply (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                         content VARCHAR(50) NOT NULL,
+                         content VARCHAR(100) NOT NULL,
                          banned BOOLEAN NOT NULL,
                          member_id BIGINT NOT NULL,
                          comment_id BIGINT NOT NULL,

@@ -18,7 +18,7 @@ public class Reply extends BaseEntity {
     private Long id;
 
     @NotNull
-    @Column(length = 50)
+    @Column(length = 100)
     private String content;
 
     @NotNull private boolean banned;
