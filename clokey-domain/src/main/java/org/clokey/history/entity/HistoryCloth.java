@@ -8,6 +8,13 @@ import org.clokey.common.model.BaseEntity;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "history_cloth",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_history_cloth",
+                    columnNames = {"history_id", "cloth_id"})
+        })
 public class HistoryCloth extends BaseEntity {
 
     @Id
