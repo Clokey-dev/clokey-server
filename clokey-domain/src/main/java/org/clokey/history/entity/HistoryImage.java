@@ -2,6 +2,8 @@ package org.clokey.history.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 
@@ -19,6 +21,9 @@ public class HistoryImage extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "history_id", nullable = false)
     private History history;
+
+    @OneToMany(mappedBy = "historyImage", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistoryClothTag> clothTags = new ArrayList<>();
 
     //    @Builder(access = AccessLevel.PRIVATE)
     //    private HistoryImage(String imageUrl, History history) {
