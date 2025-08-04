@@ -1,6 +1,7 @@
 package org.clokey.report.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.history.entity.History;
@@ -18,11 +19,11 @@ public class HistoryReport extends BaseEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @NotNull
     private HistoryReportType historyReportType;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "VARCHAR(15) DEFAULT 'UNCHECKED'", nullable = false)
+    @NotNull
     private ReportStatus reportStatus;
 
     @Column(length = 200)
@@ -36,23 +37,25 @@ public class HistoryReport extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @Builder(access = AccessLevel.PRIVATE)
-    private HistoryReport(
-            HistoryReportType historyReportType, History history, Member member, String content) {
-        this.historyReportType = historyReportType;
-        this.history = history;
-        this.member = member;
-        this.content = content;
-        this.reportStatus = ReportStatus.UNCHECKED; // 기본값 지정
-    }
-
-    public static HistoryReport createHistoryReport(
-            HistoryReportType historyReportType, History history, Member member, String content) {
-        return HistoryReport.builder()
-                .historyReportType(historyReportType)
-                .history(history)
-                .member(member)
-                .content(content)
-                .build();
-    }
+    //    @Builder(access = AccessLevel.PRIVATE)
+    //    private HistoryReport(
+    //            HistoryReportType historyReportType, History history, Member member, String
+    // content) {
+    //        this.historyReportType = historyReportType;
+    //        this.history = history;
+    //        this.member = member;
+    //        this.content = content;
+    //        this.reportStatus = ReportStatus.UNCHECKED; // 기본값 지정
+    //    }
+    //
+    //    public static HistoryReport createHistoryReport(
+    //            HistoryReportType historyReportType, History history, Member member, String
+    // content) {
+    //        return HistoryReport.builder()
+    //                .historyReportType(historyReportType)
+    //                .history(history)
+    //                .member(member)
+    //                .content(content)
+    //                .build();
+    //    }
 }
