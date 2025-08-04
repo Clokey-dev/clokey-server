@@ -32,8 +32,8 @@ CREATE TABLE member (
                         banned BOOLEAN NOT NULL DEFAULT FALSE,
                         inactive_date DATE,
 
-                        created_at DATETIME(6),
-                        updated_at DATETIME(6)
+                        created_at DATETIME(6) NOT NULL,
+                        updated_at DATETIME(6) NOT NULL
 );
 CREATE INDEX idx_member_clokey_id ON member (clokey_id);
 
@@ -45,8 +45,8 @@ CREATE TABLE term (
                       body TEXT NOT NULL,
                       optional BOOLEAN NOT NULL,
 
-                      created_at DATETIME(6),
-                      updated_at DATETIME(6)
+                      created_at DATETIME(6) NOT NULL,
+                      updated_at DATETIME(6) NOT NULL
 );
 
 
@@ -54,9 +54,8 @@ CREATE TABLE category (
                           id BIGINT AUTO_INCREMENT PRIMARY KEY,
                           name VARCHAR(50) NOT NULL,
                           parent_id BIGINT,
-
-                          created_at DATETIME(6),
-                          updated_at DATETIME(6),
+                          created_at DATETIME(6) NOT NULL,
+                          updated_at DATETIME(6) NOT NULL,
 
                           CONSTRAINT fk_category_parent FOREIGN KEY (parent_id) REFERENCES category(id)
 );
@@ -66,8 +65,8 @@ CREATE TABLE folder (
                         member_id BIGINT NOT NULL,
                         name VARCHAR(30) NOT NULL,
                         item_count BIGINT NOT NULL DEFAULT 0,
-                        created_at DATETIME(6),
-                        updated_at DATETIME(6),
+                        created_at DATETIME(6) NOT NULL,
+                        updated_at DATETIME(6) NOT NULL,
                         CONSTRAINT fk_folder_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
 
@@ -81,8 +80,8 @@ CREATE TABLE cloth (
                        brand VARCHAR(255),
                        category_id BIGINT NOT NULL,
                        member_id BIGINT NOT NULL,
-                       created_at DATETIME(6),
-                       updated_at DATETIME(6),
+                       created_at DATETIME(6) NOT NULL,
+                       updated_at DATETIME(6) NOT NULL,
 
                        CONSTRAINT fk_cloth_category FOREIGN KEY (category_id) REFERENCES category(id),
                        CONSTRAINT fk_cloth_member FOREIGN KEY (member_id) REFERENCES member(id)
@@ -95,8 +94,8 @@ CREATE TABLE history (
                          content VARCHAR(200),
                          banned BOOLEAN NOT NULL DEFAULT FALSE,
                          member_id BIGINT NOT NULL,
-                         created_at DATETIME(6),
-                         updated_at DATETIME(6),
+                         created_at DATETIME(6) NOT NULL,
+                         updated_at DATETIME(6) NOT NULL,
 
                          CONSTRAINT fk_history_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
@@ -105,8 +104,8 @@ CREATE INDEX idx_member_date ON history (member_id, history_date);
 CREATE TABLE hashtag (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
                          name VARCHAR(30) NOT NULL UNIQUE,
-                         created_at DATETIME(6),
-                         updated_at DATETIME(6)
+                         created_at DATETIME(6) NOT NULL,
+                         updated_at DATETIME(6) NOT NULL
 );
 
 
@@ -117,8 +116,8 @@ CREATE TABLE comment (
                          history_id BIGINT NOT NULL,
                          parent_id BIGINT,
                          banned BOOLEAN NOT NULL,
-                         created_at DATETIME(6),
-                         updated_at DATETIME(6),
+                         created_at DATETIME(6) NOT NULL,
+                         updated_at DATETIME(6) NOT NULL,
                          CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),
                          CONSTRAINT fk_comment_history FOREIGN KEY (history_id) REFERENCES history(id),
                          CONSTRAINT fk_comment_parent FOREIGN KEY (parent_id) REFERENCES comment(id)
@@ -130,8 +129,8 @@ CREATE TABLE reply (
                          banned BOOLEAN NOT NULL,
                          member_id BIGINT NOT NULL,
                          comment_id BIGINT NOT NULL,
-                         created_at DATETIME(6),
-                         updated_at DATETIME(6),
+                         created_at DATETIME(6) NOT NULL,
+                         updated_at DATETIME(6) NOT NULL,
                          CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),
                          CONSTRAINT fk_comment_comment FOREIGN KEY (comment_id) REFERENCES comment(id)
 );
@@ -142,8 +141,8 @@ CREATE TABLE cloth_folder (
                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
                               cloth_id BIGINT NOT NULL,
                               folder_id BIGINT NOT NULL,
-                              created_at DATETIME(6),
-                              updated_at DATETIME(6),
+                              created_at DATETIME(6) NOT NULL,
+                              updated_at DATETIME(6) NOT NULL,
                               CONSTRAINT fk_cloth_folder_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id),
                               CONSTRAINT fk_cloth_folder_folder FOREIGN KEY (folder_id) REFERENCES folder(id)
 );
@@ -154,8 +153,8 @@ CREATE TABLE history_cloth (
                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                history_id BIGINT NOT NULL,
                                cloth_id BIGINT NOT NULL,
-                               created_at DATETIME(6),
-                               updated_at DATETIME(6),
+                               created_at DATETIME(6) NOT NULL,
+                               updated_at DATETIME(6) NOT NULL,
 
                                CONSTRAINT fk_history_cloth_history FOREIGN KEY (history_id) REFERENCES history(id),
                                CONSTRAINT fk_history_cloth_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
@@ -167,8 +166,8 @@ CREATE TABLE history_image (
                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                image_url VARCHAR(255) NOT NULL UNIQUE,
                                history_id BIGINT NOT NULL,
-                               created_at DATETIME(6),
-                               updated_at DATETIME(6),
+                               created_at DATETIME(6) NOT NULL,
+                               updated_at DATETIME(6) NOT NULL,
 
                                CONSTRAINT fk_history_image_history FOREIGN KEY (history_id) REFERENCES history(id)
 );
@@ -179,8 +178,8 @@ CREATE TABLE member_like (
                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
                              member_id BIGINT NOT NULL,
                              history_id BIGINT NOT NULL,
-                             created_at DATETIME(6),
-                             updated_at DATETIME(6),
+                             created_at DATETIME(6) NOT NULL,
+                             updated_at DATETIME(6) NOT NULL,
 
                              CONSTRAINT fk_member_like_member FOREIGN KEY (member_id) REFERENCES member(id),
                              CONSTRAINT fk_member_like_history FOREIGN KEY (history_id) REFERENCES history(id),
@@ -194,8 +193,8 @@ CREATE TABLE hashtag_history (
                                  id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                  hashtag_id BIGINT NOT NULL,
                                  history_id BIGINT NOT NULL,
-                                 created_at DATETIME(6),
-                                 updated_at DATETIME(6),
+                                 created_at DATETIME(6) NOT NULL,
+                                 updated_at DATETIME(6) NOT NULL,
 
                                  CONSTRAINT fk_hashtag_history_hashtag FOREIGN KEY (hashtag_id) REFERENCES hashtag(id),
                                  CONSTRAINT fk_hashtag_history_history FOREIGN KEY (history_id) REFERENCES history(id),
@@ -209,8 +208,8 @@ CREATE TABLE block (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        blocker_id BIGINT NOT NULL,
                        blocked_id BIGINT NOT NULL,
-                       created_at DATETIME(6),
-                       updated_at DATETIME(6),
+                       created_at DATETIME(6) NOT NULL,
+                       updated_at DATETIME(6) NOT NULL,
 
                        CONSTRAINT fk_block_blocker FOREIGN KEY (blocker_id) REFERENCES member(id),
                        CONSTRAINT fk_block_blocked FOREIGN KEY (blocked_id) REFERENCES member(id),
@@ -223,8 +222,8 @@ CREATE TABLE follow (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         following_user_id BIGINT NOT NULL,
                         followed_user_id BIGINT NOT NULL,
-                        created_at DATETIME(6),
-                        updated_at DATETIME(6),
+                        created_at DATETIME(6) NOT NULL,
+                        updated_at DATETIME(6) NOT NULL,
 
                         CONSTRAINT fk_follow_following_user FOREIGN KEY (following_user_id) REFERENCES member(id),
                         CONSTRAINT fk_follow_followed_user FOREIGN KEY (followed_user_id) REFERENCES member(id),
@@ -251,8 +250,8 @@ CREATE TABLE clokey_notification (
                                          read_status IN ('READ', 'NOT_READ')
                                          ),
 
-                                     created_at DATETIME(6),
-                                     updated_at DATETIME(6),
+                                     created_at DATETIME(6) NOT NULL,
+                                     updated_at DATETIME(6) NOT NULL,
 
                                      CONSTRAINT fk_clokey_notification_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
@@ -272,8 +271,8 @@ CREATE TABLE recommendation (
                                     ),
 
                                 member_id BIGINT NOT NULL,
-                                created_at DATETIME(6),
-                                updated_at DATETIME(6),
+                                created_at DATETIME(6) NOT NULL,
+                                updated_at DATETIME(6) NOT NULL,
 
                                 CONSTRAINT fk_recommendation_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
@@ -290,8 +289,8 @@ CREATE TABLE comment_report (
                                 member_id BIGINT NOT NULL,
 
                                 content VARCHAR(200),
-                                created_at DATETIME(6),
-                                updated_at DATETIME(6),
+                                created_at DATETIME(6) NOT NULL,
+                                updated_at DATETIME(6) NOT NULL,
 
                                 CONSTRAINT fk_comment_report_comment FOREIGN KEY (comment_id) REFERENCES comment(id),
                                 CONSTRAINT fk_comment_report_member FOREIGN KEY (member_id) REFERENCES member(id)
@@ -310,8 +309,8 @@ CREATE TABLE history_report (
                                 member_id BIGINT NOT NULL,
 
                                 content VARCHAR(200),
-                                created_at DATETIME(6),
-                                updated_at DATETIME(6),
+                                created_at DATETIME(6) NOT NULL,
+                                updated_at DATETIME(6) NOT NULL,
 
                                 CONSTRAINT fk_history_report_history FOREIGN KEY (history_id) REFERENCES history(id),
                                 CONSTRAINT fk_history_report_member FOREIGN KEY (member_id) REFERENCES member(id)
@@ -334,8 +333,8 @@ CREATE TABLE profile_report (
                                     report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
                                     ),
 
-                                created_at DATETIME(6),
-                                updated_at DATETIME(6),
+                                created_at DATETIME(6) NOT NULL,
+                                updated_at DATETIME(6) NOT NULL,
 
                                 CONSTRAINT fk_profile_report_reporter FOREIGN KEY (reporter_id) REFERENCES member(id),
                                 CONSTRAINT fk_profile_report_reported FOREIGN KEY (reported_id) REFERENCES member(id)
@@ -348,8 +347,8 @@ CREATE TABLE member_term (
                              member_id BIGINT NOT NULL,
                              term_id BIGINT NOT NULL,
 
-                             created_at DATETIME(6),
-                             updated_at DATETIME(6),
+                             created_at DATETIME(6) NOT NULL,
+                             updated_at DATETIME(6) NOT NULL,
 
                              CONSTRAINT fk_member_term_member FOREIGN KEY (member_id) REFERENCES member(id),
                              CONSTRAINT fk_member_term_term FOREIGN KEY (term_id) REFERENCES term(id)
