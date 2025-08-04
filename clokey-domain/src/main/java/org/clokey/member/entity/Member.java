@@ -12,12 +12,13 @@ import org.clokey.cloth.entity.Cloth;
 import org.clokey.comment.entitiy.Comment;
 import org.clokey.comment.entitiy.Reply;
 import org.clokey.common.model.BaseEntity;
+import org.clokey.folder.entity.Folder;
 import org.clokey.history.entity.History;
 import org.clokey.like.entity.MemberLike;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.RegisterStatus;
-import org.clokey.member.enums.SocialType;
 import org.clokey.member.enums.Visibility;
+import org.clokey.notification.entity.ClokeyNotification;
 import org.clokey.term.entity.MemberTerm;
 
 @Getter
@@ -31,15 +32,13 @@ public class Member extends BaseEntity {
 
     @NotNull private String email;
 
-    @Column(length = 30)
-    private String nickname;
-
     @Column(unique = true)
     private String clokeyId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SocialType socialType;
+    @Column(length = 30)
+    private String nickname;
+
+    @Embedded private OauthInfo oauthInfo;
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -59,12 +58,28 @@ public class Member extends BaseEntity {
     private String deviceToken;
     private String oid;
 
-    @NotNull private boolean banned;
-
     private LocalDate inactiveDate;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberTerm> memberTermList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<ClokeyNotification> clokeyNotifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Follow> follows = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Folder> folders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MemberLike> memberLikes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reply> replies = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<MemberLike> memberLikeList = new ArrayList<>();
@@ -74,10 +89,4 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<History> historyList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reply> replies = new ArrayList<>();
 }
