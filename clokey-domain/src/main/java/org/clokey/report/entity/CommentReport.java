@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.comment.entitiy.Comment;
 import org.clokey.common.model.BaseEntity;
-import org.clokey.history.enums.CommentReportType;
 import org.clokey.member.entity.Member;
+import org.clokey.report.enums.CommentReportType;
 import org.clokey.report.enums.ReportStatus;
 
 @Entity

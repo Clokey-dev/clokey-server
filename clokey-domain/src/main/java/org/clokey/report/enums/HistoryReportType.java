@@ -1,4 +1,4 @@
-package org.clokey.history.enums;
+package org.clokey.report.enums;
 
 import java.util.Arrays;
 import java.util.List;
