@@ -2,13 +2,9 @@ package org.clokey.cloth.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.*;
 import org.clokey.category.entity.Category;
 import org.clokey.common.model.BaseEntity;
-import org.clokey.folder.entity.ClothFolder;
-import org.clokey.history.entity.HistoryCloth;
 import org.clokey.member.entity.Member;
 
 @Entity
@@ -39,9 +35,9 @@ public class Cloth extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToMany(mappedBy = "cloth", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HistoryCloth> historyCloths = new ArrayList<>();
-
-    @OneToMany(mappedBy = "cloth", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ClothFolder> clothFolders = new ArrayList<>();
+    //    @OneToMany(mappedBy = "cloth", cascade = CascadeType.ALL, orphanRemoval = true)
+    //    private List<HistoryCloth> historyCloths = new ArrayList<>();
+    //
+    //    @OneToMany(mappedBy = "cloth", cascade = CascadeType.ALL, orphanRemoval = true)
+    //    private List<ClothFolder> clothFolders = new ArrayList<>();
 }

@@ -2,8 +2,6 @@ package org.clokey.comment.entitiy;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.history.entity.History;
@@ -31,8 +29,8 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "history_id", nullable = false)
     private History history;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Reply> replies = new ArrayList<>();
+    //    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    //    private List<Reply> replies = new ArrayList<>();
 
     //    @Builder(access = AccessLevel.PRIVATE)
     //    private Comment(
