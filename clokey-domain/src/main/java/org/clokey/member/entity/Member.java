@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
+import org.clokey.comment.entitiy.Comment;
+import org.clokey.comment.entitiy.Reply;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.history.entity.History;
 import org.clokey.like.entity.MemberLike;
@@ -83,6 +85,12 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<History> historyList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reply> replies = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     private Member(

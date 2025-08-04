@@ -24,12 +24,10 @@ public class Reply extends BaseEntity {
     @NotNull private boolean banned;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
-    @JoinColumn(name = "comment_id")
+    @JoinColumn(name = "comment_id", nullable = false)
     private Comment comment;
 }

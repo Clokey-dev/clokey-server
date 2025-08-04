@@ -22,7 +22,12 @@ public class Cloth extends BaseEntity {
 
     @NotNull private String clothImageUrl;
 
+    @Column(length = 1000)
     private String clothUrl;
+
+    private String name;
+
+    private int price;
 
     private String brand;
 

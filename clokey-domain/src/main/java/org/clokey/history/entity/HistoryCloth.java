@@ -8,7 +8,6 @@ import org.clokey.common.model.BaseEntity;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(indexes = {@Index(name = "idx_history_cloth_history_id", columnList = "history_id")})
 public class HistoryCloth extends BaseEntity {
 
     @Id
@@ -23,13 +22,13 @@ public class HistoryCloth extends BaseEntity {
     @JoinColumn(name = "cloth_id", nullable = false)
     private Cloth cloth;
 
-    @Builder(access = AccessLevel.PRIVATE)
-    private HistoryCloth(History history, Cloth cloth) {
-        this.history = history;
-        this.cloth = cloth;
-    }
-
-    public static HistoryCloth createHistoryCloth(History history, Cloth cloth) {
-        return HistoryCloth.builder().history(history).cloth(cloth).build();
-    }
+    //    @Builder(access = AccessLevel.PRIVATE)
+    //    private HistoryCloth(History history, Cloth cloth) {
+    //        this.history = history;
+    //        this.cloth = cloth;
+    //    }
+    //
+    //    public static HistoryCloth createHistoryCloth(History history, Cloth cloth) {
+    //        return HistoryCloth.builder().history(history).cloth(cloth).build();
+    //    }
 }

@@ -75,7 +75,9 @@ CREATE TABLE folder (
 CREATE TABLE cloth (
                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
                        cloth_image_url VARCHAR(255) NOT NULL ,
-                       cloth_url VARCHAR(255),
+                       cloth_url VARCHAR(1000),
+                       name VARCHAR(255),
+                       price INT price,
                        brand VARCHAR(255),
                        category_id BIGINT NOT NULL,
                        member_id BIGINT NOT NULL,

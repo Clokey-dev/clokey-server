@@ -8,10 +8,6 @@ import org.clokey.common.model.BaseEntity;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        indexes = {
-            @Index(name = "idx_history_id", columnList = "history_id"),
-            @Index(name = "idx_hashtag_id", columnList = "hashtag_id")
-        },
         uniqueConstraints = {
             @UniqueConstraint(
                     name = "uk_history_hashtag",
@@ -31,13 +27,13 @@ public class HashtagHistory extends BaseEntity {
     @JoinColumn(name = "history_id", nullable = false)
     private History history;
 
-    @Builder(access = AccessLevel.PRIVATE)
-    private HashtagHistory(Hashtag hashtag, History history) {
-        this.hashtag = hashtag;
-        this.history = history;
-    }
-
-    public static HashtagHistory createHashtagHistory(Hashtag hashtag, History history) {
-        return HashtagHistory.builder().hashtag(hashtag).history(history).build();
-    }
+    //    @Builder(access = AccessLevel.PRIVATE)
+    //    private HashtagHistory(Hashtag hashtag, History history) {
+    //        this.hashtag = hashtag;
+    //        this.history = history;
+    //    }
+    //
+    //    public static HashtagHistory createHashtagHistory(Hashtag hashtag, History history) {
+    //        return HashtagHistory.builder().hashtag(hashtag).history(history).build();
+    //    }
 }
