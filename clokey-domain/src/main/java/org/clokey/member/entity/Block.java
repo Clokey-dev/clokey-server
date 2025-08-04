@@ -6,6 +6,13 @@ import lombok.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "block",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_blocker_blocked",
+                    columnNames = {"blocker_id", "blocked_id"})
+        })
 public class Block {
 
     @Id

@@ -9,6 +9,13 @@ import org.clokey.member.entity.Member;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+        name = "member_like",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_member_history_like",
+                    columnNames = {"member_id", "history_id"})
+        })
 public class MemberLike extends BaseEntity {
 
     @Id

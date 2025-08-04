@@ -18,6 +18,6 @@ public class Follow {
     private Member followTo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "followed_from_id", nullable = false)
-    private Member followedFrom;
+    @JoinColumn(name = "follow_from_id", nullable = false)
+    private Member followFrom;
 }

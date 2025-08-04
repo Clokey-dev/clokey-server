@@ -1,15 +1,16 @@
 CREATE TABLE member (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
                         email VARCHAR(255) NOT NULL,
-                        nickname VARCHAR(30),
                         clokey_id VARCHAR(255) UNIQUE,
+                        nickname VARCHAR(30),
+                        oauth_id VARCHAR(255) NOT NULL ,
 
                         social_type VARCHAR(20) NOT NULL CHECK (
                             social_type IN ('KAKAO', 'APPLE')
                             ),
 
-                        status VARCHAR(15) NOT NULL DEFAULT 'ACTIVE' CHECK (
-                            status IN ('ACTIVE', 'INACTIVE')
+                        member_status VARCHAR(15) NOT NULL DEFAULT 'ACTIVE' CHECK (
+                            member_status IN ('ACTIVE', 'INACTIVE','BANNED')
                             ),
 
                         register_status VARCHAR(30) NOT NULL DEFAULT 'NOT_AGREED' CHECK (
@@ -23,19 +24,12 @@ CREATE TABLE member (
                         profile_image_url VARCHAR(255),
                         profile_back_image_url VARCHAR(255),
                         bio TEXT,
-                        refresh_token VARCHAR(255),
-                        access_token VARCHAR(255),
                         device_token VARCHAR(255),
-                        apple_refresh_token VARCHAR(255),
-                        kakao_id VARCHAR(255),
-
-                        banned BOOLEAN NOT NULL DEFAULT FALSE,
                         inactive_date DATE,
 
                         created_at DATETIME(6) NOT NULL,
                         updated_at DATETIME(6) NOT NULL
 );
-CREATE INDEX idx_member_clokey_id ON member (clokey_id);
 
 
 CREATE TABLE term (
@@ -62,9 +56,8 @@ CREATE TABLE category (
 
 CREATE TABLE folder (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        member_id BIGINT NOT NULL,
                         name VARCHAR(30) NOT NULL,
-                        item_count BIGINT NOT NULL DEFAULT 0,
+                        member_id BIGINT NOT NULL,
                         created_at DATETIME(6) NOT NULL,
                         updated_at DATETIME(6) NOT NULL,
                         CONSTRAINT fk_folder_member FOREIGN KEY (member_id) REFERENCES member(id)
@@ -76,7 +69,7 @@ CREATE TABLE cloth (
                        cloth_image_url VARCHAR(255) NOT NULL ,
                        cloth_url VARCHAR(1000),
                        name VARCHAR(255),
-                       price INT price,
+                       price INT,
                        brand VARCHAR(255),
                        category_id BIGINT NOT NULL,
                        member_id BIGINT NOT NULL,
@@ -87,19 +80,26 @@ CREATE TABLE cloth (
                        CONSTRAINT fk_cloth_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
 
+CREATE TABLE history_type (
+                       id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                       name VARCHAR(255) NOT NULL,
+                       created_at DATETIME(6) NOT NULL,
+                       updated_at DATETIME(6) NOT NULL
+);
+
 CREATE TABLE history (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
                          history_date DATE NOT NULL,
-                         likes INTEGER NOT NULL DEFAULT 0,
                          content VARCHAR(200),
-                         banned BOOLEAN NOT NULL DEFAULT FALSE,
+                         banned BOOLEAN NOT NULL,
                          member_id BIGINT NOT NULL,
+                         history_type_id BIGINT NOT NULL,
                          created_at DATETIME(6) NOT NULL,
                          updated_at DATETIME(6) NOT NULL,
 
-                         CONSTRAINT fk_history_member FOREIGN KEY (member_id) REFERENCES member(id)
+                         CONSTRAINT fk_history_member FOREIGN KEY (member_id) REFERENCES member(id),
+                         CONSTRAINT fk_history_history_type FOREIGN KEY (history_type_id) REFERENCES history_type(id)
 );
-CREATE INDEX idx_member_date ON history (member_id, history_date);
 
 CREATE TABLE hashtag (
                          id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -119,8 +119,7 @@ CREATE TABLE comment (
                          created_at DATETIME(6) NOT NULL,
                          updated_at DATETIME(6) NOT NULL,
                          CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),
-                         CONSTRAINT fk_comment_history FOREIGN KEY (history_id) REFERENCES history(id),
-                         CONSTRAINT fk_comment_parent FOREIGN KEY (parent_id) REFERENCES comment(id)
+                         CONSTRAINT fk_comment_history FOREIGN KEY (history_id) REFERENCES history(id)
 );
 
 CREATE TABLE reply (
@@ -131,8 +130,8 @@ CREATE TABLE reply (
                          comment_id BIGINT NOT NULL,
                          created_at DATETIME(6) NOT NULL,
                          updated_at DATETIME(6) NOT NULL,
-                         CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),
-                         CONSTRAINT fk_comment_comment FOREIGN KEY (comment_id) REFERENCES comment(id)
+                         CONSTRAINT fk_reply_member FOREIGN KEY (member_id) REFERENCES member(id),
+                         CONSTRAINT fk_reply_comment FOREIGN KEY (comment_id) REFERENCES comment(id)
 );
 
 
@@ -157,21 +156,34 @@ CREATE TABLE history_cloth (
                                updated_at DATETIME(6) NOT NULL,
 
                                CONSTRAINT fk_history_cloth_history FOREIGN KEY (history_id) REFERENCES history(id),
-                               CONSTRAINT fk_history_cloth_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
+                               CONSTRAINT fk_history_cloth_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id),
+                               CONSTRAINT uk_member_history UNIQUE (history_id, cloth_id)
 );
-CREATE INDEX idx_history_cloth_history_id ON history_cloth (history_id);
 
 
 CREATE TABLE history_image (
                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                               image_url VARCHAR(255) NOT NULL UNIQUE,
+                               image_url VARCHAR(255) NOT NULL,
                                history_id BIGINT NOT NULL,
                                created_at DATETIME(6) NOT NULL,
                                updated_at DATETIME(6) NOT NULL,
 
                                CONSTRAINT fk_history_image_history FOREIGN KEY (history_id) REFERENCES history(id)
 );
-CREATE INDEX idx_history_created_at ON history_image (history_id, created_at);
+
+CREATE TABLE history_cloth_tag (
+                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                               history_image_id BIGINT NOT NULL,
+                               history_cloth_id BIGINT NOT NULL,
+                               x DOUBLE NOT NULL,
+                               y DOUBLE NOT NULL,
+                               created_at DATETIME(6) NOT NULL,
+                               updated_at DATETIME(6) NOT NULL,
+
+                               CONSTRAINT fk_history_cloth_tag_history_image FOREIGN KEY (history_image_id) REFERENCES history_image(id),
+                               CONSTRAINT fk_history_cloth_tag_history_cloth FOREIGN KEY (history_cloth_id) REFERENCES history_cloth(id)
+);
+
 
 
 CREATE TABLE member_like (
@@ -185,8 +197,6 @@ CREATE TABLE member_like (
                              CONSTRAINT fk_member_like_history FOREIGN KEY (history_id) REFERENCES history(id),
                              CONSTRAINT uk_member_history UNIQUE (member_id, history_id)
 );
-CREATE INDEX idx_member_like_member_id ON member_like (member_id);
-CREATE INDEX idx_member_like_history_id ON member_like (history_id);
 
 
 CREATE TABLE hashtag_history (
@@ -200,8 +210,6 @@ CREATE TABLE hashtag_history (
                                  CONSTRAINT fk_hashtag_history_history FOREIGN KEY (history_id) REFERENCES history(id),
                                  CONSTRAINT uk_history_hashtag UNIQUE (history_id, hashtag_id)
 );
-CREATE INDEX idx_history_id ON hashtag_history (history_id);
-CREATE INDEX idx_hashtag_id ON hashtag_history (hashtag_id);
 
 
 CREATE TABLE block (
@@ -220,24 +228,20 @@ CREATE TABLE block (
 
 CREATE TABLE follow (
                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                        following_user_id BIGINT NOT NULL,
-                        followed_user_id BIGINT NOT NULL,
+                        follow_to_id BIGINT NOT NULL,
+                        follow_from_id BIGINT NOT NULL,
                         created_at DATETIME(6) NOT NULL,
                         updated_at DATETIME(6) NOT NULL,
 
-                        CONSTRAINT fk_follow_following_user FOREIGN KEY (following_user_id) REFERENCES member(id),
-                        CONSTRAINT fk_follow_followed_user FOREIGN KEY (followed_user_id) REFERENCES member(id),
+                        CONSTRAINT fk_follow_follow_to FOREIGN KEY (follow_to_id) REFERENCES member(id),
+                        CONSTRAINT fk_follow_follow_from FOREIGN KEY (follow_from_id) REFERENCES member(id),
 
-                        CONSTRAINT uk_following_followed UNIQUE (following_user_id, followed_user_id)
+                        CONSTRAINT uk_following_followed UNIQUE (follow_to_id, follow_from_id)
 );
-
-
 
 
 CREATE TABLE clokey_notification (
                                      id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-                                     member_id BIGINT NOT NULL,
                                      content VARCHAR(50) NOT NULL,
                                      notification_image_url VARCHAR(255) NOT NULL,
                                      redirect_info VARCHAR(255) NOT NULL,
@@ -249,46 +253,34 @@ CREATE TABLE clokey_notification (
                                      read_status VARCHAR(15) NOT NULL DEFAULT 'NOT_READ' CHECK (
                                          read_status IN ('READ', 'NOT_READ')
                                          ),
-
+                                     member_id BIGINT NOT NULL,
                                      created_at DATETIME(6) NOT NULL,
                                      updated_at DATETIME(6) NOT NULL,
 
                                      CONSTRAINT fk_clokey_notification_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
 
-CREATE TABLE recommendation (
-                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-                                content_id BIGINT,
-                                image_url VARCHAR(500),
-                                temperature DOUBLE,
-                                clothes_ids VARCHAR(1000),
-                                hashtag VARCHAR(500),
-                                sub_title VARCHAR(500),
-
-                                news_type VARCHAR(20) NOT NULL CHECK (
-                                    news_type IN ('NEWS', 'UPDATE', 'RECOMMEND') -- 💡 가라 enum 값, 실제 enum 값으로 수정 가능
-                                    ),
-
-                                member_id BIGINT NOT NULL,
-                                created_at DATETIME(6) NOT NULL,
-                                updated_at DATETIME(6) NOT NULL,
-
-                                CONSTRAINT fk_recommendation_member FOREIGN KEY (member_id) REFERENCES member(id)
-);
-
 CREATE TABLE comment_report (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                                comment_report_type VARCHAR(30) NOT NULL, -- 예: 가라 enum 값, 추후 CHECK 제약으로 확장 가능
+                                comment_report_type VARCHAR(30) NOT NULL CHECK (
+                                    comment_report_type IN (
+                                                            'SWEARING_AND_CURSING',
+                                                            'DISCRIMINATORY_AND_HATEFUL',
+                                                            'SPAM_OR_PROMOTION',
+                                                            'PRIVATE_INFO',
+                                                            'ANNOYING',
+                                                            'ETC'
+                                        )
+                                    ),
                                 report_status VARCHAR(15) NOT NULL DEFAULT 'UNCHECKED' CHECK (
                                     report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
                                     ),
-
+                                content VARCHAR(200),
                                 comment_id BIGINT NOT NULL,
                                 member_id BIGINT NOT NULL,
 
-                                content VARCHAR(200),
+
                                 created_at DATETIME(6) NOT NULL,
                                 updated_at DATETIME(6) NOT NULL,
 
@@ -300,7 +292,15 @@ CREATE TABLE comment_report (
 CREATE TABLE history_report (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                                history_report_type VARCHAR(30) NOT NULL, -- 가라 enum 값 (예: 'SPAM', 'INAPPROPRIATE' 등)
+                                history_report_type VARCHAR(30) NOT NULL CHECK (
+                                    history_report_type IN (
+                                                            'SPAM',
+                                                            'INAPPROPRIATE',
+                                                            'OFFENSIVE',
+                                                            'VIOLENT',
+                                                            'ETC'
+                                        )
+                                    ),
                                 report_status VARCHAR(15) NOT NULL DEFAULT 'UNCHECKED' CHECK (
                                     report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
                                     ),

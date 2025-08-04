@@ -42,7 +42,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @NotNull
-    private MemberStatus status;
+    private MemberStatus memberStatus;
 
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -56,7 +56,6 @@ public class Member extends BaseEntity {
     private String profileBackImageUrl;
     private String bio;
     private String deviceToken;
-    private String oid;
 
     private LocalDate inactiveDate;
 
@@ -66,8 +65,11 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ClokeyNotification> clokeyNotifications = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<Follow> follows = new ArrayList<>();
+    @OneToMany(mappedBy = "followFrom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Follow> followFroms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "followTo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Follow> followTos = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
