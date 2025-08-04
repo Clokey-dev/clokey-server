@@ -22,13 +22,13 @@ public class ClothFolder extends BaseEntity {
     @JoinColumn(name = "folder_id", nullable = false)
     private Folder folder;
 
-    @Builder(access = AccessLevel.PRIVATE)
-    private ClothFolder(Cloth cloth, Folder folder) {
-        this.cloth = cloth;
-        this.folder = folder;
-    }
-
-    public static ClothFolder createClothFolder(Cloth cloth, Folder folder) {
-        return ClothFolder.builder().cloth(cloth).folder(folder).build();
-    }
+    //    @Builder(access = AccessLevel.PRIVATE)
+    //    private ClothFolder(Cloth cloth, Folder folder) {
+    //        this.cloth = cloth;
+    //        this.folder = folder;
+    //    }
+    //
+    //    public static ClothFolder createClothFolder(Cloth cloth, Folder folder) {
+    //        return ClothFolder.builder().cloth(cloth).folder(folder).build();
+    //    }
 }

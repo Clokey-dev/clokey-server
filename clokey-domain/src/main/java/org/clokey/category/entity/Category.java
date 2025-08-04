@@ -1,7 +1,6 @@
 package org.clokey.category.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
@@ -16,8 +15,7 @@ public class Category extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
