@@ -157,7 +157,7 @@ CREATE TABLE history_cloth (
 
                                CONSTRAINT fk_history_cloth_history FOREIGN KEY (history_id) REFERENCES history(id),
                                CONSTRAINT fk_history_cloth_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id),
-                               CONSTRAINT uk_member_history UNIQUE (history_id, cloth_id)
+                               CONSTRAINT uk_history_cloth_history_id_cloth_id UNIQUE (history_id, cloth_id)
 );
 
 
@@ -208,7 +208,7 @@ CREATE TABLE hashtag_history (
 
                                  CONSTRAINT fk_hashtag_history_hashtag FOREIGN KEY (hashtag_id) REFERENCES hashtag(id),
                                  CONSTRAINT fk_hashtag_history_history FOREIGN KEY (history_id) REFERENCES history(id),
-                                 CONSTRAINT uk_history_hashtag UNIQUE (history_id, hashtag_id)
+                                 CONSTRAINT uk_hashtag_history_history_id_hashtag_id UNIQUE (history_id, hashtag_id)
 );
 
 
@@ -222,7 +222,7 @@ CREATE TABLE block (
                        CONSTRAINT fk_block_blocker FOREIGN KEY (blocker_id) REFERENCES member(id),
                        CONSTRAINT fk_block_blocked FOREIGN KEY (blocked_id) REFERENCES member(id),
 
-                       CONSTRAINT uk_blocker_blocked UNIQUE (blocker_id, blocked_id)
+                       CONSTRAINT uk_block_blocker_id_blocked_id UNIQUE (blocker_id, blocked_id)
 );
 
 
@@ -236,7 +236,7 @@ CREATE TABLE follow (
                         CONSTRAINT fk_follow_follow_to FOREIGN KEY (follow_to_id) REFERENCES member(id),
                         CONSTRAINT fk_follow_follow_from FOREIGN KEY (follow_from_id) REFERENCES member(id),
 
-                        CONSTRAINT uk_following_followed UNIQUE (follow_to_id, follow_from_id)
+                        CONSTRAINT uk_follow_follow_to_id_followed_from_id UNIQUE (follow_to_id, follow_from_id)
 );
 
 

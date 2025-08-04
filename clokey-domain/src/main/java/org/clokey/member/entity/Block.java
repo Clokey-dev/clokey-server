@@ -10,7 +10,7 @@ import lombok.*;
         name = "block",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_blocker_blocked",
+                    name = "uk_block+blocker_id_blocked_id",
                     columnNames = {"blocker_id", "blocked_id"})
         })
 public class Block {

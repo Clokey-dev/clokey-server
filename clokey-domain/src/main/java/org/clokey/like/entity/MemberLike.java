@@ -13,7 +13,7 @@ import org.clokey.member.entity.Member;
         name = "member_like",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_member_history_like",
+                    name = "uk_member_like_member_id_history_id",
                     columnNames = {"member_id", "history_id"})
         })
 public class MemberLike extends BaseEntity {

@@ -6,7 +6,13 @@ import lombok.*;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"follow_to_id", "followed_from_id"}))
+@Table(
+        name = "follow",
+        uniqueConstraints = {
+            @UniqueConstraint(
+                    name = "uk_follow_follow_to_id_follow_from_id",
+                    columnNames = {"follow_to_id", "follow_from_id"})
+        })
 public class Follow {
 
     @Id

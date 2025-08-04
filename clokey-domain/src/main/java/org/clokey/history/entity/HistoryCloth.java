@@ -14,7 +14,7 @@ import org.clokey.common.model.BaseEntity;
         name = "history_cloth",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_history_cloth",
+                    name = "uk_history_cloth_history_id_cloth_id",
                     columnNames = {"history_id", "cloth_id"})
         })
 public class HistoryCloth extends BaseEntity {

@@ -14,7 +14,7 @@ import org.clokey.member.entity.Member;
         name = "history",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_member_date",
+                    name = "uk_history_member_id_history_date",
                     columnNames = {"member_id", "history_date"})
         })
 public class History extends BaseEntity {

@@ -10,7 +10,7 @@ import org.clokey.common.model.BaseEntity;
 @Table(
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_history_hashtag",
+                    name = "uk_history_hashtag_history_id_hashtag_id",
                     columnNames = {"history_id", "hashtag_id"})
         })
 public class HashtagHistory extends BaseEntity {
