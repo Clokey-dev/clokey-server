@@ -5,19 +5,19 @@ CREATE TABLE member (
                         nickname VARCHAR(30),
                         oauth_id VARCHAR(255) NOT NULL ,
 
-                        social_type VARCHAR(20) NOT NULL CHECK (
+                        social_type VARCHAR(255) NOT NULL CHECK (
                             social_type IN ('KAKAO', 'APPLE')
                             ),
 
-                        member_status VARCHAR(15) NOT NULL DEFAULT 'ACTIVE' CHECK (
+                        member_status VARCHAR(255) NOT NULL DEFAULT 'ACTIVE' CHECK (
                             member_status IN ('ACTIVE', 'INACTIVE','BANNED')
                             ),
 
-                        register_status VARCHAR(30) NOT NULL DEFAULT 'NOT_AGREED' CHECK (
+                        register_status VARCHAR(255) NOT NULL DEFAULT 'NOT_AGREED' CHECK (
                             register_status IN ('NOT_AGREED', 'AGREED_PROFILE_NOT_SET', 'REGISTERED')
                             ),
 
-                        visibility VARCHAR(15) NOT NULL DEFAULT 'PUBLIC' CHECK (
+                        visibility VARCHAR(255) NOT NULL DEFAULT 'PUBLIC' CHECK (
                             visibility IN ('PUBLIC', 'PRIVATE')
                             ),
 
@@ -174,8 +174,8 @@ CREATE TABLE history_cloth_tag (
                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                history_image_id BIGINT NOT NULL,
                                history_cloth_id BIGINT NOT NULL,
-                               x DOUBLE NOT NULL,
-                               y DOUBLE NOT NULL,
+                               coordinate_x DOUBLE NOT NULL,
+                               coordinate_y DOUBLE NOT NULL,
                                created_at DATETIME(6) NOT NULL,
                                updated_at DATETIME(6) NOT NULL,
 
@@ -245,11 +245,11 @@ CREATE TABLE clokey_notification (
                                      notification_image_url VARCHAR(255) NOT NULL,
                                      redirect_info VARCHAR(255) NOT NULL,
 
-                                     redirect_type VARCHAR(30) NOT NULL CHECK (
+                                     redirect_type VARCHAR(255) NOT NULL CHECK (
                                          redirect_type IN ('HISTORY_REDIRECT', 'MEMBER_REDIRECT')
                                          ),
 
-                                     read_status VARCHAR(15) NOT NULL DEFAULT 'NOT_READ' CHECK (
+                                     read_status VARCHAR(255) NOT NULL DEFAULT 'NOT_READ' CHECK (
                                          read_status IN ('READ', 'NOT_READ')
                                          ),
                                      member_id BIGINT NOT NULL,
@@ -262,7 +262,7 @@ CREATE TABLE clokey_notification (
 CREATE TABLE comment_report (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                                comment_report_type VARCHAR(30) NOT NULL CHECK (
+                                comment_report_type VARCHAR(255) NOT NULL CHECK (
                                     comment_report_type IN (
                                                             'SWEARING_AND_CURSING',
                                                             'DISCRIMINATORY_AND_HATEFUL',
@@ -272,7 +272,7 @@ CREATE TABLE comment_report (
                                                             'ETC'
                                         )
                                     ),
-                                report_status VARCHAR(15) NOT NULL DEFAULT 'UNCHECKED' CHECK (
+                                report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
                                     report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
                                     ),
                                 content VARCHAR(200),
@@ -291,7 +291,7 @@ CREATE TABLE comment_report (
 CREATE TABLE history_report (
                                 id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                                history_report_type VARCHAR(30) NOT NULL CHECK (
+                                history_report_type VARCHAR(255) NOT NULL CHECK (
                                     history_report_type IN (
                                                             'SPAM',
                                                             'INAPPROPRIATE',
@@ -300,7 +300,7 @@ CREATE TABLE history_report (
                                                             'ETC'
                                         )
                                     ),
-                                report_status VARCHAR(15) NOT NULL DEFAULT 'UNCHECKED' CHECK (
+                                report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
                                     report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
                                     ),
 
@@ -322,13 +322,13 @@ CREATE TABLE profile_report (
                                 reporter_id BIGINT NOT NULL,
                                 reported_id BIGINT NOT NULL,
 
-                                profile_report_type VARCHAR(30) NOT NULL CHECK (
+                                profile_report_type VARCHAR(255) NOT NULL CHECK (
                                     profile_report_type IN ('FAKE', 'SPAM_OR_PROMOTION', 'INAPPROPRIATE', 'ETC')
                                     ),
 
                                 content VARCHAR(200),
 
-                                report_status VARCHAR(15) NOT NULL DEFAULT 'UNCHECKED' CHECK (
+                                report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
                                     report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
                                     ),
 
