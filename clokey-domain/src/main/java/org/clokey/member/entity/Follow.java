@@ -1,6 +1,7 @@
 package org.clokey.member.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -20,10 +21,12 @@ public class Follow {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follow_to_id", nullable = false)
+    @JoinColumn(name = "follow_to_id")
+    @NotNull
     private Member followTo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follow_from_id", nullable = false)
+    @JoinColumn(name = "follow_from_id")
+    @NotNull
     private Member followFrom;
 }

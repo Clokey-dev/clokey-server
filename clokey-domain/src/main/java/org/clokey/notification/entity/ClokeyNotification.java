@@ -17,7 +17,8 @@ public class ClokeyNotification extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
+    @NotNull
     private String content;
 
     @NotNull private String notificationImageUrl;
@@ -34,7 +35,8 @@ public class ClokeyNotification extends BaseEntity {
     private ReadStatus readStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id")
+    @NotNull
     private Member member;
 
     //    @Builder(access = AccessLevel.PRIVATE)

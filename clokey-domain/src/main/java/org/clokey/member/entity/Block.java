@@ -1,6 +1,7 @@
 package org.clokey.member.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -20,11 +21,13 @@ public class Block {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blocker_id", nullable = false)
+    @JoinColumn(name = "blocker_id")
+    @NotNull
     private Member blocker; // 차단한 회원
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "blocked_id", nullable = false)
+    @JoinColumn(name = "blocked_id")
+    @NotNull
     private Member blocked; // 차단된 회원
 
     //    @Builder(access = AccessLevel.PRIVATE)

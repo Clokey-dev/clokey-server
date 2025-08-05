@@ -1,6 +1,7 @@
 package org.clokey.history.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 
@@ -20,11 +21,13 @@ public class HashtagHistory extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hashtag_id", nullable = false)
+    @JoinColumn(name = "hashtag_id")
+    @NotNull
     private Hashtag hashtag;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id", nullable = false)
+    @JoinColumn(name = "history_id")
+    @NotNull
     private History history;
 
     //    @Builder(access = AccessLevel.PRIVATE)

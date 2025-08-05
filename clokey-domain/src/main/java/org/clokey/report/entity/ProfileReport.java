@@ -30,11 +30,13 @@ public class ProfileReport extends BaseEntity {
     private ReportStatus reportStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter_id", nullable = false)
+    @JoinColumn(name = "reporter_id")
+    @NotNull
     private Member reporter;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reported_id", nullable = false)
+    @JoinColumn(name = "reported_id")
+    @NotNull
     private Member reported;
 
     //    @Builder(access = AccessLevel.PRIVATE)
