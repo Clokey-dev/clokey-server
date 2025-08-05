@@ -26,7 +26,7 @@ public class HistoryClothTag extends BaseEntity {
     @NotNull
     private HistoryCloth historyCloth;
 
-    @NotNull private Double locationX;
+    @NotNull private Double coordinateX;
 
-    @NotNull private Double locationY;
+    @NotNull private Double coordinateY;
 }
