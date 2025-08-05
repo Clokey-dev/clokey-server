@@ -114,7 +114,6 @@ CREATE TABLE comment (
                          content VARCHAR(100) NOT NULL,
                          member_id BIGINT NOT NULL,
                          history_id BIGINT NOT NULL,
-                         parent_id BIGINT,
                          banned BOOLEAN NOT NULL,
                          created_at DATETIME(6) NOT NULL,
                          updated_at DATETIME(6) NOT NULL,
