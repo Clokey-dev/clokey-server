@@ -24,7 +24,7 @@ public class HistoryClothTag extends BaseEntity {
     @JoinColumn(name = "history_cloth_id", nullable = false)
     private HistoryCloth historyCloth;
 
-    @NotNull private Double x;
+    @NotNull private Double locationX;
 
-    @NotNull private Double y;
+    @NotNull private Double locationY;
 }
