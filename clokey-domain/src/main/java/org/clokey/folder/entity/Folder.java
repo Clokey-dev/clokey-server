@@ -1,6 +1,7 @@
 package org.clokey.folder.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.member.entity.Member;
@@ -14,11 +15,13 @@ public class Folder extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 30)
+    @NotNull
+    @Column(length = 30)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id")
+    @NotNull
     private Member member;
 
     //    @OneToMany(mappedBy = "folder", cascade = CascadeType.ALL, orphanRemoval = true)

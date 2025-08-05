@@ -17,7 +17,8 @@ public class HistoryImage extends BaseEntity {
     @NotNull private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id", nullable = false)
+    @JoinColumn(name = "history_id")
+    @NotNull
     private History history;
 
     //    @OneToMany(mappedBy = "historyImage", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -31,10 +31,12 @@ public class History extends BaseEntity {
     @NotNull private boolean banned;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id")
+    @NotNull
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_type_id", nullable = false)
+    @JoinColumn(name = "history_type_id")
+    @NotNull
     private HistoryType historyType;
 }

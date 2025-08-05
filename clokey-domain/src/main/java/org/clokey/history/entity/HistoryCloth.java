@@ -1,6 +1,7 @@
 package org.clokey.history.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.common.model.BaseEntity;
@@ -22,11 +23,13 @@ public class HistoryCloth extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id", nullable = false)
+    @JoinColumn(name = "history_id")
+    @NotNull
     private History history;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cloth_id", nullable = false)
+    @JoinColumn(name = "cloth_id")
+    @NotNull
     private Cloth cloth;
 
     //    @OneToMany(mappedBy = "historyCloth", cascade = CascadeType.ALL, orphanRemoval = true)

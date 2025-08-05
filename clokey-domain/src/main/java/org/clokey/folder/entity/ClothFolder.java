@@ -1,6 +1,7 @@
 package org.clokey.folder.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.common.model.BaseEntity;
@@ -15,11 +16,13 @@ public class ClothFolder extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cloth_id", nullable = false)
+    @JoinColumn(name = "cloth_id")
+    @NotNull
     private Cloth cloth;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "folder_id", nullable = false)
+    @JoinColumn(name = "folder_id")
+    @NotNull
     private Folder folder;
 
     //    @Builder(access = AccessLevel.PRIVATE)

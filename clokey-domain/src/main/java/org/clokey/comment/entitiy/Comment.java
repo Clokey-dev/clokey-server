@@ -16,17 +16,20 @@ public class Comment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100)
+    @NotNull
     private String content;
 
     @NotNull private boolean banned;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id")
+    @NotNull
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_id", nullable = false)
+    @JoinColumn(name = "history_id")
+    @NotNull
     private History history;
 
     //    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)

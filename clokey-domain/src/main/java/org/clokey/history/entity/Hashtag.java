@@ -1,6 +1,7 @@
 package org.clokey.history.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 
@@ -13,7 +14,8 @@ public class Hashtag extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 30, unique = true)
+    @Column(length = 30, unique = true)
+    @NotNull
     private String name;
 
     //    @Builder(access = AccessLevel.PRIVATE)

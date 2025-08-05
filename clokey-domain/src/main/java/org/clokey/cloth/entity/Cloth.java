@@ -28,11 +28,13 @@ public class Cloth extends BaseEntity {
     private String brand;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
+    @NotNull
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id")
+    @NotNull
     private Member member;
 
     //    @OneToMany(mappedBy = "cloth", cascade = CascadeType.ALL, orphanRemoval = true)

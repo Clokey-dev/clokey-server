@@ -17,11 +17,13 @@ public class HistoryClothTag extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_image_id", nullable = false)
+    @JoinColumn(name = "history_image_id")
+    @NotNull
     private HistoryImage historyImage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_cloth_id", nullable = false)
+    @JoinColumn(name = "history_cloth_id")
+    @NotNull
     private HistoryCloth historyCloth;
 
     @NotNull private Double locationX;
