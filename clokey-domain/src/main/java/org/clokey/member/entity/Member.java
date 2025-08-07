@@ -56,12 +56,14 @@ public class Member extends BaseEntity {
     private Member(
             String email,
             String clokeyId,
+            String nickname,
             OauthInfo oauthInfo,
             MemberStatus memberStatus,
             RegisterStatus registerStatus,
             Visibility visibility) {
         this.email = email;
         this.clokeyId = clokeyId;
+        this.nickname = nickname;
         this.oauthInfo = oauthInfo;
         this.memberStatus = memberStatus;
         this.registerStatus = registerStatus;
@@ -71,6 +73,7 @@ public class Member extends BaseEntity {
     public static Member createMember(
             String email,
             String clokeyId,
+            String nickname,
             OauthInfo oauthInfo,
             MemberStatus memberStatus,
             RegisterStatus registerStatus,
@@ -78,6 +81,7 @@ public class Member extends BaseEntity {
         return Member.builder()
                 .email(email)
                 .clokeyId(clokeyId)
+                .nickname(nickname)
                 .oauthInfo(oauthInfo)
                 .memberStatus(memberStatus)
                 .registerStatus(registerStatus)

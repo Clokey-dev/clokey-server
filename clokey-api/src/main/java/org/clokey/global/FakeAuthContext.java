@@ -21,6 +21,7 @@ public class FakeAuthContext {
                 Member.createMember(
                         "tempEmail",
                         "tempClokeyId",
+                        "tempNickname",
                         OauthInfo.createOauthInfo("tempOid", OauthProvider.KAKAO),
                         MemberStatus.ACTIVE,
                         RegisterStatus.REGISTERED,
