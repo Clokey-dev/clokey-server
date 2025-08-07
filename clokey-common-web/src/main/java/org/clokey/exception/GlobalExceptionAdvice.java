@@ -73,13 +73,20 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
                 .getFieldErrors()
                 .forEach(
                         fieldError -> {
-                            String fieldName = fieldError.getField();
+                            String rawFieldName =
+                                    fieldError.getField(); // ex: content[0].clothImageUrl
+                            String simplifiedFieldName =
+                                    rawFieldName
+                                            .substring(rawFieldName.lastIndexOf('.') + 1)
+                                            .replaceAll(".*\\.", ""); // → clothImageUrl
+
                             String errorMessage =
                                     GlobalBaseErrorCode.findByCode(fieldError.getDefaultMessage())
                                             .map(GlobalBaseErrorCode::getMessage)
                                             .orElse(fieldError.getDefaultMessage());
+
                             errors.merge(
-                                    fieldName,
+                                    simplifiedFieldName,
                                     errorMessage,
                                     (existing, replacement) -> existing + ", " + replacement);
                         });
@@ -93,14 +100,15 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
                                     GlobalBaseErrorCode.findByCode(objectError.getDefaultMessage())
                                             .map(GlobalBaseErrorCode::getMessage)
                                             .orElse(objectError.getDefaultMessage());
+
                             errors.merge(
-                                    "message :",
+                                    "message",
                                     errorMessage,
                                     (existing, replacement) -> existing + ", " + replacement);
                         });
 
         return handleExceptionInternalArgs(
-                e, HttpHeaders.EMPTY, GlobalBaseErrorCode.BAD_REQUEST, request, errors);
+                e, headers, GlobalBaseErrorCode.BAD_REQUEST, request, errors);
     }
 
     @ExceptionHandler
