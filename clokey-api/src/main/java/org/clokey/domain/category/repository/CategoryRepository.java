@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    boolean existsByIdIn(Iterable<Long> ids);
+    long countByIdIn(Iterable<Long> ids);
 
     List<Category> findAllById(Iterable<Long> ids);
 }

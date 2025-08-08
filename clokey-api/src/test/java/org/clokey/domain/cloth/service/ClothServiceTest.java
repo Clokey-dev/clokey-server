@@ -1,17 +1,20 @@
 package org.clokey.domain.cloth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 import org.clokey.IntegrationTest;
 import org.clokey.category.entity.Category;
+import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.member.repository.MemberRepository;
+import org.clokey.exception.BaseCustomException;
 import org.clokey.global.FakeAuthContext;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
@@ -73,12 +76,27 @@ class ClothServiceTest extends IntegrationTest {
             Assertions.assertAll(
                     () ->
                             assertThat(clothRepository.findById(1L).orElseThrow())
-                                    .extracting("id", "clothImageUrl", "category.id", "member.id")
-                                    .containsExactly(1L, "testClothImageUrl1", 1L, 1L),
+                                    .extracting("lothImageUrl", "category.id", "member.id")
+                                    .containsExactly("testClothImageUrl1", 1L, 1L),
                     () ->
                             assertThat(clothRepository.findById(2L).orElseThrow())
-                                    .extracting("id", "clothImageUrl", "category.id", "member.id")
-                                    .containsExactly(1L, "testClothImageUrl2", 1L, 1L));
+                                    .extracting("clothImageUrl", "category.id", "member.id")
+                                    .containsExactly("testClothImageUrl2", 1L, 1L));
+        }
+
+        @Test
+        void 카테고리가_존재하지_않을_경우_예외가_발생한다() {
+            // given
+            ClothCreateRequests request =
+                    new ClothCreateRequests(
+                            List.of(
+                                    new ClothCreateRequest("testClothImageUrl1", 1L),
+                                    new ClothCreateRequest("testClothImageUrl2", 999L)));
+
+            // when & then
+            assertThatThrownBy(() -> clothService.createCloths(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND.getMessage());
         }
     }
 }

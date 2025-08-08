@@ -56,7 +56,7 @@ public class ClothServiceImpl implements ClothService {
     }
 
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {
-        if (!categoryRepository.existsByIdIn(ids)) {
+        if (categoryRepository.countByIdIn(ids) != ids.size()) {
             throw new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND);
         }
 
