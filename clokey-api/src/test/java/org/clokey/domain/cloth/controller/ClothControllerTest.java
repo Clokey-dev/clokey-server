@@ -8,10 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
 import org.clokey.domain.cloth.service.ClothService;
+import org.clokey.exception.BaseCustomException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,7 +56,7 @@ class ClothControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/cloths")
+                            post("/clothes")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -74,7 +76,7 @@ class ClothControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/cloths")
+                            post("/clothes")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -97,7 +99,7 @@ class ClothControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/cloths")
+                            post("/clothes")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -118,7 +120,7 @@ class ClothControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/cloths")
+                            post("/clothes")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -127,6 +129,29 @@ class ClothControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.categoryId").value("옷의 카테고리 ID는 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 카테고리가_존재하지_않을_경우_예외가_발생한다() throws Exception {
+            // given
+            ClothCreateRequests request =
+                    new ClothCreateRequests(
+                            List.of(new ClothCreateRequest("testClothImageUrl1", 999L)));
+            given(clothService.createCloths(request))
+                    .willThrow(
+                            new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/clothes")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("CATEGORY_4042"))
+                    .andExpect(jsonPath("$.message").value("존재하지 않는 카테고리가 포함되어 있습니다."));
         }
     }
 }

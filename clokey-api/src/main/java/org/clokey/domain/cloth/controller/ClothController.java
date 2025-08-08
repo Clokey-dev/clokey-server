@@ -13,7 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/cloths")
+@RequestMapping("/clothes")
 @RequiredArgsConstructor
 @Tag(name = "4. 옷 API", description = "옷 관련 API입니다.")
 @Validated
