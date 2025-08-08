@@ -76,7 +76,7 @@ class ClothServiceTest extends IntegrationTest {
             Assertions.assertAll(
                     () ->
                             assertThat(clothRepository.findById(1L).orElseThrow())
-                                    .extracting("lothImageUrl", "category.id", "member.id")
+                                    .extracting("clothImageUrl", "category.id", "member.id")
                                     .containsExactly("testClothImageUrl1", 1L, 1L),
                     () ->
                             assertThat(clothRepository.findById(2L).orElseThrow())
