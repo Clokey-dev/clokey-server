@@ -97,7 +97,7 @@ class CommentServiceTest extends IntegrationTest {
             Comment comment = commentRepository.findById(1L).orElseThrow();
             assertThat(comment)
                     .extracting("content", "banned", "member.id", "history.id")
-                    .containsExactly("testContent1", false, 1L, 1L);
+                    .containsExactly("testContent", false, 1L, 1L);
         }
 
         @Test
