@@ -59,7 +59,7 @@ public class CommentServiceImpl implements CommentService {
 
     private void validateHistoryAuthority(Member member, History history) {
         if (history.getMember().getVisibility().equals(Visibility.PRIVATE)
-                || !history.getMember().getId().equals(member.getId())) {
+                && !history.getMember().getId().equals(member.getId())) {
             throw new BaseCustomException(HistoryErrorCode.LIMITED_AUTHORITY);
         }
     }
