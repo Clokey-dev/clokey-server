@@ -17,7 +17,7 @@ public interface KakaoOauthClient {
 
     @PostMapping(
             "/oauth/token?grant_type=authorization_code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&code={CODE}&client_secret={CLIENT_SECRET}")
-    KakaoTokenDto kakaoAuth(
+    KakaoTokenDto getKakaoTokens(
             @PathVariable("CLIENT_ID") String clientId,
             @PathVariable("REDIRECT_URI") String redirectUri,
             @PathVariable("CODE") String code,
