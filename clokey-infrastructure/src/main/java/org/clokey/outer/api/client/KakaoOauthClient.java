@@ -1,6 +1,11 @@
 package org.clokey.outer.api.client;
 
+import org.clokey.outer.api.config.KakaoAuthConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @FeignClient(
         name = "KakaoAuthClient",
