@@ -1,6 +1,8 @@
 package org.clokey.outer.api.client;
 
 import org.clokey.outer.api.config.KakaoAuthConfig;
+import org.clokey.outer.api.dto.KakaoTokenDto;
+import org.clokey.outer.api.dto.OIDCPublicKeysDto;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
