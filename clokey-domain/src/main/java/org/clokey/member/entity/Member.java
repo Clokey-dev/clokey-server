@@ -121,4 +121,19 @@ public class Member extends BaseEntity {
     //
     //    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     //    private List<History> historyList = new ArrayList<>();
+
+    public void profileUpdate(String nickname, String clokeyId, String profileImageUrl,
+                              String profileBackImageUrl, String bio, Visibility visibility) {
+        this.nickname = nickname;
+        this.clokeyId = clokeyId;
+        this.profileImageUrl = profileImageUrl;
+        this.profileBackImageUrl = profileBackImageUrl;
+        this.bio = bio;
+        this.visibility = visibility;
+    }
+
+    public void updateRegisterStatus(RegisterStatus registerStatus) {
+        this.registerStatus = registerStatus;
+    }
+
 }
