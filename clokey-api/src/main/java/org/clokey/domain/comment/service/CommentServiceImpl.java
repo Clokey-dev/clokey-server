@@ -32,6 +32,7 @@ public class CommentServiceImpl implements CommentService {
     private final ReplyRepository replyRepository;
 
     @Override
+    @Transactional
     public CommentCreateResponse createComment(CommentCreateRequest request) {
         final Member currentMember = fakeAuthContext.getCurrentMember();
         final History history = getHistoryById(request.historyId());
@@ -45,6 +46,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public ReplyCreateResponse createReply(Long commentId, ReplyCreateRequest request) {
         final Member currentMember = fakeAuthContext.getCurrentMember();
         final Comment comment = getCommentById(commentId);
@@ -58,7 +60,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private void validateHistoryAuthority(Member member, History history) {
-        if (history.getMember().getVisibility().equals(Visibility.PRIVATE)
+        if (history.getMember().getVisibility() == Visibility.PRIVATE
                 && !history.getMember().getId().equals(member.getId())) {
             throw new BaseCustomException(HistoryErrorCode.LIMITED_AUTHORITY);
         }

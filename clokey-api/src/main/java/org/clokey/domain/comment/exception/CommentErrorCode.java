@@ -9,9 +9,9 @@ import org.clokey.exception.BaseErrorCode;
 @AllArgsConstructor
 public enum CommentErrorCode implements BaseErrorCode {
     COMMENT_NOT_FOUND(404, "COMMENT_4041", "존재하지 않는 댓글입니다.");
-    private int status;
-    private String code;
-    private String message;
+    private final int status;
+    private final String code;
+    private final String message;
 
     @Override
     public ErrorReasonDto getErrorReason() {
