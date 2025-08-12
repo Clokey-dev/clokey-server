@@ -88,6 +88,7 @@ public class Member extends BaseEntity {
                 .visibility(visibility)
                 .build();
     }
+
     //
     //    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     //    private List<MemberTerm> memberTermList = new ArrayList<>();
@@ -122,8 +123,13 @@ public class Member extends BaseEntity {
     //    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     //    private List<History> historyList = new ArrayList<>();
 
-    public void profileUpdate(String nickname, String clokeyId, String profileImageUrl,
-                              String profileBackImageUrl, String bio, Visibility visibility) {
+    public void profileUpdate(
+            String nickname,
+            String clokeyId,
+            String profileImageUrl,
+            String profileBackImageUrl,
+            String bio,
+            Visibility visibility) {
         this.nickname = nickname;
         this.clokeyId = clokeyId;
         this.profileImageUrl = profileImageUrl;
@@ -136,4 +142,7 @@ public class Member extends BaseEntity {
         this.registerStatus = registerStatus;
     }
 
+    public void updateMemberStatus(MemberStatus memberStatus) {
+        this.memberStatus = memberStatus;
+    }
 }

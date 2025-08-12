@@ -1,7 +1,8 @@
 package org.clokey.domain.member.service;
 
+import static org.springframework.util.StringUtils.hasText;
+
 import lombok.RequiredArgsConstructor;
-import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.member.dto.request.ProfileRequest;
 import org.clokey.domain.member.dto.response.ProfileResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
@@ -13,12 +14,7 @@ import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.RegisterStatus;
 import org.clokey.member.enums.Visibility;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-
-import static org.springframework.util.StringUtils.hasText;
 
 @Service
 @RequiredArgsConstructor
@@ -37,16 +33,24 @@ public class MemberServiceImpl implements MemberService {
         // 사용자 상태 체크 및 유효성 검증
         validateVisualizeBannedMember(member, request);
 
-        String profileImageUrl = hasText(request.profileImageUrl())
-                ? request.profileImageUrl()
-                : member.getProfileImageUrl();
+        String profileImageUrl =
+                hasText(request.profileImageUrl())
+                        ? request.profileImageUrl()
+                        : member.getProfileImageUrl();
 
-        String profileBackImageUrl = hasText(request.profileBackImageUrl())
-                ? request.profileBackImageUrl()
-                : member.getProfileBackImageUrl();
+        String profileBackImageUrl =
+                hasText(request.profileBackImageUrl())
+                        ? request.profileBackImageUrl()
+                        : member.getProfileBackImageUrl();
 
         // 프로필 업데이트
-        member.profileUpdate(request.nickname(), request.clokeyId(), profileImageUrl, profileBackImageUrl, request.bio(), request.visibility());
+        member.profileUpdate(
+                request.nickname(),
+                request.clokeyId(),
+                profileImageUrl,
+                profileBackImageUrl,
+                request.bio(),
+                request.visibility());
 
         // 등록 상태 업데이트 (약관 동의가 완료된 경우)
         if (member.getRegisterStatus() != RegisterStatus.REGISTERED) {
@@ -54,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         // 저장
-        Member updatedMember = memberRepository.saveMember(member);
+        Member updatedMember = memberRepository.save(member);
 
         // Elasticsearch 동기화였던 부분 삭제
 
@@ -62,10 +66,10 @@ public class MemberServiceImpl implements MemberService {
         return ProfileResponse.from(updatedMember);
     }
 
-    private void validateVisualizeBannedMember(Member member, ProfileRequest request){
+    private void validateVisualizeBannedMember(Member member, ProfileRequest request) {
         boolean banned = member.getMemberStatus().equals(MemberStatus.BANNED);
         boolean changeToPublic = request.visibility().equals(Visibility.PUBLIC);
-        if(banned && changeToPublic){
+        if (banned && changeToPublic) {
             throw new BaseCustomException(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC);
         }
     }
