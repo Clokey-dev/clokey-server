@@ -2,6 +2,7 @@ package org.clokey.domain.auth.service;
 
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.auth.dto.response.UserInfoResponse;
+import org.clokey.domain.auth.util.AppleUtil;
 import org.clokey.member.enums.OauthProvider;
 import org.clokey.outer.api.client.AppleOauthClient;
 import org.clokey.outer.api.client.KakaoOauthClient;
@@ -9,13 +10,16 @@ import org.clokey.outer.api.dto.AppleTokenDto;
 import org.clokey.outer.api.dto.KakaoTokenDto;
 import org.clokey.properties.OauthProperties;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
     private final KakaoOauthClient kakaoOauthClient;
     private final AppleOauthClient appleOauthClient;
+    private final AppleUtil appleUtil;
 
     private final OauthProperties oauthProperties;
 
@@ -23,9 +27,9 @@ public class AuthServiceImpl implements AuthService {
     public UserInfoResponse getUserInfo(String code, OauthProvider oauthProvider, String referer) {
 
         if (oauthProvider.equals(OauthProvider.KAKAO)) {
-            return UserInfoResponse.createUserInfoResponse(getKakaoTokens(code, referer));
+            return UserInfoResponse.from(getKakaoTokens(code, referer));
         }
-        return;
+        return UserInfoResponse.from(getAppleTokens(code, referer));
     }
 
     private KakaoTokenDto getKakaoTokens(String code, String referer) {
@@ -40,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
 
         return appleOauthClient.getAppleTokens(
                 oauthProperties.apple().clientId(),
-                clientSecret,
+                appleUtil.getClientSecret(),
                 code,
                 "authorization_code",
                 referer + "/apple/callback");

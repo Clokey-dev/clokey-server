@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.properties.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
@@ -31,5 +32,30 @@ public class RedisConfig {
                         .build();
 
         return new LettuceConnectionFactory(redisStandaloneConfig, lettuceClientConfig);
+    }
+
+    @Bean
+    public RedisCacheManager appleSecretClientManager(RedisConnectionFactory cf) {
+        var keySer = new org.springframework.data.redis.serializer.StringRedisSerializer();
+        var valSer = new org.springframework.data.redis.serializer.StringRedisSerializer();
+
+        var baseCfg =
+                org.springframework.data.redis.cache.RedisCacheConfiguration.defaultCacheConfig()
+                        .serializeKeysWith(
+                                org.springframework.data.redis.serializer.RedisSerializationContext
+                                        .SerializationPair.fromSerializer(keySer))
+                        .serializeValuesWith(
+                                org.springframework.data.redis.serializer.RedisSerializationContext
+                                        .SerializationPair.fromSerializer(valSer));
+
+        var caches =
+                new java.util.HashMap<
+                        String, org.springframework.data.redis.cache.RedisCacheConfiguration>();
+        caches.put("appleClientSecret", baseCfg.entryTtl(Duration.ofDays(179)));
+
+        return org.springframework.data.redis.cache.RedisCacheManager.builder(cf)
+                .cacheDefaults(baseCfg)
+                .withInitialCacheConfigurations(caches)
+                .build();
     }
 }

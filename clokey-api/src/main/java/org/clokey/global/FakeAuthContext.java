@@ -6,7 +6,6 @@ import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.OauthProvider;
-import org.clokey.member.enums.RegisterStatus;
 import org.clokey.member.enums.Visibility;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +23,6 @@ public class FakeAuthContext {
                         "tempNickname",
                         OauthInfo.createOauthInfo("tempOid", OauthProvider.KAKAO),
                         MemberStatus.ACTIVE,
-                        RegisterStatus.REGISTERED,
                         Visibility.PUBLIC);
 
         memberRepository.save(member);

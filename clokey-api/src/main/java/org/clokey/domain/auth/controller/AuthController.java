@@ -34,6 +34,17 @@ public class AuthController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 
+    @GetMapping("/user-status")
+    @Operation(summary = "회원 상태 조회 API", description = "현재 회원의 상태를 조회합니다. (약관 미동의, 가입 완료)")
+    public BaseResponse<UserInfoResponse> getUserStatus(
+            @RequestParam("token") String idToken,
+            @RequestParam("oauth-provider") OauthProvider oauthProvider) {
+
+        UserInfoResponse response = authService.getUserInfo(code, oauthProvider, referer);
+
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
     // 유저 상황을 확인하는 API
 
     // 회원 가입 API
