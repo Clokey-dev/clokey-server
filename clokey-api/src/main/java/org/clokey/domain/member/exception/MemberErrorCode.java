@@ -8,7 +8,7 @@ import org.clokey.exception.BaseErrorCode;
 @Getter
 @AllArgsConstructor
 public enum MemberErrorCode implements BaseErrorCode {
-    BANNED_MEMBER_TO_PUBLIC(404, "MEMBER_4013","신고당한 회원은 공개로 전환할 수 없습니다."),
+    BANNED_MEMBER_TO_PUBLIC(404, "MEMBER_4013", "신고당한 회원은 공개로 전환할 수 없습니다."),
     ;
 
     private int status;
