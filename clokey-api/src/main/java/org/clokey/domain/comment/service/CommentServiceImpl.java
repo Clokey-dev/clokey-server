@@ -17,6 +17,7 @@ import org.clokey.global.FakeAuthContext;
 import org.clokey.history.entity.History;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.Visibility;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,12 @@ public class CommentServiceImpl implements CommentService {
         validateHistoryAuthority(currentMember, history);
 
         Comment comment = Comment.createComment(request.content(), currentMember, history);
-        commentRepository.save(comment);
+
+        try {
+            commentRepository.save(comment);
+        } catch (DataIntegrityViolationException e) {
+            throw new BaseCustomException(HistoryErrorCode.HISTORY_NOT_FOUND);
+        }
 
         return CommentCreateResponse.from(comment);
     }
@@ -54,7 +60,12 @@ public class CommentServiceImpl implements CommentService {
         validateHistoryAuthority(currentMember, comment.getHistory());
 
         Reply reply = Reply.createReply(request.content(), currentMember, comment);
-        replyRepository.save(reply);
+
+        try {
+            replyRepository.save(reply);
+        } catch (DataIntegrityViolationException e) {
+            throw new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND);
+        }
 
         return ReplyCreateResponse.from(reply);
     }
