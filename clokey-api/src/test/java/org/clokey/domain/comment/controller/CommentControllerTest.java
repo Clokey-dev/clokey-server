@@ -178,7 +178,7 @@ class CommentControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/comments/1")
+                            post("/comments/1/replies")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -200,7 +200,7 @@ class CommentControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/comments/1")
+                            post("/comments/1/replies")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -221,7 +221,7 @@ class CommentControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/comments/1")
+                            post("/comments/1/replies")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -241,7 +241,7 @@ class CommentControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/comments/1")
+                            post("/comments/1/replies")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 

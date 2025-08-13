@@ -36,7 +36,7 @@ public class CommentController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, response);
     }
 
-    @PostMapping("/{commentId}")
+    @PostMapping("/{commentId}/replies")
     @Operation(summary = "대댓글 작성", description = "대댓글을 작성합니다.")
     public BaseResponse<ReplyCreateResponse> createReply(
             @PathVariable Long commentId, @Valid @RequestBody ReplyCreateRequest request) {
