@@ -258,7 +258,7 @@ class CommentControllerTest {
     }
 
     @Nested
-    class 기록의_댓글_조회_요청_시 {
+    class 기록의_댓글_목록_조회_요청_시 {
 
         @Test
         void 정렬_조건이_ASC이면_commentId를_오름차순으로_응답한다() throws Exception {
