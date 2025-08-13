@@ -57,6 +57,6 @@ public class CommentController {
                     SortDirection direction) {
         SliceResponse<CommentListResponse> response =
                 commentService.getHistoryComments(historyId, lastCommentId, size, direction);
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, response);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

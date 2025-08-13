@@ -87,7 +87,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                                 repliedMap.getOrDefault(c.commentId(), false)))
                         .toList();
 
-        return checkLastPage(size, finalResults);
+        return new SliceImpl<>(finalResults, PageRequest.of(0, size), hasNext);
     }
 
     private BooleanExpression lastCommentIdCondition(Long commentId, SortDirection direction) {
@@ -98,16 +98,5 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         return direction == SortDirection.DESC
                 ? comment.id.lt(commentId)
                 : comment.id.gt(commentId);
-    }
-
-    private <T> Slice<T> checkLastPage(int pageSize, List<T> results) {
-        boolean hasNext = false;
-
-        if (results.size() > pageSize) {
-            hasNext = true;
-            results.remove(pageSize);
-        }
-
-        return new SliceImpl<>(results, PageRequest.of(0, pageSize), hasNext);
     }
 }
