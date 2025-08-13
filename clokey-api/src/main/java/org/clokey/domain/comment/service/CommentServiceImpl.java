@@ -45,7 +45,13 @@ public class CommentServiceImpl implements CommentService {
         try {
             commentRepository.save(comment);
         } catch (DataIntegrityViolationException e) {
-            throw new BaseCustomException(HistoryErrorCode.HISTORY_NOT_FOUND);
+            String message = e.getMostSpecificCause().getMessage();
+
+            if (message != null && message.contains("fk_comment_history")) {
+                throw new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND);
+            }
+
+            throw e;
         }
 
         return CommentCreateResponse.from(comment);
@@ -64,7 +70,13 @@ public class CommentServiceImpl implements CommentService {
         try {
             replyRepository.save(reply);
         } catch (DataIntegrityViolationException e) {
-            throw new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND);
+            String message = e.getMostSpecificCause().getMessage();
+
+            if (message != null && message.contains("fk_reply_comment")) {
+                throw new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND);
+            }
+
+            throw e;
         }
 
         return ReplyCreateResponse.from(reply);
