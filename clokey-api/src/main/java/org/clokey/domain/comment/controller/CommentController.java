@@ -61,10 +61,10 @@ public class CommentController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 
-    @GetMapping
+    @GetMapping("/{commentId}/replies")
     @Operation(summary = "대댓글 조회", description = "대댓글을 조회합니다")
     public BaseResponse<SliceResponse<ReplyListResponse>> getReplies(
-            @Parameter(description = "대댓글을 조회중인 댓글의 ID") @RequestParam Long commentId,
+            @PathVariable Long commentId,
             @Parameter(description = "이전 페이지의 마지막 대댓글 ID (첫 요청 시 생략)")
                     @RequestParam(required = false)
                     Long lastReplyId,

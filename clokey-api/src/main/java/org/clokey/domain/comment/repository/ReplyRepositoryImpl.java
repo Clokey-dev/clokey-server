@@ -37,7 +37,7 @@ public class ReplyRepositoryImpl implements ReplyRepositoryCustom {
                         .from(reply)
                         .join(reply.member, member)
                         .where(
-                                reply.member.id.eq(member.id),
+                                reply.comment.id.eq(commentId),
                                 lastReplyIdCondition(lastReplyId, direction))
                         .orderBy(direction == SortDirection.DESC ? reply.id.desc() : reply.id.asc())
                         .limit(size + 1)
