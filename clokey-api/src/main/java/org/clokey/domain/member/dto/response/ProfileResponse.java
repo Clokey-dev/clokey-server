@@ -1,7 +1,6 @@
 package org.clokey.domain.member.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.LocalDateTime;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.Visibility;
 
@@ -15,9 +14,7 @@ public record ProfileResponse(
                 String profileImageUrl,
         @Schema(description = "배경 이미지 URL", example = "https://example.com/profile/john.jpg")
                 String profileBackImageUrl,
-        @Schema(description = "계정 공개 여부", example = "PUBLIC") Visibility visibility,
-        @Schema(description = "프로필 업데이트 시간", example = "2025-01-04T10:30:00Z")
-                LocalDateTime updatedAt) {
+        @Schema(description = "계정 공개 여부", example = "PUBLIC") Visibility visibility) {
     public static ProfileResponse from(Member member) {
         return new ProfileResponse(
                 member.getId(),
@@ -27,7 +24,6 @@ public record ProfileResponse(
                 member.getClokeyId(),
                 member.getProfileImageUrl(),
                 member.getProfileBackImageUrl(),
-                member.getVisibility(),
-                member.getUpdatedAt());
+                member.getVisibility());
     }
 }

@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDateTime;
 import org.clokey.domain.member.dto.request.ProfileRequest;
 import org.clokey.domain.member.dto.response.ProfileResponse;
 import org.clokey.domain.member.service.MemberService;
@@ -62,8 +61,7 @@ class MemberControllerTest {
                             "clokeyId",
                             "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg",
-                            Visibility.PUBLIC,
-                            LocalDateTime.of(2025, 8, 11, 12, 0));
+                            Visibility.PUBLIC);
 
             given(memberService.updateProfile(any(ProfileRequest.class))).willReturn(response);
             ;
