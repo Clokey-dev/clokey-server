@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import org.clokey.IntegrationTest;
-import org.clokey.domain.member.dto.request.ProfileRequest;
+import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.ProfileResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.MemberRepository;
@@ -65,8 +65,8 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 유효한_요청이면_프로필을_수정한다() {
             // given
-            ProfileRequest request =
-                    new ProfileRequest(
+            ProfileUpdateRequest request =
+                    new ProfileUpdateRequest(
                             "newNickname",
                             "newClokeyId",
                             "newBio",
@@ -111,8 +111,8 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 이미지_URL이_비어있으면_기존값을_유지한다() {
             // given (null/공백이면 기존 값 유지)
-            ProfileRequest request =
-                    new ProfileRequest(
+            ProfileUpdateRequest request =
+                    new ProfileUpdateRequest(
                             "keepNickname",
                             "keepClokeyId",
                             "keepBio",
@@ -139,8 +139,8 @@ class MemberServiceTest extends IntegrationTest {
             member.updateMemberStatus(MemberStatus.BANNED); // 실제 메서드명에 맞게 조정
             memberRepository.save(member);
 
-            ProfileRequest request =
-                    new ProfileRequest(
+            ProfileUpdateRequest request =
+                    new ProfileUpdateRequest(
                             "anyNick",
                             "anyId",
                             "anyBio",

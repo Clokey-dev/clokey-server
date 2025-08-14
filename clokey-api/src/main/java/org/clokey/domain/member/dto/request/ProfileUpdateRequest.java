@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.clokey.member.enums.Visibility;
 
-public record ProfileRequest(
+public record ProfileUpdateRequest(
         @NotBlank(message = "닉네임은 비워둘 수 없습니다.") @Schema(description = "사용자의 닉네임", example = "팽이")
                 String nickname,
         @NotBlank(message = "Clokey ID는 비워둘 수 없습니다.")

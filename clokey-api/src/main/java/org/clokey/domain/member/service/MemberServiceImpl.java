@@ -3,8 +3,7 @@ package org.clokey.domain.member.service;
 import static org.springframework.util.StringUtils.hasText;
 
 import lombok.RequiredArgsConstructor;
-import org.clokey.domain.member.dto.request.ProfileRequest;
-import org.clokey.domain.member.dto.response.ProfileResponse;
+import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
@@ -26,7 +25,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public ProfileResponse updateProfile(ProfileRequest request) {
+    public void updateProfile(ProfileUpdateRequest request) {
         // 사용자 확인
         final Member member = fakeAuthContext.getCurrentMember();
 
@@ -62,11 +61,9 @@ public class MemberServiceImpl implements MemberService {
 
         // Elasticsearch 동기화였던 부분 삭제
 
-        // 응답 DTO 반환
-        return ProfileResponse.from(updatedMember);
     }
 
-    private void validateVisualizeBannedMember(Member member, ProfileRequest request) {
+    private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {
         boolean banned = member.getMemberStatus().equals(MemberStatus.BANNED);
         boolean changeToPublic = request.visibility().equals(Visibility.PUBLIC);
         if (banned && changeToPublic) {
