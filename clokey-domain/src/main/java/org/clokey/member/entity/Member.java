@@ -141,10 +141,6 @@ public class Member extends BaseEntity {
         this.visibility = visibility;
     }
 
-    public void updateRegisterStatus(RegisterStatus registerStatus) {
-        this.registerStatus = registerStatus;
-    }
-
     public void updateMemberStatus(MemberStatus memberStatus) {
         this.memberStatus = memberStatus;
     }

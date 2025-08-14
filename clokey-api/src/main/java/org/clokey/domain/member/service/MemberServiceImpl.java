@@ -8,7 +8,6 @@ import org.clokey.exception.BaseCustomException;
 import org.clokey.global.FakeAuthContext;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.MemberStatus;
-import org.clokey.member.enums.RegisterStatus;
 import org.clokey.member.enums.Visibility;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +54,6 @@ public class MemberServiceImpl implements MemberService {
                 profileBackImageUrl,
                 request.bio(),
                 request.visibility());
-
-        // 등록 상태 업데이트 (약관 동의가 완료된 경우)
-        if (member.getRegisterStatus() != RegisterStatus.REGISTERED) {
-            member.updateRegisterStatus(RegisterStatus.REGISTERED);
-        }
 
         // Elasticsearch 동기화였던 부분 삭제
 
