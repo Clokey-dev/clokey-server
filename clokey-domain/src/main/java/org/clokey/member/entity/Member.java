@@ -47,7 +47,10 @@ public class Member extends BaseEntity {
 
     private String profileImageUrl;
     private String profileBackImageUrl;
+
+    @Column(length = 100)
     private String bio;
+
     private String deviceToken;
 
     private LocalDate inactiveDate;

@@ -160,5 +160,34 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.clokeyId").value("Clokey ID는 비워둘 수 없습니다."));
         }
+
+        @Test
+        void 바이오가_100자를_초과하면_예외가_발생한다() throws Exception {
+            // given
+            String longBio = "a".repeat(101); // 101자
+            ProfileRequest request =
+                    new ProfileRequest(
+                            "닉네임",
+                            "clokeyId",
+                            longBio,
+                            Visibility.PRIVATE,
+                            "https://img.example.com/bg.jpg",
+                            "https://img.example.com/bg.jpg");
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                                    patch("/users")
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .content(objectMapper.writeValueAsString(request)))
+                            .andDo(print());
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.bio").value("바이오는 100자를 넘길 수 없습니다."));
+        }
     }
 }

@@ -11,7 +11,9 @@ public record ProfileRequest(
         @NotBlank(message = "Clokey ID는 비워둘 수 없습니다.")
                 @Schema(description = "사용자의 Clokey ID", example = "juwon")
                 String clokeyId,
-        @Schema(description = "사용자의 한줄 소개", example = "한줄 소개") String bio,
+        @Schema(description = "사용자의 한줄 소개", example = "한줄 소개")
+                @jakarta.validation.constraints.Size(max = 100, message = "바이오는 100자를 넘길 수 없습니다.")
+                String bio,
         @NotNull(message = "공개여부는 비워둘 수 없습니다.") @Schema(description = "계정 공개여부", example = "PUBLIC")
                 Visibility visibility,
         @Schema(description = "사용자 프로필 이미지", example = "profile.jpg") String profileImageUrl,
