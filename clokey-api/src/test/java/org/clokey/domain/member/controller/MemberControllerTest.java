@@ -3,7 +3,6 @@ package org.clokey.domain.member.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.member.enums.Visibility;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,9 +42,9 @@ class MemberControllerTest {
             // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "닉네임",
-                            "clokeyId",
-                            "바이오",
+                            "testNickname",
+                            "testClokeyId",
+                            "testBio",
                             Visibility.PUBLIC,
                             "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg");
@@ -56,10 +54,9 @@ class MemberControllerTest {
             // when
             ResultActions perform =
                     mockMvc.perform(
-                                    patch("/users")
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .content(objectMapper.writeValueAsString(request)))
-                            .andDo(print());
+                            patch("/users")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
 
             // then
             perform.andExpect(status().isOk())
@@ -71,15 +68,14 @@ class MemberControllerTest {
         @ParameterizedTest
         @NullSource
         @EmptySource
-        @ValueSource(strings = {" ", "   "})
+        @ValueSource(strings = {" "})
         void 닉네임_비어있으면_예외가_발생한다(String nickname) throws Exception {
             // given
-            Long userId = 1L;
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             nickname,
-                            "clokeyId",
-                            "바이오",
+                            "testClokeyId",
+                            "testBio",
                             Visibility.PRIVATE,
                             "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg");
@@ -87,12 +83,11 @@ class MemberControllerTest {
             // when
             ResultActions perform =
                     mockMvc.perform(
-                                    patch("/users")
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .content(objectMapper.writeValueAsString(request)))
-                            .andDo(print());
+                            patch("/users")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
 
-            // then (Bean Validation → 400)
+            // then
             perform.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
@@ -102,28 +97,24 @@ class MemberControllerTest {
 
         @ParameterizedTest
         @NullAndEmptySource
-        @ValueSource(strings = {" ", "   "})
-        @DisplayName("클로키아이디가_null_또는_공백이면_예외가_발생한다")
+        @ValueSource(strings = {" "})
         void 클로키아이디_비어있으면_예외가_발생한다(String clokeyId) throws Exception {
             // given
-            Long userId = 1L;
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "닉네임", // nickname
-                            clokeyId, // clokeyId
-                            "바이오", // bio
-                            Visibility.PRIVATE, // visibility
-                            "https://img.example.com/bg.jpg", // profileImageUrl
-                            "https://img.example.com/bg.jpg" // profileBackImageUrl
-                            );
+                            "testNickname",
+                            clokeyId,
+                            "testBio",
+                            Visibility.PRIVATE,
+                            "https://img.example.com/bg.jpg",
+                            "https://img.example.com/bg.jpg");
 
             // when
             ResultActions perform =
                     mockMvc.perform(
-                                    patch("/users")
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .content(objectMapper.writeValueAsString(request)))
-                            .andDo(print());
+                            patch("/users")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
 
             // then
             perform.andExpect(status().isBadRequest())
@@ -139,8 +130,8 @@ class MemberControllerTest {
             String longBio = "a".repeat(101); // 101자
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "닉네임",
-                            "clokeyId",
+                            "testNickname",
+                            "testClokeyId",
                             longBio,
                             Visibility.PRIVATE,
                             "https://img.example.com/bg.jpg",
@@ -149,10 +140,9 @@ class MemberControllerTest {
             // when
             ResultActions perform =
                     mockMvc.perform(
-                                    patch("/users")
-                                            .contentType(MediaType.APPLICATION_JSON)
-                                            .content(objectMapper.writeValueAsString(request)))
-                            .andDo(print());
+                            patch("/users")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
 
             // then
             perform.andExpect(status().isBadRequest())

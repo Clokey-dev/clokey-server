@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.Visibility;
 
+// 추후 프로필조회를 위해 유지.
 public record ProfileResponse(
         @Schema(description = "회원 ID", example = "1") Long id,
         @Schema(description = "한 줄 소개", example = "한줄소개") String bio,

@@ -1,7 +1,5 @@
 package org.clokey.domain.member.service;
 
-import static org.springframework.util.StringUtils.hasText;
-
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
@@ -21,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     private final FakeAuthContext fakeAuthContext;
+
     private final MemberRepository memberRepository;
 
     @Override
@@ -32,18 +31,24 @@ public class MemberServiceImpl implements MemberService {
         // 사용자 상태 체크 및 유효성 검증
         validateVisualizeBannedMember(member, request);
 
-        String profileImageUrl =
-                hasText(request.profileImageUrl())
-                        ? request.profileImageUrl()
-                        : member.getProfileImageUrl();
+        String profileImageUrl;
+        if (request.profileImageUrl() == null || request.profileImageUrl().isBlank()) {
+            profileImageUrl = null;
+            // 추후 S3에서 삭제
+        } else {
+            profileImageUrl = request.profileImageUrl();
+        }
 
-        String profileBackImageUrl =
-                hasText(request.profileBackImageUrl())
-                        ? request.profileBackImageUrl()
-                        : member.getProfileBackImageUrl();
+        String profileBackImageUrl;
+        if (request.profileBackImageUrl() == null || request.profileBackImageUrl().isBlank()) {
+            profileBackImageUrl = null;
+            // 추후 S3에서 삭제
+        } else {
+            profileBackImageUrl = request.profileBackImageUrl();
+        }
 
         // 프로필 업데이트
-        member.profileUpdate(
+        member.updateProfile(
                 request.nickname(),
                 request.clokeyId(),
                 profileImageUrl,
@@ -55,9 +60,6 @@ public class MemberServiceImpl implements MemberService {
         if (member.getRegisterStatus() != RegisterStatus.REGISTERED) {
             member.updateRegisterStatus(RegisterStatus.REGISTERED);
         }
-
-        // 저장
-        Member updatedMember = memberRepository.save(member);
 
         // Elasticsearch 동기화였던 부분 삭제
 
