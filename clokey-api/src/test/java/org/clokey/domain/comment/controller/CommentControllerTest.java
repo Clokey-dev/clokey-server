@@ -411,7 +411,7 @@ class CommentControllerTest {
             perform.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
-                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
         }
 
         @ParameterizedTest
@@ -579,7 +579,7 @@ class CommentControllerTest {
             perform.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
-                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
         }
 
         @ParameterizedTest
