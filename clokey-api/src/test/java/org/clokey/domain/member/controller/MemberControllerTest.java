@@ -59,7 +59,10 @@ class MemberControllerTest {
                                     .content(objectMapper.writeValueAsString(request)));
 
             // then
-            perform.andExpect(status().isNoContent());
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
         }
 
         @ParameterizedTest
