@@ -33,6 +33,7 @@ public class MemberController {
     public BaseResponse<Void> checkID(
             @PathVariable("clokey_id") @NotBlank String clokeyId) { // 클로키 아이디를 PathVariable로 받음
 
-        memberService.clokeyIdUsingCheck(clokeyId);
+        memberService.checkClokeyIdUsing(clokeyId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

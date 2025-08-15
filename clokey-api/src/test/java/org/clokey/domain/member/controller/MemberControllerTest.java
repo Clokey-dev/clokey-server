@@ -2,6 +2,7 @@ package org.clokey.domain.member.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -150,6 +151,45 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.bio").value("바이오는 100자를 넘길 수 없습니다."));
+        }
+    }
+
+    @Nested
+    class 아이디_중복확인_요청_시 {
+
+        @Test
+        void 사용가능하면_성공코드를_반환한다() throws Exception {
+            // given
+            String clokeyId = "availableId";
+            willDoNothing().given(memberService).checkClokeyIdUsing(clokeyId);
+
+            // when
+            ResultActions perform = mockMvc.perform(get("/users/{clokey_id}/check", clokeyId));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {" "})
+        void 클로키아이디가_공백이면_예외가_발생한다(String clokeyId) throws Exception {
+            mockMvc.perform(get("/users/{clokey_id}/check", clokeyId))
+                    .andExpect(status().is4xxClientError()); // JSON 기대 대신 상태 코드만 체크
+        }
+
+        @Test
+        void 클로키아이디가_빈문자열이면_예외가_발생한다() throws Exception {
+            mockMvc.perform(get("/users/{clokey_id}/check", "")) // /users//check
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void 클로키아이디가_null이면_예외가_발생한다() throws Exception {
+            mockMvc.perform(get("/users/{clokey_id}/check", (Object) null))
+                    .andExpect(status().is4xxClientError()); // 예외 대신 상태 코드 체크
         }
     }
 }

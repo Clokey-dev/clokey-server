@@ -149,4 +149,59 @@ class MemberServiceTest extends IntegrationTest {
                     .hasMessage(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC.getMessage());
         }
     }
+
+    @Nested
+    class 아이디_중복_확인_시 {
+
+        private Member member(String clokeyId) {
+            Member m =
+                    Member.createMember(
+                            "testEmail",
+                            clokeyId,
+                            "testNickname",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
+                            MemberStatus.ACTIVE,
+                            RegisterStatus.REGISTERED,
+                            Visibility.PRIVATE);
+            return memberRepository.save(m);
+        }
+
+        @Test
+        void 내_아이디와_같은_ID를_요청하면_성공한다() {
+            // given: 내 clokeyId = meId
+            Member me = member("myId");
+            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+
+            // when& then
+            memberService.checkClokeyIdUsing("myId");
+        }
+
+        @Test
+        void 다른_사람이_쓰는_ID를_요청하면_예외가_발생한다() {
+            // given
+            Member me = member("myId");
+            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+
+            // 다른 사용자가 이미 사용 중인 ID
+            member("usedId");
+
+            // when & then
+            assertThatThrownBy(() -> memberService.checkClokeyIdUsing("usedId"))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.DUPLICATE_CLOKEY_ID.getMessage());
+        }
+
+        @Test
+        void 다른_사람이_쓰지_않는_ID를_요청하면_성공한다() {
+            // given
+            Member me = member("myId");
+            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+
+            // when
+            memberService.checkClokeyIdUsing("availableId");
+
+            // then
+            assertThat(memberRepository.existsByClokeyId("availableId")).isFalse();
+        }
+    }
 }

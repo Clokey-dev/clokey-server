@@ -72,20 +72,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public void clokeyIdUsingCheck(String clokeyId) {
+    public void checkClokeyIdUsing(String clokeyId) {
         // 현재 로그인한 사용자의 clokeyId 가져오기
         final Member member = fakeAuthContext.getCurrentMember();
         String myClokeyId = member.getClokeyId();
 
-        // 1️⃣ 내 아이디가 없으면 입력한 아이디가 중복인지 검사
-        if (myClokeyId == null) {
-            if (memberRepository.existsByClokeyId(clokeyId)) {
-                throw new BaseCustomException(MemberErrorCode.DUPLICATE_CLOKEY_ID);
-            }
-            return;
-        }
-
-        // 2️⃣ 내 아이디가 존재하면, 내가 입력한 아이디가 기존 내 아이디와 다를 때만 중복 검사
         if (!clokeyId.equals(myClokeyId) && memberRepository.existsByClokeyId(clokeyId)) {
             throw new BaseCustomException(MemberErrorCode.DUPLICATE_CLOKEY_ID);
         }

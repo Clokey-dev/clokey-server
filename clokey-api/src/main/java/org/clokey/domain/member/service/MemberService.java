@@ -6,5 +6,5 @@ public interface MemberService {
 
     void updateProfile(ProfileUpdateRequest request);
 
-    void clokeyIdUsingCheck(String clokeyId);
+    void checkClokeyIdUsing(String clokeyId);
 }
