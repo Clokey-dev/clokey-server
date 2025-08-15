@@ -1,11 +1,10 @@
 package org.clokey.domain.member.service;
 
-import org.clokey.domain.member.dto.request.ProfileRequest;
-import org.clokey.domain.member.dto.response.ProfileResponse;
+import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 
 public interface MemberService {
 
-    ProfileResponse updateProfile(ProfileRequest request);
+    void updateProfile(ProfileUpdateRequest request);
 
     void clokeyIdUsingCheck(String clokeyId);
 }
