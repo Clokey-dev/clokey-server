@@ -526,14 +526,14 @@ class CommentControllerTest {
                             new ReplyListResponse(
                                     2L, 1L, "testNickName", "testProfile", "testContent2"));
 
-            given(commentService.getCommentReplies(1L, null, 1, SortDirection.ASC))
+            given(commentService.getCommentReplies(1L, null, 2, SortDirection.ASC))
                     .willReturn(new SliceResponse<>(commentsReplies, false));
 
             // when & then
             ResultActions perform =
                     mockMvc.perform(
                             get("/comments/1/replies")
-                                    .param("size", "1")
+                                    .param("size", "2")
                                     .param("direction", "ASC"));
 
             perform.andExpect(status().isOk())
