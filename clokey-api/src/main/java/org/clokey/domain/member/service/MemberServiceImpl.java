@@ -25,7 +25,12 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void updateProfile(ProfileUpdateRequest request) {
         // 사용자 확인
-        final Member member = fakeAuthContext.getCurrentMember();
+        Long memberId = fakeAuthContext.getCurrentMember().getId();
+        final Member member =
+                memberRepository
+                        .findById(memberId)
+                        .orElseThrow(
+                                () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 사용자 상태 체크 및 유효성 검증
         validateVisualizeBannedMember(member, request);

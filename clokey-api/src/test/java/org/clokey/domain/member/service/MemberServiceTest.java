@@ -101,8 +101,9 @@ class MemberServiceTest extends IntegrationTest {
                             "testClokeyId",
                             "testBio",
                             Visibility.PRIVATE,
-                            null,
-                            " ");
+                            null, // profileImageUrl 삭제
+                            " " // profileBackImageUrl 삭제
+                            );
 
             // when
             memberService.updateProfile(request);
@@ -118,9 +119,9 @@ class MemberServiceTest extends IntegrationTest {
                             "profileImageUrl",
                             "profileBackImageUrl")
                     .containsExactly(
-                            "keepNickname",
-                            "keepClokeyId",
-                            "keepBio",
+                            "testNickname",
+                            "testClokeyId",
+                            "testBio",
                             Visibility.PRIVATE,
                             null,
                             null);
