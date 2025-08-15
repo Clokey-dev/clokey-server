@@ -3,6 +3,7 @@ package org.clokey.domain.member.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.clokey.member.enums.Visibility;
 
 public record ProfileUpdateRequest(
@@ -12,7 +13,7 @@ public record ProfileUpdateRequest(
                 @Schema(description = "사용자의 Clokey ID", example = "juwon")
                 String clokeyId,
         @Schema(description = "사용자의 한줄 소개", example = "한줄 소개")
-                @jakarta.validation.constraints.Size(max = 100, message = "바이오는 100자를 넘길 수 없습니다.")
+                @Size(max = 100, message = "바이오는 100자를 넘길 수 없습니다.")
                 String bio,
         @NotNull(message = "공개여부는 비워둘 수 없습니다.") @Schema(description = "계정 공개여부", example = "PUBLIC")
                 Visibility visibility,
