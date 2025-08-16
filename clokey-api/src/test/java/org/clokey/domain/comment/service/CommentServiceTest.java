@@ -73,7 +73,7 @@ class CommentServiceTest extends IntegrationTest {
                             "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-
+            member2.changeVisibility();
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
@@ -171,7 +171,7 @@ class CommentServiceTest extends IntegrationTest {
                             "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-
+            member2.changeVisibility();
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
@@ -273,7 +273,7 @@ class CommentServiceTest extends IntegrationTest {
                             "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-
+            member2.changeVisibility();
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
@@ -390,7 +390,7 @@ class CommentServiceTest extends IntegrationTest {
                             "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-
+            member2.changeVisibility();
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 

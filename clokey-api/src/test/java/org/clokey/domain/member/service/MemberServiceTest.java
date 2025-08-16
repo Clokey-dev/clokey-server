@@ -33,7 +33,6 @@ class MemberServiceTest extends IntegrationTest {
 
         @BeforeEach
         void setUp() {
-            // 기본 멤버 생성
             Member member =
                     Member.createMember(
                             "testEmail",
@@ -41,7 +40,6 @@ class MemberServiceTest extends IntegrationTest {
                             "oldNickname",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
-            // 기존 프로필 값 세팅
             member.updateProfile(
                     "oldNickname",
                     "oldClokeyId",
@@ -97,9 +95,8 @@ class MemberServiceTest extends IntegrationTest {
                             "testClokeyId",
                             "testBio",
                             Visibility.PRIVATE,
-                            null, // profileImageUrl 삭제
-                            " " // profileBackImageUrl 삭제
-                            );
+                            null,
+                            " ");
 
             // when
             memberService.updateProfile(request);

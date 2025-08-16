@@ -88,6 +88,7 @@ public class SecurityConfig {
     /** 인증 없이 제공하고 싶은 API는 /public 으로 시작해야 합니다. */
     @Bean
     @Order(2)
+    @Profile({"local", "dev", "prod"})
     public SecurityFilterChain apiFilterChain(
             HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         defaultFilterChain(http);
