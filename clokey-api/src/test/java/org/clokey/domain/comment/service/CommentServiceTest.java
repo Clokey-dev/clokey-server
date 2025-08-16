@@ -352,6 +352,18 @@ class CommentServiceTest extends IntegrationTest {
         }
 
         @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
+            // when
+            SliceResponse<CommentListResponse> response =
+                    commentService.getHistoryComments(1L, null, 2, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(2),
+                    () -> assertThat(response.isLast()).isFalse());
+        }
+
+        @Test
         void 존재하지_않는_기록을_입력하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(
@@ -468,6 +480,18 @@ class CommentServiceTest extends IntegrationTest {
             Assertions.assertAll(
                     () -> assertThat(response.content().size()).isEqualTo(2),
                     () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
+            // when
+            SliceResponse<ReplyListResponse> response =
+                    commentService.getCommentReplies(1L, null, 1, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(1),
+                    () -> assertThat(response.isLast()).isFalse());
         }
 
         @Test
