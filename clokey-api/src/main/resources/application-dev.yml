@@ -63,3 +63,7 @@ jwt:
   access-token-expiration-time: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME}
   refresh-token-expiration-time: ${JWT_REFRESH_TOKEN_EXPIRATION_TIME}
   issuer: ${JWT_ISSUER}
+
+swagger:
+  username: ${SWAGGER_USERNAME}
+  password: ${SWAGGER_PASSWORD}
