@@ -128,7 +128,7 @@ class MemberControllerTest {
         @Test
         void 바이오가_100자를_초과하면_예외가_발생한다() throws Exception {
             // given
-            String longBio = "a".repeat(101); // 101자
+            String longBio = "a".repeat(101);
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "testNickname",
@@ -177,19 +177,18 @@ class MemberControllerTest {
         @ValueSource(strings = {" "})
         void 클로키아이디가_공백이면_예외가_발생한다(String clokeyId) throws Exception {
             mockMvc.perform(get("/users/{clokey_id}/check", clokeyId))
-                    .andExpect(status().is4xxClientError()); // JSON 기대 대신 상태 코드만 체크
+                    .andExpect(status().is4xxClientError());
         }
 
         @Test
         void 클로키아이디가_빈문자열이면_예외가_발생한다() throws Exception {
-            mockMvc.perform(get("/users/{clokey_id}/check", "")) // /users//check
-                    .andExpect(status().isNotFound());
+            mockMvc.perform(get("/users/{clokey_id}/check", "")).andExpect(status().isNotFound());
         }
 
         @Test
         void 클로키아이디가_null이면_예외가_발생한다() throws Exception {
             mockMvc.perform(get("/users/{clokey_id}/check", (Object) null))
-                    .andExpect(status().is4xxClientError()); // 예외 대신 상태 코드 체크
+                    .andExpect(status().is4xxClientError());
         }
     }
 }

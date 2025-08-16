@@ -34,7 +34,6 @@ class MemberServiceTest extends IntegrationTest {
 
         @BeforeEach
         void setUp() {
-            // 기본 멤버 생성
             Member member =
                     Member.createMember(
                             "testEmail",
@@ -45,7 +44,6 @@ class MemberServiceTest extends IntegrationTest {
                             RegisterStatus.REGISTERED,
                             Visibility.PRIVATE);
 
-            // 기존 프로필 값 세팅
             member.updateProfile(
                     "oldNickname",
                     "oldClokeyId",
@@ -101,9 +99,8 @@ class MemberServiceTest extends IntegrationTest {
                             "testClokeyId",
                             "testBio",
                             Visibility.PRIVATE,
-                            null, // profileImageUrl 삭제
-                            " " // profileBackImageUrl 삭제
-                            );
+                            null,
+                            " ");
 
             // when
             memberService.updateProfile(request);
@@ -168,8 +165,9 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 내_아이디와_같은_ID를_요청하면_성공한다() {
-            // given: 내 clokeyId = meId
-            Member me = member("myId");
+            // given
+            member("myId");
+            Member me = memberRepository.findById(1L).orElseThrow();
             given(fakeAuthContext.getCurrentMember()).willReturn(me);
 
             // when& then
@@ -179,10 +177,10 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 다른_사람이_쓰는_ID를_요청하면_예외가_발생한다() {
             // given
-            Member me = member("myId");
+            member("myId");
+            Member me = memberRepository.findById(1L).orElseThrow();
             given(fakeAuthContext.getCurrentMember()).willReturn(me);
 
-            // 다른 사용자가 이미 사용 중인 ID
             member("usedId");
 
             // when & then
@@ -194,7 +192,8 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 다른_사람이_쓰지_않는_ID를_요청하면_성공한다() {
             // given
-            Member me = member("myId");
+            member("myId");
+            Member me = memberRepository.findById(1L).orElseThrow();
             given(fakeAuthContext.getCurrentMember()).willReturn(me);
 
             // when
