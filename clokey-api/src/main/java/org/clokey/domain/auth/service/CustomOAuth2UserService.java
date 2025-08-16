@@ -3,6 +3,7 @@ package org.clokey.domain.auth.service;
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.auth.util.UniqueUtil;
 import org.clokey.domain.member.repository.MemberRepository;
+import org.clokey.global.security.CustomPrincipal;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;

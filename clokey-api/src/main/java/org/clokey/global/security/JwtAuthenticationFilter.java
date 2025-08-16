@@ -1,4 +1,4 @@
-package org.clokey.domain.auth.service;
+package org.clokey.global.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
