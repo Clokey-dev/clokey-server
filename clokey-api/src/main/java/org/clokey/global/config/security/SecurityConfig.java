@@ -3,6 +3,7 @@ package org.clokey.global.config.security;
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.auth.handler.OidcLoginSuccessHandler;
 import org.clokey.domain.auth.service.CustomOAuth2UserService;
+import org.clokey.domain.auth.service.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +20,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
