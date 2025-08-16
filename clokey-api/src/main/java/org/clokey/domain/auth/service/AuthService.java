@@ -1,3 +1,8 @@
 package org.clokey.domain.auth.service;
 
-public interface AuthService {}
+import org.clokey.domain.auth.dto.response.UserStatusResponse;
+
+public interface AuthService {
+
+    UserStatusResponse getUserStatus();
+}
