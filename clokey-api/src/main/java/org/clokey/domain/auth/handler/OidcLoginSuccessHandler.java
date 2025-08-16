@@ -5,10 +5,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.auth.dto.response.TokenResponse;
 import org.clokey.domain.auth.service.JwtTokenService;
 import org.clokey.global.security.CustomPrincipal;
 import org.clokey.member.entity.Member;
+import org.clokey.response.BaseResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -34,6 +36,9 @@ public class OidcLoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandl
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        new ObjectMapper().writeValue(response.getWriter(), tokenResponse);
+        new ObjectMapper()
+                .writeValue(
+                        response.getWriter(),
+                        BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, tokenResponse));
     }
 }
