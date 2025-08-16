@@ -24,14 +24,14 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional
     public void updateProfile(ProfileUpdateRequest request) {
-        // 사용자 확인
+
         Long memberId = fakeAuthContext.getCurrentMember().getId();
         final Member member =
                 memberRepository
                         .findById(memberId)
                         .orElseThrow(
                                 () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
-        // 사용자 상태 체크 및 유효성 검증
+
         validateVisualizeBannedMember(member, request);
 
         String profileImageUrl;
@@ -50,7 +50,6 @@ public class MemberServiceImpl implements MemberService {
             profileBackImageUrl = request.profileBackImageUrl();
         }
 
-        // 프로필 업데이트
         member.updateProfile(
                 request.nickname(),
                 request.clokeyId(),
@@ -73,7 +72,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public void checkClokeyIdUsing(String clokeyId) {
-        // 현재 로그인한 사용자의 clokeyId 가져오기
+
         final Member member = fakeAuthContext.getCurrentMember();
         String myClokeyId = member.getClokeyId();
 
