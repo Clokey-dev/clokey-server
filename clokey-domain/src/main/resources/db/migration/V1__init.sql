@@ -13,6 +13,10 @@ CREATE TABLE member (
                             member_status IN ('ACTIVE', 'INACTIVE','BANNED')
                             ),
 
+                        member_role VARCHAR(255) NOT NULL DEFAULT 'USER' CHECK (
+                            member_role IN ('ADMIN', 'USER')
+                            ),
+
                         visibility VARCHAR(255) NOT NULL DEFAULT 'PUBLIC' CHECK (
                             visibility IN ('PUBLIC', 'PRIVATE')
                             ),

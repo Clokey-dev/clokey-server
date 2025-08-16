@@ -2,7 +2,6 @@ package org.clokey.domain.comment.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
@@ -25,18 +24,15 @@ import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.history.repository.HistoryTypeRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
-import org.clokey.global.FakeAuthContext;
 import org.clokey.global.paging.SortDirection;
+import org.clokey.global.util.MemberUtil;
+import org.clokey.global.util.TransactionUtil;
 import org.clokey.history.entity.History;
 import org.clokey.history.entity.HistoryType;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
-import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.OauthProvider;
-import org.clokey.member.enums.RegisterStatus;
-import org.clokey.member.enums.Visibility;
 import org.clokey.response.SliceResponse;
-import org.clokey.util.TransactionUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -57,7 +53,7 @@ class CommentServiceTest extends IntegrationTest {
     @Autowired MemberRepository memberRepository;
     @Autowired HistoryTypeRepository historyTypeRepository;
 
-    @MockitoBean FakeAuthContext fakeAuthContext;
+    @MockitoBean MemberUtil memberUtil;
 
     @Nested
     class 댓글을_작성할_때 {
@@ -69,22 +65,17 @@ class CommentServiceTest extends IntegrationTest {
                             "testEmail1",
                             "testClokeyId1",
                             "testNickName1",
-                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PUBLIC);
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
             Member member2 =
                     Member.createMember(
                             "testEmail2",
                             "testClokeyId2",
                             "testNickName2",
-                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
 
             memberRepository.saveAll(List.of(member1, member2));
-            given(fakeAuthContext.getCurrentMember()).willReturn(member1);
+            given(memberUtil.getCurrentMember()).willReturn(member1);
 
             HistoryType historyType = HistoryType.createHistoryType("testType");
             historyTypeRepository.save(historyType);
@@ -172,22 +163,17 @@ class CommentServiceTest extends IntegrationTest {
                             "testEmail1",
                             "testClokeyId1",
                             "testNickName1",
-                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PUBLIC);
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
             Member member2 =
                     Member.createMember(
                             "testEmail2",
                             "testClokeyId2",
                             "testNickName2",
-                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
 
             memberRepository.saveAll(List.of(member1, member2));
-            given(fakeAuthContext.getCurrentMember()).willReturn(member1);
+            given(memberUtil.getCurrentMember()).willReturn(member1);
 
             HistoryType historyType = HistoryType.createHistoryType("testType");
             historyTypeRepository.save(historyType);
@@ -279,22 +265,17 @@ class CommentServiceTest extends IntegrationTest {
                             "testEmail1",
                             "testClokeyId1",
                             "testNickName1",
-                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PUBLIC);
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
             Member member2 =
                     Member.createMember(
                             "testEmail2",
                             "testClokeyId2",
                             "testNickName2",
-                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
 
             memberRepository.saveAll(List.of(member1, member2));
-            given(fakeAuthContext.getCurrentMember()).willReturn(member1);
+            given(memberUtil.getCurrentMember()).willReturn(member1);
 
             HistoryType historyType = HistoryType.createHistoryType("testType");
             historyTypeRepository.save(historyType);
@@ -401,22 +382,17 @@ class CommentServiceTest extends IntegrationTest {
                             "testEmail1",
                             "testClokeyId1",
                             "testNickName1",
-                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PUBLIC);
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
             Member member2 =
                     Member.createMember(
                             "testEmail2",
                             "testClokeyId2",
                             "testNickName2",
-                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
 
             memberRepository.saveAll(List.of(member1, member2));
-            given(fakeAuthContext.getCurrentMember()).willReturn(member1);
+            given(memberUtil.getCurrentMember()).willReturn(member1);
 
             HistoryType historyType = HistoryType.createHistoryType("testType");
             historyTypeRepository.save(historyType);

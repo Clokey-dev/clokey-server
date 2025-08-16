@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.clokey.common.model.BaseEntity;
+import org.clokey.member.enums.MemberRole;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
 
@@ -38,6 +39,10 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @NotNull
+    private MemberRole memberRole;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
     private Visibility visibility;
 
     private String profileImageUrl;
@@ -57,29 +62,27 @@ public class Member extends BaseEntity {
             String nickname,
             OauthInfo oauthInfo,
             MemberStatus memberStatus,
+            MemberRole memberRole,
             Visibility visibility) {
         this.email = email;
         this.clokeyId = clokeyId;
         this.nickname = nickname;
         this.oauthInfo = oauthInfo;
         this.memberStatus = memberStatus;
+        this.memberRole = memberRole;
         this.visibility = visibility;
     }
 
     public static Member createMember(
-            String email,
-            String clokeyId,
-            String nickname,
-            OauthInfo oauthInfo,
-            MemberStatus memberStatus,
-            Visibility visibility) {
+            String email, String clokeyId, String nickname, OauthInfo oauthInfo) {
         return Member.builder()
                 .email(email)
                 .clokeyId(clokeyId)
                 .nickname(nickname)
                 .oauthInfo(oauthInfo)
-                .memberStatus(memberStatus)
-                .visibility(visibility)
+                .memberStatus(MemberStatus.ACTIVE)
+                .memberRole(MemberRole.USER)
+                .visibility(Visibility.PUBLIC)
                 .build();
     }
 
