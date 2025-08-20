@@ -33,33 +33,30 @@ class MemberServiceTest extends IntegrationTest {
     @Nested
     class 프로필을_수정할_때 {
 
-        private Member testMember;
-
         @BeforeEach
         void setUp() {
-            testMember =
-                    transactionUtil.getResult(
-                            () -> {
-                                Member member =
-                                        Member.createMember(
-                                                "testEmail",
-                                                "oldClokeyId",
-                                                "oldNickname",
-                                                OauthInfo.createOauthInfo(
-                                                        "testOauthId", OauthProvider.KAKAO));
-
-                                member.updateProfile(
-                                        "oldNickname",
+            transactionUtil.getResult(
+                    () -> {
+                        Member member =
+                                Member.createMember(
+                                        "testEmail",
                                         "oldClokeyId",
-                                        "oldProfileUrl",
-                                        "oldBackUrl",
-                                        "oldBio",
-                                        Visibility.PRIVATE);
+                                        "oldNickname",
+                                        OauthInfo.createOauthInfo(
+                                                "testOauthId", OauthProvider.KAKAO));
 
-                                Member saved = memberRepository.save(member);
+                        member.updateProfile(
+                                "oldNickname",
+                                "oldClokeyId",
+                                "oldProfileUrl",
+                                "oldBackUrl",
+                                "oldBio",
+                                Visibility.PRIVATE);
 
-                                return saved;
-                            });
+                        Member saved = memberRepository.save(member);
+
+                        return saved;
+                    });
 
             given(memberUtil.getCurrentMember())
                     .willReturn(
@@ -83,7 +80,7 @@ class MemberServiceTest extends IntegrationTest {
             Member found =
                     transactionUtil.getResult(
                             () -> {
-                                Member loaded = memberRepository.findById(testMember.getId()).get();
+                                Member loaded = memberRepository.findById(1L).get();
 
                                 loaded.getNickname();
                                 loaded.getClokeyId();
