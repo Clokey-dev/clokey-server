@@ -1,9 +1,9 @@
 package org.clokey.domain.member.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
+import java.awt.*;
 import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
@@ -56,10 +56,15 @@ class MemberServiceTest extends IntegrationTest {
                                         "oldBio",
                                         Visibility.PRIVATE);
 
-                                return memberRepository.save(member);
+                                Member saved = memberRepository.save(member);
+
+                                return saved;
                             });
 
-            given(memberUtil.getCurrentMember()).willReturn(testMember);
+            given(memberUtil.getCurrentMember())
+                    .willReturn(
+                            transactionUtil.getResult(
+                                    () -> memberRepository.findById(1L).orElseThrow()));
         }
 
         @Test
@@ -73,13 +78,29 @@ class MemberServiceTest extends IntegrationTest {
                             "https://img.example.com/profile.jpg",
                             "https://img.example.com/back.jpg");
 
-            // 서비스 호출
             memberService.updateProfile(request);
 
-            // 트랜잭션에서 다시 조회해서 검증
             Member found =
                     transactionUtil.getResult(
-                            () -> memberRepository.findById(testMember.getId()).orElseThrow());
+                            () -> {
+                                Member loaded = memberRepository.findById(testMember.getId()).get();
+
+                                loaded.getNickname();
+                                loaded.getClokeyId();
+                                loaded.getBio();
+                                loaded.getVisibility();
+                                loaded.getProfileImageUrl();
+                                loaded.getProfileBackImageUrl();
+
+                                return loaded;
+                            });
+
+            String nickname = found.getNickname();
+            String clokeyId = found.getClokeyId();
+            String bio = found.getBio();
+            Visibility visibility = found.getVisibility();
+            String profileImageUrl = found.getProfileImageUrl();
+            String profileBackImageUrl = found.getProfileBackImageUrl();
 
             assertThat(found)
                     .extracting(
@@ -113,7 +134,17 @@ class MemberServiceTest extends IntegrationTest {
 
             Member found =
                     transactionUtil.getResult(
-                            () -> memberRepository.findById(testMember.getId()).orElseThrow());
+                            () -> {
+                                Member loaded = memberRepository.findById(1L).get();
+
+                                loaded.getProfileImageUrl();
+                                loaded.getProfileBackImageUrl();
+
+                                return loaded;
+                            });
+
+            String profileImageUrl = found.getProfileImageUrl();
+            String profileBackImageUrl = found.getProfileBackImageUrl();
 
             assertThat(found)
                     .extracting(
@@ -131,34 +162,45 @@ class MemberServiceTest extends IntegrationTest {
                             null,
                             null);
         }
+    }
 
-        @Test
-        void 밴된_회원이_PUBLIC으로_변경하려면_예외가_발생한다() {
-            transactionUtil.getResult(
-                    () -> {
-                        testMember.updateMemberStatus(MemberStatus.BANNED);
-                        return memberRepository.save(testMember);
-                    });
-
-            ProfileUpdateRequest request =
-                    new ProfileUpdateRequest(
-                            "testNickname",
-                            "testClokeyId",
-                            "testBio",
-                            Visibility.PUBLIC,
-                            "profile.jpg",
-                            "back.jpg");
-
-            assertThatThrownBy(() -> memberService.updateProfile(request))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC.getMessage());
-        }
+    @Test
+    void 밴된_회원이_PUBLIC으로_변경하려면_예외가_발생한다() {
+        // given
+        Member current = memberUtil.getCurrentMember();
+        current.updateMemberStatus(MemberStatus.BANNED);
+        memberRepository.save(current);
+        ProfileUpdateRequest request =
+                new ProfileUpdateRequest(
+                        "testNickname",
+                        "testClokeyId",
+                        "testBio",
+                        Visibility.PUBLIC,
+                        "profile.jpg",
+                        "back.jpg");
+        // when & then
+        assertThatThrownBy(() -> memberService.updateProfile(request))
+                .isInstanceOf(BaseCustomException.class)
+                .hasMessage(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC.getMessage());
     }
 
     @Nested
     class 아이디_중복_확인_시 {
 
-        private Member member(String clokeyId) {
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testClokeyId",
+                            "testNickname",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+
+            memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
+        }
+
+        private Member otherMember(String clokeyId) {
             Member m =
                     Member.createMember(
                             "testEmail",
@@ -170,23 +212,14 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 내_아이디와_같은_ID를_요청하면_성공한다() {
-            // given
-            member("myId");
-            Member me = memberRepository.findById(1L).orElseThrow();
-            given(memberUtil.getCurrentMember()).willReturn(me);
-
             // when& then
-            memberService.checkDuplicateClokeyId("myId");
+            assertThatCode(() -> memberService.checkDuplicateClokeyId("testClokeyId"))
+                    .doesNotThrowAnyException();
         }
 
         @Test
         void 다른_사람이_쓰는_ID를_요청하면_예외가_발생한다() {
-            // given
-            member("myId");
-            Member me = memberRepository.findById(1L).orElseThrow();
-            given(memberUtil.getCurrentMember()).willReturn(me);
-
-            member("usedId");
+            otherMember("usedId");
 
             // when & then
             assertThatThrownBy(() -> memberService.checkDuplicateClokeyId("usedId"))
@@ -196,16 +229,25 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 다른_사람이_쓰지_않는_ID를_요청하면_성공한다() {
-            // given
-            member("myId");
-            Member me = memberRepository.findById(1L).orElseThrow();
-            given(memberUtil.getCurrentMember()).willReturn(me);
-
             // when
             memberService.checkDuplicateClokeyId("availableId");
 
             // then
             assertThat(memberRepository.existsByClokeyId("availableId")).isFalse();
+        }
+
+        @Test
+        void 클로키아이디가_null이면_예외가_발생한다() {
+            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(null))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
+        }
+
+        @Test
+        void 클로키아이디가_공백이면_예외가_발생한다() {
+            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(" "))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
         }
     }
 }
