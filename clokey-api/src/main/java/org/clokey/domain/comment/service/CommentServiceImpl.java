@@ -8,14 +8,15 @@ import org.clokey.domain.comment.dto.request.ReplyCreateRequest;
 import org.clokey.domain.comment.dto.response.CommentCreateResponse;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
 import org.clokey.domain.comment.dto.response.ReplyCreateResponse;
+import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.repository.CommentRepository;
 import org.clokey.domain.comment.repository.ReplyRepository;
 import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.exception.BaseCustomException;
-import org.clokey.global.FakeAuthContext;
 import org.clokey.global.paging.SortDirection;
+import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.History;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.Visibility;
@@ -30,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CommentServiceImpl implements CommentService {
 
-    private final FakeAuthContext fakeAuthContext;
+    private final MemberUtil memberUtil;
 
     private final CommentRepository commentRepository;
     private final HistoryRepository historyRepository;
@@ -39,7 +40,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public CommentCreateResponse createComment(CommentCreateRequest request) {
-        final Member currentMember = fakeAuthContext.getCurrentMember();
+        final Member currentMember = memberUtil.getCurrentMember();
         final History history = getHistoryById(request.historyId());
 
         validateHistoryAuthority(currentMember, history);
@@ -64,7 +65,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public ReplyCreateResponse createReply(Long commentId, ReplyCreateRequest request) {
-        final Member currentMember = fakeAuthContext.getCurrentMember();
+        final Member currentMember = memberUtil.getCurrentMember();
         final Comment comment = getCommentById(commentId);
 
         validateHistoryAuthority(currentMember, comment.getHistory());
@@ -89,13 +90,27 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public SliceResponse<CommentListResponse> getHistoryComments(
             Long historyId, Long lastCommentId, int size, SortDirection direction) {
-        final Member currentMember = fakeAuthContext.getCurrentMember();
+        final Member currentMember = memberUtil.getCurrentMember();
         final History history = getHistoryById(historyId);
 
         validateHistoryAuthority(currentMember, history);
 
         Slice<CommentListResponse> result =
                 commentRepository.findAllByHistoryId(historyId, lastCommentId, size, direction);
+        return SliceResponse.from(result);
+    }
+
+    @Override
+    public SliceResponse<ReplyListResponse> getCommentReplies(
+            Long commentId, Long lastReplyId, int size, SortDirection direction) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Comment comment = getCommentById(commentId);
+
+        validateHistoryAuthority(currentMember, comment.getHistory());
+
+        Slice<ReplyListResponse> result =
+                replyRepository.findAllByCommentId(commentId, lastReplyId, size, direction);
+
         return SliceResponse.from(result);
     }
 

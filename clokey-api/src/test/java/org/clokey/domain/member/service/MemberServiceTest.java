@@ -5,18 +5,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import org.clokey.IntegrationTest;
+import org.clokey.TransactionUtil;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
-import org.clokey.global.FakeAuthContext;
+import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.OauthProvider;
-import org.clokey.member.enums.RegisterStatus;
 import org.clokey.member.enums.Visibility;
-import org.clokey.util.TransactionUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,8 +27,8 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired private MemberService memberService;
     @Autowired private MemberRepository memberRepository;
 
-    @MockitoBean FakeAuthContext fakeAuthContext;
-    private final TransactionUtil transactionUtil;
+    @Autowired private TransactionUtil transactionUtil;
+    @MockitoBean MemberUtil memberUtil;
 
     @Nested
     class 프로필을_수정할_때 {
@@ -47,10 +46,7 @@ class MemberServiceTest extends IntegrationTest {
                                                 "oldClokeyId",
                                                 "oldNickname",
                                                 OauthInfo.createOauthInfo(
-                                                        "testOauthId", OauthProvider.KAKAO),
-                                                MemberStatus.ACTIVE,
-                                                RegisterStatus.REGISTERED,
-                                                Visibility.PRIVATE);
+                                                        "testOauthId", OauthProvider.KAKAO));
 
                                 member.updateProfile(
                                         "oldNickname",
@@ -63,7 +59,7 @@ class MemberServiceTest extends IntegrationTest {
                                 return memberRepository.save(member);
                             });
 
-            given(fakeAuthContext.getCurrentMember()).willReturn(testMember);
+            given(memberUtil.getCurrentMember()).willReturn(testMember);
         }
 
         @Test
@@ -168,10 +164,7 @@ class MemberServiceTest extends IntegrationTest {
                             "testEmail",
                             clokeyId,
                             "testNickname",
-                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             return memberRepository.save(m);
         }
 
@@ -180,7 +173,7 @@ class MemberServiceTest extends IntegrationTest {
             // given
             member("myId");
             Member me = memberRepository.findById(1L).orElseThrow();
-            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+            given(memberUtil.getCurrentMember()).willReturn(me);
 
             // when& then
             memberService.checkDuplicateClokeyId("myId");
@@ -191,7 +184,7 @@ class MemberServiceTest extends IntegrationTest {
             // given
             member("myId");
             Member me = memberRepository.findById(1L).orElseThrow();
-            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+            given(memberUtil.getCurrentMember()).willReturn(me);
 
             member("usedId");
 
@@ -206,7 +199,7 @@ class MemberServiceTest extends IntegrationTest {
             // given
             member("myId");
             Member me = memberRepository.findById(1L).orElseThrow();
-            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+            given(memberUtil.getCurrentMember()).willReturn(me);
 
             // when
             memberService.checkDuplicateClokeyId("availableId");
