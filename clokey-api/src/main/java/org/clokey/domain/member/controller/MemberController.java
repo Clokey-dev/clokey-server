@@ -3,7 +3,6 @@ package org.clokey.domain.member.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
@@ -28,10 +27,9 @@ public class MemberController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 
-    @GetMapping("/{clokey_id}/check")
+    @GetMapping("/check-duplicate-id")
     @Operation(summary = "아이디 중복확인", description = "클로키아이디 중복을 확인합니다.")
-    public BaseResponse<Void> checkID(
-            @PathVariable("clokey_id") @NotBlank String clokeyId) { // 클로키 아이디를 PathVariable로 받음
+    public BaseResponse<Void> checkID(@RequestParam("clokeyId") String clokeyId) {
 
         memberService.checkClokeyIdUsing(clokeyId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
