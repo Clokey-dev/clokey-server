@@ -1,7 +1,6 @@
 package org.clokey.domain.member.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 import org.clokey.IntegrationTest;
@@ -148,9 +147,25 @@ class MemberServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class 아이디_중복_확인_시 {
+    class 아이디_중복_확인할_때 {
 
-        private Member member(String clokeyId) {
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testClokeyId",
+                            "testNickname",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
+                            MemberStatus.ACTIVE,
+                            RegisterStatus.REGISTERED,
+                            Visibility.PRIVATE);
+
+            memberRepository.save(member);
+            given(fakeAuthContext.getCurrentMember()).willReturn(member);
+        }
+
+        private Member otherMember(String clokeyId) {
             Member m =
                     Member.createMember(
                             "testEmail",
@@ -165,42 +180,42 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 내_아이디와_같은_ID를_요청하면_성공한다() {
-            // given
-            member("myId");
-            Member me = memberRepository.findById(1L).orElseThrow();
-            given(fakeAuthContext.getCurrentMember()).willReturn(me);
-
             // when& then
-            memberService.checkClokeyIdUsing("myId");
+            assertThatCode(() -> memberService.checkDuplicateClokeyId("testClokeyId"))
+                    .doesNotThrowAnyException();
         }
 
         @Test
         void 다른_사람이_쓰는_ID를_요청하면_예외가_발생한다() {
-            // given
-            member("myId");
-            Member me = memberRepository.findById(1L).orElseThrow();
-            given(fakeAuthContext.getCurrentMember()).willReturn(me);
-
-            member("usedId");
+            otherMember("usedId");
 
             // when & then
-            assertThatThrownBy(() -> memberService.checkClokeyIdUsing("usedId"))
+            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId("usedId"))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.DUPLICATE_CLOKEY_ID.getMessage());
         }
 
         @Test
         void 다른_사람이_쓰지_않는_ID를_요청하면_성공한다() {
-            // given
-            member("myId");
-            Member me = memberRepository.findById(1L).orElseThrow();
-            given(fakeAuthContext.getCurrentMember()).willReturn(me);
-
             // when
-            memberService.checkClokeyIdUsing("availableId");
+            memberService.checkDuplicateClokeyId("availableId");
 
             // then
             assertThat(memberRepository.existsByClokeyId("availableId")).isFalse();
+        }
+
+        @Test
+        void 클로키아이디가_null이면_예외가_발생한다() {
+            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(null))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
+        }
+
+        @Test
+        void 클로키아이디가_공백이면_예외가_발생한다() {
+            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(" "))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
         }
     }
 }

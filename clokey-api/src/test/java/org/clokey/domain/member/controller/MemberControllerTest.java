@@ -158,10 +158,10 @@ class MemberControllerTest {
     class 아이디_중복확인_요청_시 {
 
         @Test
-        void 사용가능하면_성공코드를_반환한다() throws Exception {
+        void 유효한_요청이면_성공코드를_반환한다() throws Exception {
             // given
             String clokeyId = "availableId";
-            willDoNothing().given(memberService).checkClokeyIdUsing(clokeyId);
+            willDoNothing().given(memberService).checkDuplicateClokeyId(clokeyId);
 
             // when
             ResultActions perform = mockMvc.perform(get("/users/{clokey_id}/check", clokeyId));

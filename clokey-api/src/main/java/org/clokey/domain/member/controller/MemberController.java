@@ -31,7 +31,7 @@ public class MemberController {
     @Operation(summary = "아이디 중복확인", description = "클로키아이디 중복을 확인합니다.")
     public BaseResponse<Void> checkID(@RequestParam("clokeyId") String clokeyId) {
 
-        memberService.checkClokeyIdUsing(clokeyId);
+        memberService.checkDuplicateClokeyId(clokeyId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }
