@@ -25,14 +25,9 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void updateProfile(ProfileUpdateRequest request) {
 
-        Long memberId = fakeAuthContext.getCurrentMember().getId();
-        final Member member =
-                memberRepository
-                        .findById(memberId)
-                        .orElseThrow(
-                                () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+        final Member currentMember = fakeAuthContext.getCurrentMember();
 
-        validateVisualizeBannedMember(member, request);
+        validateVisualizeBannedMember(currentMember, request);
 
         String profileImageUrl;
         if (request.profileImageUrl() == null || request.profileImageUrl().isBlank()) {
@@ -50,7 +45,7 @@ public class MemberServiceImpl implements MemberService {
             profileBackImageUrl = request.profileBackImageUrl();
         }
 
-        member.updateProfile(
+        currentMember.updateProfile(
                 request.nickname(),
                 request.clokeyId(),
                 profileImageUrl,
@@ -71,10 +66,14 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public void checkClokeyIdUsing(String clokeyId) {
+    public void checkDuplicateClokeyId(String clokeyId) {
 
-        final Member member = fakeAuthContext.getCurrentMember();
-        String myClokeyId = member.getClokeyId();
+        if (clokeyId == null || clokeyId.isBlank()) {
+            throw new BaseCustomException(MemberErrorCode.INVALID_CLOKEY_ID);
+        }
+
+        final Member currentMember = fakeAuthContext.getCurrentMember();
+        String myClokeyId = currentMember.getClokeyId();
 
         if (!clokeyId.equals(myClokeyId) && memberRepository.existsByClokeyId(clokeyId)) {
             throw new BaseCustomException(MemberErrorCode.DUPLICATE_CLOKEY_ID);
