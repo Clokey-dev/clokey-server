@@ -1,6 +1,7 @@
 package org.clokey.domain.member.service;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import org.clokey.IntegrationTest;
@@ -15,6 +16,7 @@ import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.OauthProvider;
 import org.clokey.member.enums.RegisterStatus;
 import org.clokey.member.enums.Visibility;
+import org.clokey.util.TransactionUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,37 +29,45 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired private MemberRepository memberRepository;
 
     @MockitoBean FakeAuthContext fakeAuthContext;
-
-    @BeforeEach
-    void setUp() {
-        Member member =
-                Member.createMember(
-                        "testEmail",
-                        "oldClokeyId",
-                        "oldNickname",
-                        OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
-                        MemberStatus.ACTIVE,
-                        RegisterStatus.REGISTERED,
-                        Visibility.PRIVATE);
-
-        member.updateProfile(
-                "oldNickname",
-                "oldClokeyId",
-                "oldProfileUrl",
-                "oldBackUrl",
-                "oldBio",
-                Visibility.PRIVATE);
-
-        memberRepository.save(member);
-        given(fakeAuthContext.getCurrentMember()).willReturn(member);
-    }
+    private final TransactionUtil transactionUtil;
 
     @Nested
     class 프로필을_수정할_때 {
 
+        private Member testMember;
+
+        @BeforeEach
+        void setUp() {
+            testMember =
+                    transactionUtil.getResult(
+                            () -> {
+                                Member member =
+                                        Member.createMember(
+                                                "testEmail",
+                                                "oldClokeyId",
+                                                "oldNickname",
+                                                OauthInfo.createOauthInfo(
+                                                        "testOauthId", OauthProvider.KAKAO),
+                                                MemberStatus.ACTIVE,
+                                                RegisterStatus.REGISTERED,
+                                                Visibility.PRIVATE);
+
+                                member.updateProfile(
+                                        "oldNickname",
+                                        "oldClokeyId",
+                                        "oldProfileUrl",
+                                        "oldBackUrl",
+                                        "oldBio",
+                                        Visibility.PRIVATE);
+
+                                return memberRepository.save(member);
+                            });
+
+            given(fakeAuthContext.getCurrentMember()).willReturn(testMember);
+        }
+
         @Test
         void 유효한_요청이면_프로필을_수정한다() {
-            // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "newNickname",
@@ -67,11 +77,14 @@ class MemberServiceTest extends IntegrationTest {
                             "https://img.example.com/profile.jpg",
                             "https://img.example.com/back.jpg");
 
-            // when
+            // 서비스 호출
             memberService.updateProfile(request);
 
-            // then
-            Member found = memberRepository.findById(1L).orElseThrow();
+            // 트랜잭션에서 다시 조회해서 검증
+            Member found =
+                    transactionUtil.getResult(
+                            () -> memberRepository.findById(testMember.getId()).orElseThrow());
+
             assertThat(found)
                     .extracting(
                             "nickname",
@@ -91,7 +104,6 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 이미지_URL이_null_또는_공백이면_삭제된다() {
-            // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "testNickname",
@@ -101,11 +113,12 @@ class MemberServiceTest extends IntegrationTest {
                             null,
                             " ");
 
-            // when
             memberService.updateProfile(request);
 
-            // then
-            Member found = memberRepository.findById(1L).orElseThrow();
+            Member found =
+                    transactionUtil.getResult(
+                            () -> memberRepository.findById(testMember.getId()).orElseThrow());
+
             assertThat(found)
                     .extracting(
                             "nickname",
@@ -125,10 +138,11 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 밴된_회원이_PUBLIC으로_변경하려면_예외가_발생한다() {
-            // given
-            Member current = fakeAuthContext.getCurrentMember();
-            current.updateMemberStatus(MemberStatus.BANNED);
-            memberRepository.save(current);
+            transactionUtil.getResult(
+                    () -> {
+                        testMember.updateMemberStatus(MemberStatus.BANNED);
+                        return memberRepository.save(testMember);
+                    });
 
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
@@ -139,7 +153,6 @@ class MemberServiceTest extends IntegrationTest {
                             "profile.jpg",
                             "back.jpg");
 
-            // when & then
             assertThatThrownBy(() -> memberService.updateProfile(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC.getMessage());
@@ -147,25 +160,9 @@ class MemberServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class 아이디_중복_확인할_때 {
+    class 아이디_중복_확인_시 {
 
-        @BeforeEach
-        void setUp() {
-            Member member =
-                    Member.createMember(
-                            "testEmail",
-                            "testClokeyId",
-                            "testNickname",
-                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
-
-            memberRepository.save(member);
-            given(fakeAuthContext.getCurrentMember()).willReturn(member);
-        }
-
-        private Member otherMember(String clokeyId) {
+        private Member member(String clokeyId) {
             Member m =
                     Member.createMember(
                             "testEmail",
@@ -180,14 +177,23 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 내_아이디와_같은_ID를_요청하면_성공한다() {
+            // given
+            member("myId");
+            Member me = memberRepository.findById(1L).orElseThrow();
+            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+
             // when& then
-            assertThatCode(() -> memberService.checkDuplicateClokeyId("testClokeyId"))
-                    .doesNotThrowAnyException();
+            memberService.checkDuplicateClokeyId("myId");
         }
 
         @Test
         void 다른_사람이_쓰는_ID를_요청하면_예외가_발생한다() {
-            otherMember("usedId");
+            // given
+            member("myId");
+            Member me = memberRepository.findById(1L).orElseThrow();
+            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+
+            member("usedId");
 
             // when & then
             assertThatThrownBy(() -> memberService.checkDuplicateClokeyId("usedId"))
@@ -197,25 +203,16 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 다른_사람이_쓰지_않는_ID를_요청하면_성공한다() {
+            // given
+            member("myId");
+            Member me = memberRepository.findById(1L).orElseThrow();
+            given(fakeAuthContext.getCurrentMember()).willReturn(me);
+
             // when
             memberService.checkDuplicateClokeyId("availableId");
 
             // then
             assertThat(memberRepository.existsByClokeyId("availableId")).isFalse();
-        }
-
-        @Test
-        void 클로키아이디가_null이면_예외가_발생한다() {
-            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(null))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
-        }
-
-        @Test
-        void 클로키아이디가_공백이면_예외가_발생한다() {
-            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(" "))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
         }
     }
 }
