@@ -28,32 +28,32 @@ class MemberServiceTest extends IntegrationTest {
 
     @MockitoBean FakeAuthContext fakeAuthContext;
 
+    @BeforeEach
+    void setUp() {
+        Member member =
+                Member.createMember(
+                        "testEmail",
+                        "oldClokeyId",
+                        "oldNickname",
+                        OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
+                        MemberStatus.ACTIVE,
+                        RegisterStatus.REGISTERED,
+                        Visibility.PRIVATE);
+
+        member.updateProfile(
+                "oldNickname",
+                "oldClokeyId",
+                "oldProfileUrl",
+                "oldBackUrl",
+                "oldBio",
+                Visibility.PRIVATE);
+
+        memberRepository.save(member);
+        given(fakeAuthContext.getCurrentMember()).willReturn(member);
+    }
+
     @Nested
     class 프로필을_수정할_때 {
-
-        @BeforeEach
-        void setUp() {
-            Member member =
-                    Member.createMember(
-                            "testEmail",
-                            "oldClokeyId",
-                            "oldNickname",
-                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO),
-                            MemberStatus.ACTIVE,
-                            RegisterStatus.REGISTERED,
-                            Visibility.PRIVATE);
-
-            member.updateProfile(
-                    "oldNickname",
-                    "oldClokeyId",
-                    "oldProfileUrl",
-                    "oldBackUrl",
-                    "oldBio",
-                    Visibility.PRIVATE);
-
-            memberRepository.save(member);
-            given(fakeAuthContext.getCurrentMember()).willReturn(member);
-        }
 
         @Test
         void 유효한_요청이면_프로필을_수정한다() {

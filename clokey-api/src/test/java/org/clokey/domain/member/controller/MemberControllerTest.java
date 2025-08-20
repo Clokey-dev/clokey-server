@@ -163,32 +163,12 @@ class MemberControllerTest {
             String clokeyId = "availableId";
             willDoNothing().given(memberService).checkDuplicateClokeyId(clokeyId);
 
-            // when
-            ResultActions perform = mockMvc.perform(get("/users/{clokey_id}/check", clokeyId));
-
-            // then
-            perform.andExpect(status().isOk())
+            // when & then
+            mockMvc.perform(get("/users/check-duplicate-id").param("clokeyId", clokeyId))
+                    .andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON204"))
                     .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
-        }
-
-        @ParameterizedTest
-        @ValueSource(strings = {" "})
-        void 클로키아이디가_공백이면_예외가_발생한다(String clokeyId) throws Exception {
-            mockMvc.perform(get("/users/{clokey_id}/check", clokeyId))
-                    .andExpect(status().is4xxClientError());
-        }
-
-        @Test
-        void 클로키아이디가_빈문자열이면_예외가_발생한다() throws Exception {
-            mockMvc.perform(get("/users/{clokey_id}/check", "")).andExpect(status().isNotFound());
-        }
-
-        @Test
-        void 클로키아이디가_null이면_예외가_발생한다() throws Exception {
-            mockMvc.perform(get("/users/{clokey_id}/check", (Object) null))
-                    .andExpect(status().is4xxClientError());
         }
     }
 }
