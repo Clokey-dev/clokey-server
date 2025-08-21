@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 import java.awt.*;
+import java.util.List;
 import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
+import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.MemberRepository;
@@ -19,8 +21,11 @@ import org.clokey.member.enums.Visibility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.transaction.annotation.Transactional;
 
 class MemberServiceTest extends IntegrationTest {
 
@@ -47,6 +52,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
+        @Transactional
         void 유효한_요청이면_프로필을_수정한다() {
             // given
             ProfileUpdateRequest request =
@@ -101,70 +107,45 @@ class MemberServiceTest extends IntegrationTest {
         }
     }
 
-    /*@Nested
+    @Nested
     class 아이디_중복_확인_시 {
 
         @BeforeEach
         void setUp() {
-            Member member =
+            Member member1 =
                     Member.createMember(
-                            "testEmail",
-                            "testClokeyId",
-                            "testNickname",
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickname1",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickname2",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
-            memberRepository.save(member);
-            given(memberUtil.getCurrentMember()).willReturn(member);
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
         }
 
-        private Member otherMember(String clokeyId) {
-            Member m =
-                    Member.createMember(
-                            "testEmail",
-                            clokeyId,
-                            "testNickname",
-                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
-            return memberRepository.save(m);
-        }
+        @ParameterizedTest
+        @ValueSource(strings = {"testClokeyId1", "distinctId1", "distinctId2"})
+        void 현재_ID_또는_중복되지_않는_ID를_입력하면_false를_반환한다(String clokeyId) {
+            // given
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
 
-        @Test
-        void 내_아이디와_같은_ID를_요청하면_성공한다() {
             // when& then
-            assertThatCode(() -> memberService.checkDuplicateClokeyId("testClokeyId"))
-                    .doesNotThrowAnyException();
+            assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isFalse();
         }
 
         @Test
-        void 다른_사람이_쓰는_ID를_요청하면_예외가_발생한다() {
-            otherMember("usedId");
+        void 중복되는_ID를_입력한_경우_true를_반환한다() {
+            // given
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testClokeyId2");
 
-            // when & then
-            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId("usedId"))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.DUPLICATE_CLOKEY_ID.getMessage());
+            // when& then
+            assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isTrue();
         }
-
-        @Test
-        void 다른_사람이_쓰지_않는_ID를_요청하면_성공한다() {
-            // when
-            memberService.checkDuplicateClokeyId("availableId");
-
-            // then
-            assertThat(memberRepository.existsByClokeyId("availableId")).isFalse();
-        }
-
-        @Test
-        void 클로키아이디가_null이면_예외가_발생한다() {
-            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(null))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
-        }
-
-        @Test
-        void 클로키아이디가_공백이면_예외가_발생한다() {
-            assertThatThrownBy(() -> memberService.checkDuplicateClokeyId(" "))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
-        }
-    }*/
+    }
 }
