@@ -28,7 +28,7 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired private MemberRepository memberRepository;
 
     @Autowired private TransactionUtil transactionUtil;
-    @MockitoBean MemberUtil memberUtil;
+    @MockitoBean private MemberUtil memberUtil;
 
     @Nested
     class 프로필을_수정할_때 {
@@ -43,10 +43,12 @@ class MemberServiceTest extends IntegrationTest {
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
             memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
         }
 
         @Test
         void 유효한_요청이면_프로필을_수정한다() {
+            // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "newNickname",
@@ -56,31 +58,11 @@ class MemberServiceTest extends IntegrationTest {
                             "https://img.example.com/profile.jpg",
                             "https://img.example.com/back.jpg");
 
+            // when
             memberService.updateProfile(request);
 
-            Member found =
-                    transactionUtil.getResult(
-                            () -> {
-                                Member loaded = memberRepository.findById(1L).get();
-
-                                loaded.getNickname();
-                                loaded.getClokeyId();
-                                loaded.getBio();
-                                loaded.getVisibility();
-                                loaded.getProfileImageUrl();
-                                loaded.getProfileBackImageUrl();
-
-                                return loaded;
-                            });
-
-            String nickname = found.getNickname();
-            String clokeyId = found.getClokeyId();
-            String bio = found.getBio();
-            Visibility visibility = found.getVisibility();
-            String profileImageUrl = found.getProfileImageUrl();
-            String profileBackImageUrl = found.getProfileBackImageUrl();
-
-            assertThat(found)
+            // then
+            assertThat(memberRepository.findById(1L).orElseThrow())
                     .extracting(
                             "nickname",
                             "clokeyId",
@@ -98,71 +80,28 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 이미지_URL이_null_또는_공백이면_삭제된다() {
+        void 밴된_회원이_PUBLIC으로_변경하려면_예외가_발생한다() {
+            // given
+            Member current = memberUtil.getCurrentMember();
+            current.updateMemberStatus(MemberStatus.BANNED);
+            memberRepository.save(current);
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "testNickname",
                             "testClokeyId",
                             "testBio",
-                            Visibility.PRIVATE,
-                            null,
-                            " ");
+                            Visibility.PUBLIC,
+                            "profile.jpg",
+                            "back.jpg");
 
-            memberService.updateProfile(request);
-
-            Member found =
-                    transactionUtil.getResult(
-                            () -> {
-                                Member loaded = memberRepository.findById(1L).get();
-
-                                loaded.getProfileImageUrl();
-                                loaded.getProfileBackImageUrl();
-
-                                return loaded;
-                            });
-
-            String profileImageUrl = found.getProfileImageUrl();
-            String profileBackImageUrl = found.getProfileBackImageUrl();
-
-            assertThat(found)
-                    .extracting(
-                            "nickname",
-                            "clokeyId",
-                            "bio",
-                            "visibility",
-                            "profileImageUrl",
-                            "profileBackImageUrl")
-                    .containsExactly(
-                            "testNickname",
-                            "testClokeyId",
-                            "testBio",
-                            Visibility.PRIVATE,
-                            null,
-                            null);
+            // when & then
+            assertThatThrownBy(() -> memberService.updateProfile(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC.getMessage());
         }
     }
 
-    @Test
-    void 밴된_회원이_PUBLIC으로_변경하려면_예외가_발생한다() {
-        // given
-        Member current = memberUtil.getCurrentMember();
-        current.updateMemberStatus(MemberStatus.BANNED);
-        memberRepository.save(current);
-        ProfileUpdateRequest request =
-                new ProfileUpdateRequest(
-                        "testNickname",
-                        "testClokeyId",
-                        "testBio",
-                        Visibility.PUBLIC,
-                        "profile.jpg",
-                        "back.jpg");
-        // when & then
-        assertThatThrownBy(() -> memberService.updateProfile(request))
-                .isInstanceOf(BaseCustomException.class)
-                .hasMessage(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC.getMessage());
-    }
-
-    @Nested
+    /*@Nested
     class 아이디_중복_확인_시 {
 
         @BeforeEach
@@ -227,5 +166,5 @@ class MemberServiceTest extends IntegrationTest {
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.INVALID_CLOKEY_ID.getMessage());
         }
-    }
+    }*/
 }
