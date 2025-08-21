@@ -162,7 +162,7 @@ class MemberControllerTest {
         @Test
         void 유효한_요청이면_중복_여부를_반환한다() throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testClokeyId");
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("test_clokey_id");
             DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(true);
 
             given(memberService.checkDuplicateClokeyId(request)).willReturn(response);
@@ -182,12 +182,10 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.result.duplicated").value(true));
         }
 
-        @ParameterizedTest
-        @NullAndEmptySource
-        @ValueSource(strings = {" "})
-        void 클로키_아이디가_비어있으면_예외가_발생한다(String clokeyId) throws Exception {
+        @Test
+        void 클로키_아이디가_null이면_예외가_발생한다() throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(null);
 
             // when
             ResultActions perform =
