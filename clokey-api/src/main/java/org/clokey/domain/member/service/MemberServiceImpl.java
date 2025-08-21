@@ -1,7 +1,9 @@
 package org.clokey.domain.member.service;
 
 import lombok.RequiredArgsConstructor;
+import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MemberServiceImpl implements MemberService {
 
     private final MemberUtil memberUtil;
@@ -28,31 +31,26 @@ public class MemberServiceImpl implements MemberService {
 
         validateVisualizeBannedMember(currentMember, request);
 
-        String profileImageUrl;
-        if (request.profileImageUrl() == null || request.profileImageUrl().isBlank()) {
-            profileImageUrl = null;
-            // 추후 S3에서 삭제
-        } else {
-            profileImageUrl = request.profileImageUrl();
-        }
-
-        String profileBackImageUrl;
-        if (request.profileBackImageUrl() == null || request.profileBackImageUrl().isBlank()) {
-            profileBackImageUrl = null;
-            // 추후 S3에서 삭제
-        } else {
-            profileBackImageUrl = request.profileBackImageUrl();
-        }
+        // s3 삭제 로직 구현 이후에 반영 필요 -> 배경 및 프로필 이미지를 없애버리는 경우
 
         currentMember.updateProfile(
                 request.nickname(),
                 request.clokeyId(),
-                profileImageUrl,
-                profileBackImageUrl,
+                request.profileImageUrl(),
+                request.profileBackImageUrl(),
                 request.bio(),
                 request.visibility());
-        // Elasticsearch 동기화였던 부분 삭제
+    }
 
+    @Override
+    public DuplicatedIdCheckResponse checkDuplicateClokeyId(DuplicatedIdCheckRequest request) {
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        boolean duplicated =
+                !request.clokeyId().equals(currentMember.getClokeyId())
+                        && memberRepository.existsByClokeyId(request.clokeyId());
+
+        return DuplicatedIdCheckResponse.of(duplicated);
     }
 
     private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {
@@ -60,22 +58,6 @@ public class MemberServiceImpl implements MemberService {
         boolean changeToPublic = request.visibility().equals(Visibility.PUBLIC);
         if (banned && changeToPublic) {
             throw new BaseCustomException(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC);
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public void checkDuplicateClokeyId(String clokeyId) {
-
-        if (clokeyId == null || clokeyId.isBlank()) {
-            throw new BaseCustomException(MemberErrorCode.INVALID_CLOKEY_ID);
-        }
-
-        final Member currentMember = memberUtil.getCurrentMember();
-        String myClokeyId = currentMember.getClokeyId();
-
-        if (!clokeyId.equals(myClokeyId) && memberRepository.existsByClokeyId(clokeyId)) {
-            throw new BaseCustomException(MemberErrorCode.DUPLICATE_CLOKEY_ID);
         }
     }
 }

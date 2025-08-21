@@ -35,33 +35,14 @@ class MemberServiceTest extends IntegrationTest {
 
         @BeforeEach
         void setUp() {
-            transactionUtil.getResult(
-                    () -> {
-                        Member member =
-                                Member.createMember(
-                                        "testEmail",
-                                        "oldClokeyId",
-                                        "oldNickname",
-                                        OauthInfo.createOauthInfo(
-                                                "testOauthId", OauthProvider.KAKAO));
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "oldClokeyId",
+                            "oldNickname",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
-                        member.updateProfile(
-                                "oldNickname",
-                                "oldClokeyId",
-                                "oldProfileUrl",
-                                "oldBackUrl",
-                                "oldBio",
-                                Visibility.PRIVATE);
-
-                        Member saved = memberRepository.save(member);
-
-                        return saved;
-                    });
-
-            given(memberUtil.getCurrentMember())
-                    .willReturn(
-                            transactionUtil.getResult(
-                                    () -> memberRepository.findById(1L).orElseThrow()));
+            memberRepository.save(member);
         }
 
         @Test

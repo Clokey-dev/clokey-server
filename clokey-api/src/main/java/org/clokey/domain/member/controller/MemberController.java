@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
+import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.response.BaseResponse;
 import org.springframework.validation.annotation.Validated;
@@ -27,11 +29,12 @@ public class MemberController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 
-    @GetMapping("/check-duplicate-id")
+    @PostMapping("/check-duplicate-id")
     @Operation(summary = "아이디 중복확인", description = "클로키아이디 중복을 확인합니다.")
-    public BaseResponse<Void> checkID(@RequestParam("clokeyId") String clokeyId) {
+    public BaseResponse<DuplicatedIdCheckResponse> checkID(
+            @Valid @RequestBody DuplicatedIdCheckRequest request) {
 
-        memberService.checkDuplicateClokeyId(clokeyId);
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+        DuplicatedIdCheckResponse response = memberService.checkDuplicateClokeyId(request);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }
