@@ -31,7 +31,7 @@ public class MemberController {
 
     @PostMapping("/check-duplicate-id")
     @Operation(summary = "아이디 중복확인", description = "클로키아이디 중복을 확인합니다.")
-    public BaseResponse<DuplicatedIdCheckResponse> checkID(
+    public BaseResponse<DuplicatedIdCheckResponse> checkDuplicateClokeyId(
             @Valid @RequestBody DuplicatedIdCheckRequest request) {
 
         DuplicatedIdCheckResponse response = memberService.checkDuplicateClokeyId(request);

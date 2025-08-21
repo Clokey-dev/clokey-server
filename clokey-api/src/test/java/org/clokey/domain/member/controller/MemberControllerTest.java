@@ -1,14 +1,16 @@
 package org.clokey.domain.member.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.member.enums.Visibility;
 import org.junit.jupiter.api.Nested;
@@ -99,7 +101,7 @@ class MemberControllerTest {
         @ParameterizedTest
         @NullAndEmptySource
         @ValueSource(strings = {" "})
-        void 클로키아이디_비어있으면_예외가_발생한다(String clokeyId) throws Exception {
+        void 클로키_아이디가_비어있으면_예외가_발생한다(String clokeyId) throws Exception {
             // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
@@ -158,17 +160,72 @@ class MemberControllerTest {
     class 아이디_중복확인_요청_시 {
 
         @Test
-        void 유효한_요청이면_성공코드를_반환한다() throws Exception {
+        void 유효한_요청이면_중복_여부를_반환한다() throws Exception {
             // given
-            String clokeyId = "availableId";
-            willDoNothing().given(memberService).checkDuplicateClokeyId(clokeyId);
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testClokeyId");
+            DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(true);
 
-            // when & then
-            mockMvc.perform(get("/users/check-duplicate-id").param("clokeyId", clokeyId))
-                    .andExpect(status().isOk())
+            given(memberService.checkDuplicateClokeyId(request)).willReturn(response);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/check-duplicate-id")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andExpect(jsonPath("$.code").value("COMMON204"))
-                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.duplicated").value(true));
+        }
+
+        @ParameterizedTest
+        @NullAndEmptySource
+        @ValueSource(strings = {" "})
+        void 클로키_아이디가_비어있으면_예외가_발생한다(String clokeyId) throws Exception {
+            // given
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/check-duplicate-id")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.clokeyId").value("Clokey ID는 비워둘 수 없습니다."));
+        }
+
+        // 허용 종류 : 영문(소문자) , 숫자, 언더바(_), 점(.)
+        @ParameterizedTest
+        @ValueSource(strings = {"clokey clokey", "CLOKEY", "클로키", "clokey-user", "clokey,,user^^"})
+        void 클로키_아이디_제약조건을_위배하면_예외가_발생한다(String clokeyId) throws Exception {
+            // given
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/check-duplicate-id")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(
+                            jsonPath("$.result.clokeyId")
+                                    .value("Clokey ID는 영어 소문자, 숫자, 언더바(_), 점(.)만 허용됩니다."));
         }
     }
 }
