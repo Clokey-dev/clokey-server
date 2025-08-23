@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
         AccessTokenDto newAccessTokenDto =
                 jwtTokenService.reissueAccessToken(getMember(newRefreshTokenDto));
 
-        return TokenResponse.of(newAccessTokenDto.tokenValue(), newAccessTokenDto.tokenValue());
+        return TokenResponse.of(newAccessTokenDto.tokenValue(), newRefreshTokenDto.tokenValue());
     }
 
     private Member getMember(RefreshTokenDto refreshTokenDto) {
