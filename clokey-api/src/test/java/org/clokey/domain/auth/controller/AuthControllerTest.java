@@ -126,7 +126,7 @@ class AuthControllerTest {
     class 로그아웃_요청_시 {
 
         @Test
-        void 엑세스_토큰과_리프레시_토큰_쿠키가_만료_처리하고_NO_CONTENT를_반환한다() throws Exception {
+        void 리프레시_토큰을_만료_처리하고_NO_CONTENT를_반환한다() throws Exception {
             // given
             willDoNothing().given(authService).logoutUser();
 
