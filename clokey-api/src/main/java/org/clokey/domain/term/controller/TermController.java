@@ -23,7 +23,7 @@ public class TermController {
     @Operation(summary = "전체 약관 조회", description = "전체 약관 조회 API")
     public BaseResponse<TermListResponse> getTerms() {
         TermListResponse response = termService.getTerms();
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, response);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 
     @PostMapping
