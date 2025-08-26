@@ -3,13 +3,12 @@ package org.clokey.domain.term.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 import org.clokey.IntegrationTest;
 import org.clokey.domain.member.repository.MemberRepository;
-import org.clokey.domain.term.dto.TermAgreeRequest;
+import org.clokey.domain.term.dto.request.TermAgreeRequest;
 import org.clokey.domain.term.exception.TermErrorCode;
 import org.clokey.domain.term.repository.MemberTermRepository;
 import org.clokey.domain.term.repository.TermRepository;

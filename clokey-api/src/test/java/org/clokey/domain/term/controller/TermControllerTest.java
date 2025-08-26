@@ -1,6 +1,5 @@
 package org.clokey.domain.term.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -8,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
-import org.clokey.domain.term.dto.TermAgreeRequest;
+import org.clokey.domain.term.dto.request.TermAgreeRequest;
 import org.clokey.domain.term.service.TermService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
