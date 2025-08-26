@@ -24,7 +24,7 @@ public class TermServiceImpl implements TermService {
 
     private final MemberUtil memberUtil;
 
-    private final TermRepository repository;
+    private final TermRepository termRepository;
     private final MemberTermRepository memberTermRepository;
 
     @Override
@@ -42,7 +42,7 @@ public class TermServiceImpl implements TermService {
                         .map(
                                 payload -> {
                                     Term term =
-                                            repository
+                                            termRepository
                                                     .findById(payload.termId())
                                                     .orElseThrow(
                                                             () ->
