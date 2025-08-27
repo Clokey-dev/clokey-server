@@ -70,7 +70,7 @@ public class TermServiceImpl implements TermService {
     public MyOptionalTermResponse getMyOptionalTerms() {
         final Member currentMember = memberUtil.getCurrentMember();
 
-        List<MemberTerm> memberTerms =
+        final List<MemberTerm> memberTerms =
                 getByMemberIdAndTermIdIn(currentMember.getId(), TermInfo.getOptionalIds());
 
         return MyOptionalTermResponse.from(memberTerms);
@@ -81,8 +81,16 @@ public class TermServiceImpl implements TermService {
     public void toggleMyOptionalTerms(Long termId) {
         final Member currentMember = memberUtil.getCurrentMember();
 
+        validateIsOptionalTerm(termId);
+
         MemberTerm memberTerm = getByMemberIdAndTermId(currentMember.getId(), termId);
         memberTerm.toggleAgreed();
+    }
+
+    private void validateIsOptionalTerm(Long termId) {
+        if (!TermInfo.getOptionalIds().contains(termId)) {
+            throw new BaseCustomException(TermErrorCode.NOT_OPTIONAL_TERM);
+        }
     }
 
     private void validateAllTermContained(TermAgreeRequest request) {
