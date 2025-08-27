@@ -15,7 +15,7 @@ public record MyOptionalTermResponse(@Schema(description = "나의 선택 약관
                         .map(
                                 term ->
                                         new MyOptionalTermResponse.Payload(
-                                                term.getId(), term.isAgreed()))
+                                                term.getTerm().getId(), term.isAgreed()))
                         .toList();
 
         return new MyOptionalTermResponse(payloads);

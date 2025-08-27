@@ -121,6 +121,7 @@ public class TermServiceImpl implements TermService {
         }
     }
 
+    /** 선택 약관만을 DB에서 확인하지만, 선택 약관 동의가 되어 있지 않는 경우 약관 동의 절차를 생략했다고 판단. */
     private List<MemberTerm> getByMemberIdAndTermIdIn(Long memberId, List<Long> termIds) {
         List<MemberTerm> memberTerms =
                 memberTermRepository.findByMemberIdAndTermIdIn(memberId, termIds);
