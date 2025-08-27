@@ -252,7 +252,7 @@ class TermServiceTest extends IntegrationTest {
             termRepository.saveAll(List.of(term1, term2, term3, term4, term5));
 
             MemberTerm memberTerm1 = MemberTerm.createMemberTerm(member1, term4, true);
-            MemberTerm memberTerm2 = MemberTerm.createMemberTerm(member2, term5, false);
+            MemberTerm memberTerm2 = MemberTerm.createMemberTerm(member1, term5, false);
             memberTermRepository.saveAll(List.of(memberTerm1, memberTerm2));
         }
 
@@ -266,6 +266,14 @@ class TermServiceTest extends IntegrationTest {
             MemberTerm memberTerm =
                     memberTermRepository.findByMemberIdAndTermId(1L, termId).orElseThrow();
             assertThat(memberTerm.isAgreed()).isEqualTo(expectedAgreed);
+        }
+
+        @Test
+        void 선택_약관이_아닌_약관의_ID값을_입력할_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> termService.toggleMyOptionalTerms(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(TermErrorCode.NOT_OPTIONAL_TERM.getMessage());
         }
 
         @Test
