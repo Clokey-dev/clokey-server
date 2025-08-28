@@ -69,3 +69,19 @@ public record AccessTokenDto(Long memberId, MemberRole role, String tokenValue) 
 ⚠️ example 값 오류 : 배열이면 ```(1,2,3,4)```는 안됩니다 ```[1,2,3,4]``` 이렇게 작성되어야 합니다.
 json 변환 오류가 발생할 수 있습니다.
 
+### 3. Layered Dto
+
+```java
+public record TermAgreeRequest(
+        @NotEmpty(message = "약관 동의 정보는 비워둘 수 없습니다.") @Valid @Schema(description = "약관 동의 정보 리스트")
+                List<Payload> payloads) {
+    public record Payload(
+            @NotNull(message = "약관 ID는 비워둘 수 없습니다.") @Schema(description = "약관 ID") Long termId,
+            @NotNull(message = "약관 동의 여부는 비워둘 수 없습니다.")
+                    @Schema(description = "약관 동의 여부", example = "true")
+                    Boolean agreed) {}
+}
+
+```
+- 다음과 같이 내부 내용들의 이름은 ```Payload```로 사용하겠습니다.
+- ```@Valid```를 한 번 더 붙여야 내부 검증 로직이 작동합니다.
