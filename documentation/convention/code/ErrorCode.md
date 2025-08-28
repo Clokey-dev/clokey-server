@@ -11,7 +11,7 @@
 
 ### 1. ErrorCode Structure
 
-```
+```java
 @Getter
 @AllArgsConstructor
 public enum AuthErrorCode implements BaseErrorCode {

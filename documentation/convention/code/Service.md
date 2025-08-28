@@ -59,9 +59,10 @@ private Comment getCommentById(Long commentId) {
 - 별도로 해당 에러를 처리하고 가져오는 ```Adapter```클래스를 분리하지는 않았습니다. 모든 서비스에서 조금 중복되더라도 서비스 코드에서 존재해야할 로직이라고 생각했습니다.
 - ```validate 명명 규칙``` : ```validate``` + ```주제``` + ```행위 또는 상황```
 - validation은 하나당 주제 하나만을 다루는 것을 권장합니다.
+- validation에서 Id를 다수로 받을 경우 이름과 순서를 동일하게 해주세요 (많이 실수함).
 
 코드 배치
-```
+```java
 
 @Override
 @Transactional

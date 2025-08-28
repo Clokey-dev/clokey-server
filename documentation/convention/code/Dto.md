@@ -21,7 +21,7 @@
 
 사용자와 상호 작용하는 DTO (request)
 
-```
+```java
 public record ClothCreateRequest(
         @NotBlank(message = "옷의 이미지 주소는 비워둘 수 없습니다.")
                 @Schema(description = "옷의 이미지 주소", example = "https://example.jpg")
@@ -40,7 +40,7 @@ public record ClothCreateRequest(
 
 
 사용자와 상호 작용하는 DTO (response)
-```
+```java
 public record ClothCreateResponse(
         @Schema(description = "생성된 옷 ID들", example = "[1,2,3,4]") List<Long> clothIds) {
     public static ClothCreateResponse from(List<Cloth> cloths) {
@@ -56,7 +56,7 @@ public record ClothCreateResponse(
 
 서버 내부 통신용 DTO
 
-```
+```java
 public record AccessTokenDto(Long memberId, MemberRole role, String tokenValue) {
     public static AccessTokenDto of(Long memberId, MemberRole role, String tokenValue) {
         return new AccessTokenDto(memberId, role, tokenValue);

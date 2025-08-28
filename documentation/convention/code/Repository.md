@@ -14,7 +14,7 @@
 - 기본적으로 JPA 레포지토리에 맞게 사용하면 됩니다.
 - 다만, Query DSL을 사용해야하는 경우 다음과 같은 구조를 따릅니다.
 
-```
+```java
 public interface CommentRepository extends JpaRepository<Comment, Long>, CommentRepositoryCustom {}
 ```
 - XXXRepository.java

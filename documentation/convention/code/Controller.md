@@ -12,7 +12,7 @@
 ### 2. Controller Structure
 
 상단부
-```
+```java
 @RestController
 @RequestMapping("/clothes")
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class ClothController {
 - ```@Validated```는 ```@Enum``` 또는 ```@PageSize``` 처럼 Custom Annotation이 적용되는 경우 사용해 주세요.
 
 API 코드
-```
+```java
 @PostMapping
 @Operation(summary = "옷 생성", description = "새로운 옷을 생성합니다.")
 public BaseResponse<ClothCreateResponse> createCloths(
