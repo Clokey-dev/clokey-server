@@ -88,3 +88,44 @@ public class Album extends BaseTimeEntity {
 - 이와 같은 경우 DB 스키마는 남겨두고 (또 DB를 만드는건 귀찮으니까 조심하세요) 내부 테이블만 Drop하고 다시 실행하면 init 스크립트가 실행됩니다.
 
 ## 📌 Flyway Convention
+### ✅ 명명규칙
+
+<img width="" height="140" alt="flyway 명명규칙" src="https://img.notionusercontent.com/s3/prod-files-secure%2F91e6ef36-6446-81ad-8489-00030261db85%2F2ae00cde-e0a8-4e2f-8ffc-00981bcd852c%2Fimage.png/size/w=2000?exp=1756459521&sig=joNPFenDZHIy8HazgFc-2ZVXJFTr4jr-EY9QCQPcmU4&id=24c6ef36-6446-815b-bea2-d1a7ca920762&table=block&userId=b28206d6-9d3c-434f-990c-aac1556e033e" />
+
+
+네이밍순서 : Prefix → Version → Separator(__) → Description → Suffix
+
+네이밍 예시 : V2__Add_new_table.sql
+
+- Prefix
+    - V : Version - 새로운 버전으로 업데이트 하는 경우 사용
+    - U : Undo - 이전 버전으로 돌아가는 경우 사용 (유료버전이라 해당 없을 듯!!)
+    - R : Repeatable - 버전에 관계 없이 반복적으로 실행되는 경우 사용
+- Version
+
+  R의 경우에는 Version 없습니다.
+
+    - 1, 2, 3 식으로 Version 설정 (항상 이전보다 크게 설정해야!)
+    - 20250725 (날짜)로 Version 설정
+
+  이 두 가지 경우 중 설정하면 될 것 같습니다!!
+
+- Seperator
+
+  언더바 두개 입니다. __
+
+- Description
+    - 자유롭게 적을 수 있고, 단어 구분은 언더바로 합니다. (카멜X)
+    - 구체적으로 적어주세요!
+
+### ✅ 버전 기준
+
+| 상황 | 예시 |
+| --- | --- |
+| 새로운 테이블 추가 | `V2__create_orders_table.sql` |
+| 컬럼 추가/삭제 | `V3__add_email_to_users.sql` |
+| 인덱스 추가 | `V4__add_index_on_email.sql` |
+| 컬럼 타입 변경 | `V5__change_price_to_decimal.sql` |
+| 제약조건 추가 | `V6__add_foreign_key.sql` |
+
+단순 데이터 삽입이나 오타 수정 등은 버전 업데이트에 영향을 미치지 않습니다 !!
