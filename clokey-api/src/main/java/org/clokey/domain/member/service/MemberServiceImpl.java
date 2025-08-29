@@ -5,9 +5,13 @@ import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
+import org.clokey.domain.member.repository.FollowRepository;
+import org.clokey.domain.member.repository.FollowRequestRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
+import org.clokey.member.entity.Follow;
+import org.clokey.member.entity.FollowRequest;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
@@ -22,6 +26,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberUtil memberUtil;
 
     private final MemberRepository memberRepository;
+    private final FollowRepository followRepository;
+    private final FollowRequestRepository followRequestRepository;
 
     @Override
     @Transactional
@@ -58,6 +64,48 @@ public class MemberServiceImpl implements MemberService {
         boolean changeToPublic = request.visibility().equals(Visibility.PUBLIC);
         if (banned && changeToPublic) {
             throw new BaseCustomException(MemberErrorCode.BANNED_MEMBER_TO_PUBLIC);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void follow(String clokeyId) {
+        final Member followFrom = memberUtil.getCurrentMember();
+        final Member followTo =
+                memberRepository
+                        .findByClokeyId(clokeyId)
+                        .orElseThrow(
+                                () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (followFrom.getId().equals(followTo.getId())) {
+            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
+        }
+
+        if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
+            if (followRequestRepository.existsByFromMemberIdAndToMemberId(
+                    followFrom.getId(), followTo.getId())) {
+
+                followRequestRepository.deleteByFromMemberIdAndToMemberId(
+                        followFrom.getId(), followTo.getId());
+
+            } else {
+                FollowRequest followRequest =
+                        FollowRequest.createFollowRequest(followFrom, followTo);
+
+                followRequestRepository.save(followRequest);
+            }
+        } else {
+            if (followRepository.existsByFollowFromIdAndFollowToId(
+                    followFrom.getId(), followTo.getId())) {
+
+                followRepository.deleteByFollowFromIdAndFollowToId(
+                        followFrom.getId(), followTo.getId());
+
+            } else {
+                Follow follow = Follow.createFollow(followFrom, followTo);
+
+                followRepository.save(follow);
+            }
         }
     }
 }

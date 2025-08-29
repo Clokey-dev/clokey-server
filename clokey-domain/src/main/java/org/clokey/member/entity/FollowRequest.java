@@ -8,13 +8,13 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "follow",
+        name = "follow_request",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_follow_follow_to_id_follow_from_id",
+                    name = "uk_follow_request_to_id_from_id",
                     columnNames = {"follow_to_id", "follow_from_id"})
         })
-public class Follow {
+public class FollowRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,12 +31,12 @@ public class Follow {
     private Member followFrom;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Follow(Member followTo, Member followFrom) {
+    public FollowRequest(Member followTo, Member followFrom) {
         this.followTo = followTo;
         this.followFrom = followFrom;
     }
 
-    public static Follow createFollow(Member followTo, Member followFrom) {
-        return Follow.builder().followTo(followTo).followFrom(followFrom).build();
+    public static FollowRequest createFollowRequest(Member followTo, Member followFrom) {
+        return FollowRequest.builder().followTo(followTo).followFrom(followFrom).build();
     }
 }

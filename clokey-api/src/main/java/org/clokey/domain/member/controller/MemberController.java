@@ -37,4 +37,18 @@ public class MemberController {
         DuplicatedIdCheckResponse response = memberService.checkDuplicateClokeyId(request);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
+
+    @PostMapping("/follow")
+    @Operation(
+            summary = "팔로우 API",
+            description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
+    public BaseResponse<Void> follow(@RequestParam("clokeyId") String clokeyId) {
+
+        memberService.follow(clokeyId);
+
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, null);
+    }
+    // 비공개 사용자에게 팔로우시 추가적인 요소를 반환해야?
+    // 클로키아이디가 아닌 멤버ID를 받아야?
+    // 차단한 회원의 팔로우시? 추후구현?
 }
