@@ -96,7 +96,7 @@ public class MemberServiceImpl implements MemberService {
 
             } else {
                 FollowRequest followRequest =
-                        FollowRequest.createFollowRequest(followTo, followFrom);
+                        FollowRequest.createFollowRequest(followFrom, followTo);
 
                 followRequestRepository.save(followRequest);
             }
@@ -108,7 +108,7 @@ public class MemberServiceImpl implements MemberService {
                         followFrom.getId(), followTo.getId());
 
             } else {
-                Follow follow = Follow.createFollow(followTo, followFrom);
+                Follow follow = Follow.createFollow(followFrom, followTo);
 
                 followRepository.save(follow);
             }

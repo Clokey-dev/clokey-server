@@ -36,7 +36,7 @@ public class Follow {
         this.followFrom = followFrom;
     }
 
-    public static Follow createFollow(Member followTo, Member followFrom) {
-        return Follow.builder().followTo(followTo).followFrom(followFrom).build();
+    public static Follow createFollow(Member followFrom, Member followTo) {
+        return Follow.builder().followFrom(followFrom).followTo(followTo).build();
     }
 }

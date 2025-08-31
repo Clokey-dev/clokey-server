@@ -223,7 +223,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 비공개계정을_이미요청중이면_취소된다() {
             // given
-            followRequestRepository.save(FollowRequest.createFollowRequest(privateUser, me));
+            followRequestRepository.save(FollowRequest.createFollowRequest(me, privateUser));
 
             // when
             memberService.follow(3L);
@@ -236,7 +236,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 비공개계정을_이미팔로우중이면_취소된다() {
             // given
-            followRepository.save(Follow.createFollow(privateUser, me));
+            followRepository.save(Follow.createFollow(me, privateUser));
 
             // when
             memberService.follow(3L);
