@@ -190,7 +190,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 공개계정을_팔로우하면_팔로우가_추가된다() {
+        void 공개계정을_팔로우하면_팔로우를_추가한다() {
             // when
             memberService.follow(2L);
 
@@ -199,7 +199,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 공개계정을_이미팔로우중이면_취소된다() {
+        void 공개계정을_이미팔로우중이면_취소한다() {
             // given
             followRepository.save(Follow.createFollow(me, publicUser));
 
@@ -211,7 +211,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 비공개계정을_팔로우하면_팔로우요청이_추가된다() {
+        void 비공개계정을_팔로우하면_팔로우요청을_추가한다() {
             // when
             memberService.follow(3L);
 
@@ -221,7 +221,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 비공개계정을_이미요청중이면_취소된다() {
+        void 비공개계정을_이미요청중이면_취소한다() {
             // given
             followRequestRepository.save(FollowRequest.createFollowRequest(me, privateUser));
 
@@ -234,7 +234,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 비공개계정을_이미팔로우중이면_취소된다() {
+        void 비공개계정을_이미팔로우중이면_취소한다() {
             // given
             followRepository.save(Follow.createFollow(me, privateUser));
 

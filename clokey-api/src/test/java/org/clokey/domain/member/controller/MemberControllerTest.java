@@ -228,7 +228,7 @@ class MemberControllerTest {
     }
 
     @Nested
-    class 팔로우_API_호출_시 {
+    class 팔로우_요청_시 {
 
         @Test
         void 유효한_요청이면_성공코드를_반환한다() throws Exception {
