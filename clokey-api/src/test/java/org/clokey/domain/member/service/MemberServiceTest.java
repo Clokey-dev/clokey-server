@@ -201,7 +201,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 공개계정을_이미팔로우중이면_취소된다() {
             // given
-            followRepository.save(Follow.createFollow(publicUser, me));
+            followRepository.save(Follow.createFollow(me, publicUser));
 
             // when
             memberService.follow(2L);
