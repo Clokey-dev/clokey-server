@@ -69,11 +69,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void follow(String clokeyId) {
+    public void follow(Long memberId) {
         final Member followFrom = memberUtil.getCurrentMember();
         final Member followTo =
                 memberRepository
-                        .findByClokeyId(clokeyId)
+                        .findById(memberId)
                         .orElseThrow(
                                 () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
 

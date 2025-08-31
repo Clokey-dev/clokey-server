@@ -10,9 +10,13 @@ import org.clokey.TransactionUtil;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
+import org.clokey.domain.member.repository.FollowRepository;
+import org.clokey.domain.member.repository.FollowRequestRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
+import org.clokey.member.entity.Follow;
+import org.clokey.member.entity.FollowRequest;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.MemberStatus;
@@ -31,6 +35,8 @@ class MemberServiceTest extends IntegrationTest {
 
     @Autowired private MemberService memberService;
     @Autowired private MemberRepository memberRepository;
+    @Autowired private FollowRepository followRepository;
+    @Autowired private FollowRequestRepository followRequestRepository;
 
     @Autowired private TransactionUtil transactionUtil;
     @MockitoBean private MemberUtil memberUtil;
@@ -108,7 +114,7 @@ class MemberServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class 아이디_중복_확인_시 {
+    class 아이디_중복을_확인할_때 {
 
         @BeforeEach
         void setUp() {
@@ -146,6 +152,91 @@ class MemberServiceTest extends IntegrationTest {
 
             // when& then
             assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isTrue();
+        }
+    }
+
+    @Nested
+    class 팔로우_언팔로우_할_때 {
+
+        Member me;
+        Member publicUser;
+        Member privateUser;
+
+        @BeforeEach
+        void setUp() {
+            me =
+                    Member.createMember(
+                            "me@test.com",
+                            "meId",
+                            "me",
+                            OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
+            publicUser =
+                    Member.createMember(
+                            "public@test.com",
+                            "publicId",
+                            "pub",
+                            OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
+
+            privateUser =
+                    Member.createMember(
+                            "private@test.com",
+                            "privateId",
+                            "pri",
+                            OauthInfo.createOauthInfo("priOauth", OauthProvider.KAKAO));
+            privateUser.changeVisibility();
+
+            memberRepository.saveAll(List.of(me, publicUser, privateUser));
+            given(memberUtil.getCurrentMember()).willReturn(me);
+        }
+
+        @Test
+        void 공개계정은_팔로우_엔티티가_추가된다() {
+            // when
+            memberService.follow(2L);
+
+            // then
+            assertThat(followRepository.existsByFollowFromIdAndFollowToId(1L, 2L)).isTrue();
+        }
+
+        @Test
+        void 공개계정은_이미팔로우중이면_언팔로우된다() {
+            // given
+            followRepository.save(Follow.createFollow(me, publicUser));
+
+            // when
+            memberService.follow(2L);
+
+            // then
+            assertThat(followRepository.existsByFollowFromIdAndFollowToId(1L, 2L)).isFalse();
+        }
+
+        @Test
+        void 비공개계정은_팔로우요청이_추가된다() {
+            // when
+            memberService.follow(3L);
+
+            // then
+            assertThat(followRequestRepository.existsByFromMemberIdAndToMemberId(1L, 3L)).isTrue();
+        }
+
+        @Test
+        void 비공개계정은_이미요청중이면_취소된다() {
+            // given
+            followRequestRepository.save(FollowRequest.createFollowRequest(me, privateUser));
+
+            // when
+            memberService.follow(3L);
+
+            // then
+            assertThat(followRequestRepository.existsByFromMemberIdAndToMemberId(1L, 3L)).isFalse();
+        }
+
+        @Test
+        void 자기자신은_팔로우할수없다() {
+            // when & then
+            assertThatThrownBy(() -> memberService.follow(1L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
         }
     }
 }

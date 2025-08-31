@@ -10,5 +10,5 @@ public interface MemberService {
 
     DuplicatedIdCheckResponse checkDuplicateClokeyId(DuplicatedIdCheckRequest request);
 
-    void follow(String clokeyId);
+    void follow(Long memberId);
 }

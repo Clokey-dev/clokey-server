@@ -3,6 +3,7 @@ package org.clokey.domain.member.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
@@ -42,13 +43,11 @@ public class MemberController {
     @Operation(
             summary = "팔로우 API",
             description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
-    public BaseResponse<Void> follow(@RequestParam("clokeyId") String clokeyId) {
+    public BaseResponse<Void> follow(@RequestParam("memberId") @NotNull Long memberId) {
 
-        memberService.follow(clokeyId);
+        memberService.follow(memberId);
 
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, null);
     }
-    // 비공개 사용자에게 팔로우시 추가적인 요소를 반환해야?
-    // 클로키아이디가 아닌 멤버ID를 받아야?
-    // 차단한 회원의 팔로우시? 추후구현?
+    // 차단한 회원의 팔로우시 추후구현?
 }

@@ -226,4 +226,46 @@ class MemberControllerTest {
                                     .value("Clokey ID는 영어 소문자, 숫자, 언더바(_), 점(.)만 허용됩니다."));
         }
     }
+
+    @Nested
+    class 팔로우_API_호출_시 {
+
+        @Test
+        void 유효한_요청이면_성공코드를_반환한다() throws Exception {
+            // given
+            long targetId = 1L;
+
+            willDoNothing().given(memberService).follow(targetId);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/follow")
+                                    .param("memberId", String.valueOf(targetId))
+                                    .contentType(MediaType.APPLICATION_JSON));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result").doesNotExist());
+        }
+    }
+
+    @Test
+    void memberId가_null이면_예외가_발생한다() throws Exception {
+        // when
+        ResultActions perform =
+                mockMvc.perform(
+                        post("/users/follow")
+                                .param("memberId", "")
+                                .contentType(MediaType.APPLICATION_JSON));
+
+        // then
+        perform.andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.isSuccess").value(false))
+                .andExpect(jsonPath("$.code").value("COMMON400"))
+                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+    }
 }
