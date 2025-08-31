@@ -195,19 +195,19 @@ class MemberServiceTest extends IntegrationTest {
             memberService.follow(2L);
 
             // then
-            assertThat(followRepository.existsByFollowFromIdAndFollowToId(1L, 2L)).isTrue();
+            assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 2L)).isTrue();
         }
 
         @Test
         void 공개계정은_이미팔로우중이면_언팔로우된다() {
             // given
-            followRepository.save(Follow.createFollow(me, publicUser));
+            followRepository.save(Follow.createFollow(publicUser, me));
 
             // when
             memberService.follow(2L);
 
             // then
-            assertThat(followRepository.existsByFollowFromIdAndFollowToId(1L, 2L)).isFalse();
+            assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 2L)).isFalse();
         }
 
         @Test
@@ -216,19 +216,21 @@ class MemberServiceTest extends IntegrationTest {
             memberService.follow(3L);
 
             // then
-            assertThat(followRequestRepository.existsByFromMemberIdAndToMemberId(1L, 3L)).isTrue();
+            assertThat(followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
+                    .isTrue();
         }
 
         @Test
         void 비공개계정은_이미요청중이면_취소된다() {
             // given
-            followRequestRepository.save(FollowRequest.createFollowRequest(me, privateUser));
+            followRequestRepository.save(FollowRequest.createFollowRequest(privateUser, me));
 
             // when
             memberService.follow(3L);
 
             // then
-            assertThat(followRequestRepository.existsByFromMemberIdAndToMemberId(1L, 3L)).isFalse();
+            assertThat(followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
+                    .isFalse();
         }
 
         @Test

@@ -82,27 +82,27 @@ public class MemberServiceImpl implements MemberService {
         }
 
         if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
-            if (followRequestRepository.existsByFromMemberIdAndToMemberId(
+            if (followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(
                     followFrom.getId(), followTo.getId())) {
 
-                followRequestRepository.deleteByFromMemberIdAndToMemberId(
+                followRequestRepository.deleteByFollowFrom_IdAndFollowTo_Id(
                         followFrom.getId(), followTo.getId());
 
             } else {
                 FollowRequest followRequest =
-                        FollowRequest.createFollowRequest(followFrom, followTo);
+                        FollowRequest.createFollowRequest(followTo, followFrom);
 
                 followRequestRepository.save(followRequest);
             }
         } else {
-            if (followRepository.existsByFollowFromIdAndFollowToId(
+            if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
                     followFrom.getId(), followTo.getId())) {
 
-                followRepository.deleteByFollowFromIdAndFollowToId(
+                followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
                         followFrom.getId(), followTo.getId());
 
             } else {
-                Follow follow = Follow.createFollow(followFrom, followTo);
+                Follow follow = Follow.createFollow(followTo, followFrom);
 
                 followRepository.save(follow);
             }
