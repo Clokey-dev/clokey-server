@@ -190,7 +190,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 공개계정은_팔로우_엔티티가_추가된다() {
+        void 공개계정을_팔로우하면_팔로우가_추가된다() {
             // when
             memberService.follow(2L);
 
@@ -199,7 +199,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 공개계정은_이미팔로우중이면_언팔로우된다() {
+        void 공개계정을_이미팔로우중이면_취소된다() {
             // given
             followRepository.save(Follow.createFollow(publicUser, me));
 
@@ -211,7 +211,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 비공개계정은_팔로우요청이_추가된다() {
+        void 비공개계정을_팔로우하면_팔로우요청이_추가된다() {
             // when
             memberService.follow(3L);
 
@@ -221,7 +221,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 비공개계정은_이미요청중이면_취소된다() {
+        void 비공개계정을_이미요청중이면_취소된다() {
             // given
             followRequestRepository.save(FollowRequest.createFollowRequest(privateUser, me));
 
@@ -234,7 +234,19 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 자기자신은_팔로우할수없다() {
+        void 비공개계정을_이미팔로우중이면_취소된다() {
+            // given
+            followRepository.save(Follow.createFollow(privateUser, me));
+
+            // when
+            memberService.follow(3L);
+
+            // then
+            assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L)).isFalse();
+        }
+
+        @Test
+        void 자기자신을_팔로우하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> memberService.follow(1L))
                     .isInstanceOf(BaseCustomException.class)

@@ -88,6 +88,12 @@ public class MemberServiceImpl implements MemberService {
                 followRequestRepository.deleteByFollowFrom_IdAndFollowTo_Id(
                         followFrom.getId(), followTo.getId());
 
+            } else if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
+                    followFrom.getId(), followTo.getId())) {
+
+                followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
+                        followFrom.getId(), followTo.getId());
+
             } else {
                 FollowRequest followRequest =
                         FollowRequest.createFollowRequest(followTo, followFrom);
