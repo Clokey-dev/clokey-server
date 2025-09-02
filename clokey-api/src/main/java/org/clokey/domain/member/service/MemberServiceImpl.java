@@ -58,6 +58,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional
     public void toggleBlockStatus(Long memberId) {
         final Member blocker = memberUtil.getCurrentMember();
         final Member blocked = getMemberById(memberId);
