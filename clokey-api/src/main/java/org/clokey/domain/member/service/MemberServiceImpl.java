@@ -59,26 +59,18 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void toggleBlockStatus(Long memberId) {
-        final Member currentMember = memberUtil.getCurrentMember();
+        final Member blocker = memberUtil.getCurrentMember();
+        final Member blocked = getMemberById(memberId);
 
-        validateSelfBlock(currentMember.getId(), memberId);
+        validateSelfBlock(blocker.getId(), blocked.getId());
 
         Optional<Block> existingBlock =
-                blockRepository.findByBlockerIdAndBlockedId(currentMember.getId(), memberId);
+                blockRepository.findByBlockerIdAndBlockedId(blocker.getId(), blocked.getId());
 
         if (existingBlock.isPresent()) {
             blockRepository.delete(existingBlock.get());
         } else {
-            final Member blocked =
-                    memberRepository
-                            .findById(memberId)
-                            .orElseThrow(
-                                    () ->
-                                            new BaseCustomException(
-                                                    MemberErrorCode.MEMBER_NOT_FOUND));
-
-            Block block = Block.createBlock(currentMember, blocked);
-
+            Block block = Block.createBlock(blocker, blocked);
             blockRepository.save(block);
         }
     }
@@ -95,5 +87,11 @@ public class MemberServiceImpl implements MemberService {
         if (blockerId.equals(blockedId)) {
             throw new BaseCustomException(MemberErrorCode.SELF_BLOCK_UNAVAILABLE);
         }
+    }
+
+    private Member getMemberById(Long memberId) {
+        return memberRepository
+                .findById(memberId)
+                .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }
