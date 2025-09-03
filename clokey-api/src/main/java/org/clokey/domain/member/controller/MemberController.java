@@ -38,9 +38,9 @@ public class MemberController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 
-    @PostMapping("/block/{userId}")
+    @PostMapping("/block/{memberId}")
     @Operation(summary = "차단 토글 API", description = "차단 상태를 변경합니다.")
-    public BaseResponse<Void> toggleBlockStatus(@PathVariable("userId") Long memberId) {
+    public BaseResponse<Void> toggleBlockStatus(@PathVariable Long memberId) {
         memberService.toggleBlockStatus(memberId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
