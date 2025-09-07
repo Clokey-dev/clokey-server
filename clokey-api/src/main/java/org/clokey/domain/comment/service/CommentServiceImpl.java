@@ -116,6 +116,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteComment(Long commentId) {
         final Member currentMember = memberUtil.getCurrentMember();
         final Comment comment = getCommentById(commentId);
@@ -126,6 +127,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    @Transactional
     public void deleteReply(Long commentId, Long replyId) {
         final Member currentMember = memberUtil.getCurrentMember();
         final Reply reply = getReplyById(replyId);
