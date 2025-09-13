@@ -157,26 +157,22 @@ class MemberServiceTest extends IntegrationTest {
     @Nested
     class 팔로우_언팔로우_할_때 {
 
-        Member me;
-        Member publicUser;
-        Member privateUser;
-
         @BeforeEach
         void setUp() {
-            me =
+            Member me =
                     Member.createMember(
                             "me@test.com",
                             "meId",
                             "me",
                             OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
-            publicUser =
+            Member publicUser =
                     Member.createMember(
                             "public@test.com",
                             "publicId",
                             "pub",
                             OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
 
-            privateUser =
+            Member privateUser =
                     Member.createMember(
                             "private@test.com",
                             "privateId",
@@ -191,7 +187,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 공개계정을_팔로우하면_팔로우를_추가한다() {
             // when
-            memberService.follow(2L);
+            memberService.toggleFollow(2L);
 
             // then
             assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 2L)).isTrue();
@@ -200,10 +196,13 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 공개계정을_이미팔로우중이면_취소한다() {
             // given
-            followRepository.save(Follow.createFollow(me, publicUser));
+            followRepository.save(
+                    Follow.createFollow(
+                            memberRepository.findById(1L).orElseThrow(),
+                            memberRepository.findById(2L).orElseThrow()));
 
             // when
-            memberService.follow(2L);
+            memberService.toggleFollow(2L);
 
             // then
             assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 2L)).isFalse();
@@ -212,7 +211,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 비공개계정을_팔로우하면_팔로우요청을_추가한다() {
             // when
-            memberService.follow(3L);
+            memberService.togglePendingFollow(3L);
 
             // then
             assertThat(followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
@@ -222,10 +221,13 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 비공개계정을_이미요청중이면_취소한다() {
             // given
-            followRequestRepository.save(PendingFollow.createFollowRequest(me, privateUser));
+            followRequestRepository.save(
+                    PendingFollow.createPendingFollow(
+                            memberRepository.findById(1L).orElseThrow(),
+                            memberRepository.findById(3L).orElseThrow()));
 
             // when
-            memberService.follow(3L);
+            memberService.togglePendingFollow(3L);
 
             // then
             assertThat(followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
@@ -235,19 +237,30 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 비공개계정을_이미팔로우중이면_취소한다() {
             // given
-            followRepository.save(Follow.createFollow(me, privateUser));
+            followRepository.save(
+                    Follow.createFollow(
+                            memberRepository.findById(1L).orElseThrow(),
+                            memberRepository.findById(3L).orElseThrow()));
 
             // when
-            memberService.follow(3L);
+            memberService.togglePendingFollow(3L);
 
             // then
             assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L)).isFalse();
         }
 
         @Test
-        void 자기자신을_팔로우하면_예외가_발생한다() {
+        void 자기자신의_공개계정을_팔로우하면_예외가_발생한다() {
             // when & then
-            assertThatThrownBy(() -> memberService.follow(1L))
+            assertThatThrownBy(() -> memberService.toggleFollow(1L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
+        }
+
+        @Test
+        void 자기자신의_비공개계정을_팔로우하면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> memberService.togglePendingFollow(1L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
         }
