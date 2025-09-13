@@ -71,15 +71,9 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void toggleFollow(Long userId) {
         final Member followFrom = memberUtil.getCurrentMember();
-        final Member followTo =
-                memberRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+        final Member followTo = getMemberById(userId);
 
-        if (followFrom.getId().equals(followTo.getId())) {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
-        }
+        validateFollowMyself(followFrom, followTo);
 
         if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
             throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_PRIVATE);
@@ -102,15 +96,9 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void toggleFollowRequest(Long userId) {
         final Member followFrom = memberUtil.getCurrentMember();
-        final Member followTo =
-                memberRepository
-                        .findById(userId)
-                        .orElseThrow(
-                                () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+        final Member followTo = getMemberById(userId);
 
-        if (followFrom.getId().equals(followTo.getId())) {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
-        }
+        validateFollowMyself(followFrom, followTo);
 
         if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
             if (followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(
@@ -133,6 +121,18 @@ public class MemberServiceImpl implements MemberService {
             }
         } else {
             throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOWREQUEST_PUBLIC);
+        }
+    }
+
+    private Member getMemberById(Long memberId) {
+        return memberRepository
+                .findById(memberId)
+                .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private void validateFollowMyself(Member followFrom, Member followTo) {
+        if (followFrom.getId().equals(followTo.getId())) {
+            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
         }
     }
 }
