@@ -3,7 +3,6 @@ package org.clokey.domain.member.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
@@ -43,11 +42,11 @@ public class MemberController {
     @Operation(
             summary = "팔로우 API",
             description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
-    public BaseResponse<Void> toggleFollow(@RequestParam("memberId") @NotNull Long memberId) {
+    public BaseResponse<Void> toggleFollow(@RequestParam("userId") Long userId) {
 
-        memberService.toggleFollow(memberId);
+        memberService.toggleFollow(userId);
 
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, null);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 
     // 차단한 회원의 팔로우시 추후구현?
@@ -56,11 +55,10 @@ public class MemberController {
     @Operation(
             summary = "팔로우 API",
             description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
-    public BaseResponse<Void> toggleFollowRequest(
-            @RequestParam("memberId") @NotNull Long memberId) {
+    public BaseResponse<Void> toggleFollowRequest(@RequestParam("userId") Long userId) {
 
-        memberService.toggleFollowRequest(memberId);
+        memberService.toggleFollowRequest(userId);
 
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, null);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

@@ -69,11 +69,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void toggleFollow(Long memberId) {
+    public void toggleFollow(Long userId) {
         final Member followFrom = memberUtil.getCurrentMember();
         final Member followTo =
                 memberRepository
-                        .findById(memberId)
+                        .findById(userId)
                         .orElseThrow(
                                 () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -100,11 +100,11 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void toggleFollowRequest(Long memberId) {
+    public void toggleFollowRequest(Long userId) {
         final Member followFrom = memberUtil.getCurrentMember();
         final Member followTo =
                 memberRepository
-                        .findById(memberId)
+                        .findById(userId)
                         .orElseThrow(
                                 () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
 
