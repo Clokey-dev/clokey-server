@@ -69,7 +69,38 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void follow(Long memberId) {
+    public void toggleFollow(Long memberId) {
+        final Member followFrom = memberUtil.getCurrentMember();
+        final Member followTo =
+                memberRepository
+                        .findById(memberId)
+                        .orElseThrow(
+                                () -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        if (followFrom.getId().equals(followTo.getId())) {
+            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
+        }
+
+        if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
+            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_PRIVATE);
+        } else {
+            if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
+                    followFrom.getId(), followTo.getId())) {
+
+                followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
+                        followFrom.getId(), followTo.getId());
+
+            } else {
+                Follow follow = Follow.createFollow(followFrom, followTo);
+
+                followRepository.save(follow);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void toggleFollowRequest(Long memberId) {
         final Member followFrom = memberUtil.getCurrentMember();
         final Member followTo =
                 memberRepository
@@ -101,17 +132,7 @@ public class MemberServiceImpl implements MemberService {
                 followRequestRepository.save(followRequest);
             }
         } else {
-            if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId())) {
-
-                followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                        followFrom.getId(), followTo.getId());
-
-            } else {
-                Follow follow = Follow.createFollow(followFrom, followTo);
-
-                followRepository.save(follow);
-            }
+            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOWREQUEST_PUBLIC);
         }
     }
 }

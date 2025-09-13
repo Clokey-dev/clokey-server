@@ -10,5 +10,7 @@ public interface MemberService {
 
     DuplicatedIdCheckResponse checkDuplicateClokeyId(DuplicatedIdCheckRequest request);
 
-    void follow(Long memberId);
+    void toggleFollow(Long memberId);
+
+    void toggleFollowRequest(Long memberId);
 }
