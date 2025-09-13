@@ -8,10 +8,10 @@ import lombok.*;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
-        name = "follow_request",
+        name = "pending_follow",
         uniqueConstraints = {
             @UniqueConstraint(
-                    name = "uk_follow_request_to_id_from_id",
+                    name = "uk_pending_follow_to_id_from_id",
                     columnNames = {"follow_to_id", "follow_from_id"})
         })
 public class PendingFollow {

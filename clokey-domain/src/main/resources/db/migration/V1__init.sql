@@ -253,7 +253,6 @@ CREATE TABLE pending_follow (
 );
 
 
-
 CREATE TABLE clokey_notification (
                                      id BIGINT AUTO_INCREMENT PRIMARY KEY,
                                      content VARCHAR(50) NOT NULL,

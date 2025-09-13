@@ -241,15 +241,14 @@ class MemberControllerTest {
             ResultActions perform =
                     mockMvc.perform(
                             post("/users/follow")
-                                    .param("memberId", String.valueOf(targetId))
+                                    .param("userId", String.valueOf(targetId))
                                     .contentType(MediaType.APPLICATION_JSON));
 
             // then
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andExpect(jsonPath("$.code").value("COMMON200"))
-                    .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
         }
     }
 
@@ -266,16 +265,15 @@ class MemberControllerTest {
             // when
             ResultActions perform =
                     mockMvc.perform(
-                            post("/users/follow")
-                                    .param("memberId", String.valueOf(targetId))
+                            post("/users/pending-follow")
+                                    .param("userId", String.valueOf(targetId))
                                     .contentType(MediaType.APPLICATION_JSON));
 
             // then
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andExpect(jsonPath("$.code").value("COMMON200"))
-                    .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result").doesNotExist());
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
         }
     }
 }
