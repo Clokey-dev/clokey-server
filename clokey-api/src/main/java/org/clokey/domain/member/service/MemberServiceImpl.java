@@ -27,7 +27,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
-    private final PendingFollowRepository followRequestRepository;
+    private final PendingFollowRepository pendingFollowRepository;
 
     @Override
     @Transactional
@@ -101,10 +101,10 @@ public class MemberServiceImpl implements MemberService {
         validateFollowMyself(followFrom, followTo);
 
         if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
-            if (followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(
+            if (pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(
                     followFrom.getId(), followTo.getId())) {
 
-                followRequestRepository.deleteByFollowFrom_IdAndFollowTo_Id(
+                pendingFollowRepository.deleteByFollowFrom_IdAndFollowTo_Id(
                         followFrom.getId(), followTo.getId());
 
             } else if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
@@ -114,13 +114,13 @@ public class MemberServiceImpl implements MemberService {
                         followFrom.getId(), followTo.getId());
 
             } else {
-                PendingFollow followRequest =
+                PendingFollow pendingFollow =
                         PendingFollow.createPendingFollow(followFrom, followTo);
 
-                followRequestRepository.save(followRequest);
+                pendingFollowRepository.save(pendingFollow);
             }
         } else {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOWREQUEST_PUBLIC);
+            throw new BaseCustomException(MemberErrorCode.CANNOT_PENDING_FOLLOW_PUBLIC);
         }
     }
 

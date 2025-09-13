@@ -23,24 +23,20 @@ public class PendingFollow {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follow_to_id")
     @NotNull
-    private Member pendingFollowTo;
+    private Member followTo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follow_from_id")
     @NotNull
-    private Member pendingFollowFrom;
+    private Member followFrom;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public PendingFollow(Member pendingFollowTo, Member pendingFollowFrom) {
-        this.pendingFollowTo = pendingFollowTo;
-        this.pendingFollowFrom = pendingFollowFrom;
+    public PendingFollow(Member followTo, Member followFrom) {
+        this.followTo = followTo;
+        this.followFrom = followFrom;
     }
 
-    public static PendingFollow createPendingFollow(
-            Member pendingFollowFrom, Member pendingFollowTo) {
-        return PendingFollow.builder()
-                .pendingFollowFrom(pendingFollowFrom)
-                .pendingFollowTo(pendingFollowTo)
-                .build();
+    public static PendingFollow createPendingFollow(Member followFrom, Member followTo) {
+        return PendingFollow.builder().followFrom(followFrom).followTo(followTo).build();
     }
 }

@@ -35,7 +35,7 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired private MemberService memberService;
     @Autowired private MemberRepository memberRepository;
     @Autowired private FollowRepository followRepository;
-    @Autowired private PendingFollowRepository followRequestRepository;
+    @Autowired private PendingFollowRepository pendingFollowRepository;
 
     @Autowired private TransactionUtil transactionUtil;
     @MockitoBean private MemberUtil memberUtil;
@@ -214,14 +214,14 @@ class MemberServiceTest extends IntegrationTest {
             memberService.togglePendingFollow(3L);
 
             // then
-            assertThat(followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
+            assertThat(pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
                     .isTrue();
         }
 
         @Test
         void 비공개계정을_이미요청중이면_취소한다() {
             // given
-            followRequestRepository.save(
+            pendingFollowRepository.save(
                     PendingFollow.createPendingFollow(
                             memberRepository.findById(1L).orElseThrow(),
                             memberRepository.findById(3L).orElseThrow()));
@@ -230,7 +230,7 @@ class MemberServiceTest extends IntegrationTest {
             memberService.togglePendingFollow(3L);
 
             // then
-            assertThat(followRequestRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
+            assertThat(pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
                     .isFalse();
         }
 
