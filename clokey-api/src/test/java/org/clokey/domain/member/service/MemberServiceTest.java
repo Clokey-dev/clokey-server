@@ -3,7 +3,6 @@ package org.clokey.domain.member.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
-import java.awt.*;
 import java.util.List;
 import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
@@ -11,14 +10,14 @@ import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.FollowRepository;
-import org.clokey.domain.member.repository.FollowRequestRepository;
 import org.clokey.domain.member.repository.MemberRepository;
+import org.clokey.domain.member.repository.PendingFollowRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Follow;
-import org.clokey.member.entity.FollowRequest;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
+import org.clokey.member.entity.PendingFollow;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.OauthProvider;
 import org.clokey.member.enums.Visibility;
@@ -36,7 +35,7 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired private MemberService memberService;
     @Autowired private MemberRepository memberRepository;
     @Autowired private FollowRepository followRepository;
-    @Autowired private FollowRequestRepository followRequestRepository;
+    @Autowired private PendingFollowRepository followRequestRepository;
 
     @Autowired private TransactionUtil transactionUtil;
     @MockitoBean private MemberUtil memberUtil;
@@ -223,7 +222,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 비공개계정을_이미요청중이면_취소한다() {
             // given
-            followRequestRepository.save(FollowRequest.createFollowRequest(me, privateUser));
+            followRequestRepository.save(PendingFollow.createFollowRequest(me, privateUser));
 
             // when
             memberService.follow(3L);

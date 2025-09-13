@@ -12,5 +12,5 @@ public interface MemberService {
 
     void toggleFollow(Long userId);
 
-    void toggleFollowRequest(Long userId);
+    void togglePendingFollow(Long userId);
 }

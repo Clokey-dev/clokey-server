@@ -14,7 +14,7 @@ import lombok.*;
                     name = "uk_follow_request_to_id_from_id",
                     columnNames = {"follow_to_id", "follow_from_id"})
         })
-public class FollowRequest {
+public class PendingFollow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,20 +23,24 @@ public class FollowRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follow_to_id")
     @NotNull
-    private Member followTo;
+    private Member pendingFollowTo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follow_from_id")
     @NotNull
-    private Member followFrom;
+    private Member pendingFollowFrom;
 
     @Builder(access = AccessLevel.PRIVATE)
-    public FollowRequest(Member followTo, Member followFrom) {
-        this.followTo = followTo;
-        this.followFrom = followFrom;
+    public PendingFollow(Member pendingFollowTo, Member pendingFollowFrom) {
+        this.pendingFollowTo = pendingFollowTo;
+        this.pendingFollowFrom = pendingFollowFrom;
     }
 
-    public static FollowRequest createFollowRequest(Member followFrom, Member followTo) {
-        return FollowRequest.builder().followFrom(followFrom).followTo(followTo).build();
+    public static PendingFollow createPendingFollow(
+            Member pendingFollowFrom, Member pendingFollowTo) {
+        return PendingFollow.builder()
+                .pendingFollowFrom(pendingFollowFrom)
+                .pendingFollowTo(pendingFollowTo)
+                .build();
     }
 }

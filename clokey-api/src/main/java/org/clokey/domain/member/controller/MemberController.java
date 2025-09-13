@@ -55,9 +55,9 @@ public class MemberController {
     @Operation(
             summary = "팔로우 API",
             description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
-    public BaseResponse<Void> toggleFollowRequest(@RequestParam("userId") Long userId) {
+    public BaseResponse<Void> togglePendingFollow(@RequestParam("userId") Long userId) {
 
-        memberService.toggleFollowRequest(userId);
+        memberService.togglePendingFollow(userId);
 
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }

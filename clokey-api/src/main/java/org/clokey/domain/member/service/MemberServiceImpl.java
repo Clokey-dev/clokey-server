@@ -6,13 +6,13 @@ import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.FollowRepository;
-import org.clokey.domain.member.repository.FollowRequestRepository;
 import org.clokey.domain.member.repository.MemberRepository;
+import org.clokey.domain.member.repository.PendingFollowRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Follow;
-import org.clokey.member.entity.FollowRequest;
 import org.clokey.member.entity.Member;
+import org.clokey.member.entity.PendingFollow;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
-    private final FollowRequestRepository followRequestRepository;
+    private final PendingFollowRepository followRequestRepository;
 
     @Override
     @Transactional
@@ -94,7 +94,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional
-    public void toggleFollowRequest(Long userId) {
+    public void togglePendingFollow(Long userId) {
         final Member followFrom = memberUtil.getCurrentMember();
         final Member followTo = getMemberById(userId);
 
@@ -114,8 +114,8 @@ public class MemberServiceImpl implements MemberService {
                         followFrom.getId(), followTo.getId());
 
             } else {
-                FollowRequest followRequest =
-                        FollowRequest.createFollowRequest(followFrom, followTo);
+                PendingFollow followRequest =
+                        PendingFollow.createPendingFollow(followFrom, followTo);
 
                 followRequestRepository.save(followRequest);
             }
