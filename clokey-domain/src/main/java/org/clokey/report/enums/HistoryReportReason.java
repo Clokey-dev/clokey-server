@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public enum HistoryReportType {
+public enum HistoryReportReason {
     SEXUAL("음란물, 또는 선정적인 내용입니다.", List.of("성적인 묘사, 이미지·영상 포함", "노출이 과도한 사진 또는 부적절한 설명 포함")),
     VIOLENT(
             "폭력적이거나 불법적인 내용을 포함하고 있습니다",
