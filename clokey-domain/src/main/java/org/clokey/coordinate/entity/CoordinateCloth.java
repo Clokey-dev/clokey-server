@@ -24,7 +24,9 @@ public class CoordinateCloth extends BaseEntity {
 
     @Positive @NotNull private Double ratio;
 
-    @NotNull private int order;
+    @NotNull
+    @Column(name = "`order`")
+    private int order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coordinate_id")

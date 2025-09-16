@@ -35,7 +35,7 @@ public class CoordinateServiceImpl implements CoordinateService {
     private final CoordinateRepository coordinateRepository;
     private final ClothRepository clothRepository;
     private final CoordinateClothRepository coordinateClothRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional
@@ -51,13 +51,14 @@ public class CoordinateServiceImpl implements CoordinateService {
                         .stream()
                         .collect(Collectors.toMap(Cloth::getId, Function.identity()));
 
+        validateAllClothesExist(request, clothMap);
+
         final List<Cloth> clothes =
                 request.payloads().stream()
                         .map(payload -> clothMap.get(payload.clothId()))
                         .toList();
 
         validateDuplicatedClothes(clothes);
-        validateAllClothesExist(request, clothes);
         validateAllClothesOwnership(currentMember, clothes);
         validateDailyCoordinateExist(currentMember.getId(), LocalDate.now());
 
@@ -85,8 +86,13 @@ public class CoordinateServiceImpl implements CoordinateService {
     }
 
     private void validateAllClothesExist(
-            DailyCoordinateCreateRequest request, List<Cloth> clothes) {
-        if (!Objects.equals(request.payloads().size(), clothes.size())) {
+            DailyCoordinateCreateRequest request, Map<Long, Cloth> clothMap) {
+        boolean hasMissing =
+                request.payloads().stream()
+                        .map(DailyCoordinateCreateRequest.Payload::clothId)
+                        .anyMatch(clothId -> !clothMap.containsKey(clothId));
+
+        if (hasMissing) {
             throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
         }
     }
@@ -107,9 +113,19 @@ public class CoordinateServiceImpl implements CoordinateService {
         }
     }
 
+    private void validateDuplicatedClothes(List<Cloth> clothes) {
+        List<Long> clothIds = clothes.stream().map(Cloth::getId).toList();
+
+        Set<Long> uniqueIds = new HashSet<>(clothIds);
+        if (uniqueIds.size() != clothIds.size()) {
+            throw new BaseCustomException(ClothErrorCode.DUPLICATED_CLOTH);
+        }
+    }
+
     private Long getDailyCoordinateId(Long memberId, LocalDate date) {
         String key = String.format("dailyCoordinate:%d:%s", memberId, date);
-        return (Long) redisTemplate.opsForValue().get(key);
+        String value = redisTemplate.opsForValue().get(key);
+        return value != null ? Long.valueOf(value) : null;
     }
 
     private boolean hasDailyCoordinate(Long memberId, LocalDate date) {
@@ -125,14 +141,5 @@ public class CoordinateServiceImpl implements CoordinateService {
         Duration ttl = Duration.between(now, midnight);
 
         redisTemplate.opsForValue().set(key, coordinateId.toString(), ttl);
-    }
-
-    private void validateDuplicatedClothes(List<Cloth> clothes) {
-        List<Long> clothIds = clothes.stream().map(Cloth::getId).toList();
-
-        Set<Long> uniqueIds = new HashSet<>(clothIds);
-        if (uniqueIds.size() != clothIds.size()) {
-            throw new BaseCustomException(ClothErrorCode.DUPLICATED_CLOTH);
-        }
     }
 }
