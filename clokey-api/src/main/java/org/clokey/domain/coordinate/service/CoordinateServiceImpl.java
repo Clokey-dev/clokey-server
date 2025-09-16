@@ -4,20 +4,24 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.coordinate.entity.Coordinate;
+import org.clokey.coordinate.entity.CoordinateCloth;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateCreateResponse;
+import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
+import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,42 +34,105 @@ public class CoordinateServiceImpl implements CoordinateService {
 
     private final CoordinateRepository coordinateRepository;
     private final ClothRepository clothRepository;
+    private final CoordinateClothRepository coordinateClothRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     @Transactional
-    public DailyCoordinateCreateResponse createDailyCoordinate(DailyCoordinateCreateRequest request) {
+    public DailyCoordinateCreateResponse createDailyCoordinate(
+            DailyCoordinateCreateRequest request) {
         final Member currentMember = memberUtil.getCurrentMember();
-        final List<Cloth> clothes = clothRepository.findAllById(request.clothIds());
+        final Map<Long, Cloth> clothMap =
+                clothRepository
+                        .findAllById(
+                                request.payloads().stream()
+                                        .map(DailyCoordinateCreateRequest.Payload::clothId)
+                                        .toList())
+                        .stream()
+                        .collect(Collectors.toMap(Cloth::getId, Function.identity()));
 
+        final List<Cloth> clothes =
+                request.payloads().stream()
+                        .map(payload -> clothMap.get(payload.clothId()))
+                        .toList();
 
+        validateDuplicatedClothes(clothes);
+        validateAllClothesExist(request, clothes);
+        validateAllClothesOwnership(currentMember, clothes);
+        validateDailyCoordinateExist(currentMember.getId(), LocalDate.now());
 
-        validateAllClothesExist(request,clothes);
-        validateAllClothesOwnership(currentMember,clothes);
+        Coordinate coordinate =
+                Coordinate.createDailyCoordinate(request.coordinateImageUrl(), currentMember);
+        coordinateRepository.save(coordinate);
+        saveDailyCoordinateToRedis(currentMember.getId(), coordinate.getId());
 
+        List<CoordinateCloth> coordinateCloths =
+                request.payloads().stream()
+                        .map(
+                                payload ->
+                                        CoordinateCloth.createCoordinateCloth(
+                                                payload.locationX(),
+                                                payload.locationY(),
+                                                payload.ratio(),
+                                                payload.order(),
+                                                coordinate,
+                                                clothMap.get(payload.clothId())))
+                        .toList();
 
-        Coordinate coordinate = Coordinat
+        coordinateClothRepository.saveAll(coordinateCloths);
 
-
-        return null;
+        return DailyCoordinateCreateResponse.from(coordinate);
     }
 
-
-    private void validateAllClothesExist(DailyCoordinateCreateRequest request, List<Cloth> clothes){
-        if(!Objects.equals(request.clothIds().size(),clothes.size())){
+    private void validateAllClothesExist(
+            DailyCoordinateCreateRequest request, List<Cloth> clothes) {
+        if (!Objects.equals(request.payloads().size(), clothes.size())) {
             throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
         }
     }
 
     private void validateAllClothesOwnership(Member member, List<Cloth> clothes) {
-        boolean containsClothesNotMine = clothes.stream()
-                .anyMatch(cloth -> !cloth.getMember().getId().equals(member.getId()));
+        boolean containsClothesNotMine =
+                clothes.stream()
+                        .anyMatch(cloth -> !cloth.getMember().getId().equals(member.getId()));
 
         if (containsClothesNotMine) {
             throw new BaseCustomException(ClothErrorCode.NOT_CLOTH_OWNER);
         }
     }
 
-    private void validateDailyCoordinateExist(){
+    private void validateDailyCoordinateExist(Long memberId, LocalDate date) {
+        if (hasDailyCoordinate(memberId, date)) {
+            throw new BaseCustomException(CoordinateErrorCode.DAILY_COORDINATE_ALREADY_EXISTS);
+        }
+    }
 
+    private Long getDailyCoordinateId(Long memberId, LocalDate date) {
+        String key = String.format("dailyCoordinate:%d:%s", memberId, date);
+        return (Long) redisTemplate.opsForValue().get(key);
+    }
+
+    private boolean hasDailyCoordinate(Long memberId, LocalDate date) {
+        String key = String.format("dailyCoordinate:%d:%s", memberId, date);
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    private void saveDailyCoordinateToRedis(Long memberId, Long coordinateId) {
+        String key = String.format("dailyCoordinate:%d:%s", memberId, LocalDate.now());
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime midnight = LocalDate.now().atTime(LocalTime.MAX);
+        Duration ttl = Duration.between(now, midnight);
+
+        redisTemplate.opsForValue().set(key, coordinateId.toString(), ttl);
+    }
+
+    private void validateDuplicatedClothes(List<Cloth> clothes) {
+        List<Long> clothIds = clothes.stream().map(Cloth::getId).toList();
+
+        Set<Long> uniqueIds = new HashSet<>(clothIds);
+        if (uniqueIds.size() != clothIds.size()) {
+            throw new BaseCustomException(ClothErrorCode.DUPLICATED_CLOTH);
+        }
     }
 }

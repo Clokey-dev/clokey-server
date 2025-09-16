@@ -8,7 +8,7 @@ import org.clokey.exception.BaseErrorCode;
 @Getter
 @AllArgsConstructor
 public enum CoordinateErrorCode implements BaseErrorCode {
-
+    DAILY_COORDINATE_ALREADY_EXISTS(400, "COORDINATE_4001", "오늘의 코디가 이미 존재합니다");
 
     private final int status;
     private final String code;

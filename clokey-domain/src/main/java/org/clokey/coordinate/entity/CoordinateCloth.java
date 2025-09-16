@@ -57,6 +57,8 @@ public class CoordinateCloth extends BaseEntity {
                 .location(Location.createLocation(locationX, locationY))
                 .ratio(ratio)
                 .order(order)
+                .coordinate(coordinate)
+                .cloth(cloth)
                 .build();
     }
 }
