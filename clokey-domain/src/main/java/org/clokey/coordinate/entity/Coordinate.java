@@ -52,7 +52,7 @@ public class Coordinate extends BaseEntity {
         this.member = member;
     }
 
-    public static Coordinate createHomeCoordinate(String imageUrl, Member member) {
+    public static Coordinate createDailyCoordinate(String imageUrl, Member member) {
         return Coordinate.builder().name(null).memo(null).imageUrl(imageUrl).member(member).build();
     }
 }
