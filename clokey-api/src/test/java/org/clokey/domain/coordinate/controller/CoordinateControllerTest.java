@@ -120,7 +120,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, 200.25, 1.0, 1)));
+                                            1L, null, 200.25, 1.0, 1)));
 
             // when & then
             ResultActions perform =
