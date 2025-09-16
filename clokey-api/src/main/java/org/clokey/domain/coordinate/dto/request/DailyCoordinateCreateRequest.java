@@ -18,12 +18,16 @@ public record DailyCoordinateCreateRequest(
             @NotNull(message = "옷 ID는 비워둘 수 없습니다.")
                     @Schema(description = "오늘의 코디에 등록되는 옷ID", example = "1")
                     Long clothId,
-            @NotNull(message = "옷의 x좌표를 비워둘 수 없습니다.") @Schema(description = "오늘의 코디에 등록되는 옷의 X좌표")
+            @NotNull(message = "옷의 x좌표는 비워둘 수 없습니다.")
+                    @Schema(description = "오늘의 코디에 등록되는 옷의 X좌표")
+                    @Positive(message = "옷의 x좌표는 음수일 수 없습니다.")
                     Double locationX,
-            @NotNull(message = "옷의 y좌표를 비워둘 수 없습니다.") @Schema(description = "오늘의 코디에 등록되는 옷의 Y좌표")
+            @NotNull(message = "옷의 y좌표는 비워둘 수 없습니다.")
+                    @Schema(description = "오늘의 코디에 등록되는 옷의 Y좌표")
+                    @Positive(message = "옷의 y좌표는 음수일 수 없습니다.")
                     Double locationY,
-            @NotNull(message = "비율을 비워둘 수 없습니다.")
-                    @Positive(message = "비율은 음수일 수 없습니다.")
+            @NotNull(message = "옷의 비율은 비워둘 수 없습니다.")
+                    @Positive(message = "옷의 비율은 음수일 수 없습니다.")
                     @Schema(description = "오늘의 코디 옷의 크기 비율")
                     Double ratio,
             @NotNull(message = "옷의 순서는 비워둘 수 없습니다.") @Schema(description = "오늘의 코디 옷의 순서")

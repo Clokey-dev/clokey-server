@@ -142,6 +142,24 @@ class CoordinateServiceImplTest extends IntegrationTest {
         }
 
         @Test
+        void 옷의_ORDER가_유효하지_않은_경우_에외가_발생한다() {
+            // given
+            DailyCoordinateCreateRequest request =
+                    new DailyCoordinateCreateRequest(
+                            "testUrl",
+                            List.of(
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 1),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            2L, 100.5, 200.25, 1.0, 3)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.createDailyCoordinate(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.INVALID_ORDER.getMessage());
+        }
+
+        @Test
         void 중복된_옷을_입력하면_예외가_발생한다() {
             // given
             DailyCoordinateCreateRequest request =

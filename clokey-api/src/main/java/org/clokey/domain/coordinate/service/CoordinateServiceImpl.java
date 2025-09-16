@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.coordinate.entity.Coordinate;
@@ -58,6 +59,7 @@ public class CoordinateServiceImpl implements CoordinateService {
                         .map(payload -> clothMap.get(payload.clothId()))
                         .toList();
 
+        validateSequentialOrders(request);
         validateDuplicatedClothes(clothes);
         validateAllClothesOwnership(currentMember, clothes);
         validateDailyCoordinateExist(currentMember.getId(), LocalDate.now());
@@ -119,6 +121,21 @@ public class CoordinateServiceImpl implements CoordinateService {
         Set<Long> uniqueIds = new HashSet<>(clothIds);
         if (uniqueIds.size() != clothIds.size()) {
             throw new BaseCustomException(ClothErrorCode.DUPLICATED_CLOTH);
+        }
+    }
+
+    private void validateSequentialOrders(DailyCoordinateCreateRequest request) {
+        List<Integer> orders =
+                request.payloads().stream()
+                        .map(DailyCoordinateCreateRequest.Payload::order)
+                        .sorted()
+                        .toList();
+
+        boolean isSequential =
+                IntStream.range(0, orders.size()).allMatch(i -> orders.get(i) == i + 1);
+
+        if (!isSequential) {
+            throw new BaseCustomException(CoordinateErrorCode.INVALID_ORDER);
         }
     }
 
