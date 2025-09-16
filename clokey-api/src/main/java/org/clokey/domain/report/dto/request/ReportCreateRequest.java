@@ -7,8 +7,6 @@ import org.clokey.report.enums.ReportReason;
 import org.clokey.report.enums.TargetType;
 
 public record ReportCreateRequest(
-        @NotNull(message = "신고자 ID는 비워둘 수 없습니다.") @Schema(description = "신고자 ID", example = "1")
-                Long reporterId,
         @NotNull(message = "신고 컨텐츠 ID는 비워둘 수 없습니다.")
                 @Schema(description = "신고 컨텐츠 ID", example = "1")
                 Long targetId,
