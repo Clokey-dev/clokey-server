@@ -59,22 +59,23 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void validateTargetExists(TargetType targetType, Long targetId) {
-        switch (targetType) {
-            case COMMENT:
-                if (!commentRepository.existsById(targetId)) {
-                    throw new BaseCustomException(ReportErrorCode.COMMENT_NOT_FOUND);
-                }
-                break;
-            case REPLY:
-                if (!replyRepository.existsById(targetId)) {
-                    throw new BaseCustomException(ReportErrorCode.REPLY_NOT_FOUND);
-                }
-                break;
-            case HISTORY:
-                if (!historyRepository.existsById(targetId)) {
-                    throw new BaseCustomException(ReportErrorCode.HISTORY_NOT_FOUND);
-                }
-                break;
+        boolean exists =
+                switch (targetType) {
+                    case COMMENT -> commentRepository.existsById(targetId);
+                    case REPLY -> replyRepository.existsById(targetId);
+                    case HISTORY -> historyRepository.existsById(targetId);
+                };
+
+        if (!exists) {
+            throw new BaseCustomException(getTargetNotFoundError(targetType));
         }
+    }
+
+    private ReportErrorCode getTargetNotFoundError(TargetType targetType) {
+        return switch (targetType) {
+            case COMMENT -> ReportErrorCode.COMMENT_NOT_FOUND;
+            case REPLY -> ReportErrorCode.REPLY_NOT_FOUND;
+            case HISTORY -> ReportErrorCode.HISTORY_NOT_FOUND;
+        };
     }
 }
