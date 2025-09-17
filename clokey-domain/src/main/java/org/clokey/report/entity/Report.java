@@ -75,4 +75,8 @@ public class Report extends BaseEntity {
         report.reportStatus = ReportStatus.UNCHECKED;
         return report;
     }
+
+    public void updateReportStatus(ReportStatus reportStatus) {
+        this.reportStatus = reportStatus;
+    }
 }
