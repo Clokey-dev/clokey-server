@@ -79,7 +79,20 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Cloth cloth1 = Cloth.createCloth("testImageUrl1", category, member1);
             Cloth cloth2 = Cloth.createCloth("testImageUrl2", category, member1);
             Cloth cloth3 = Cloth.createCloth("testImageUrl3", category, member2);
-            clothRepository.saveAll(List.of(cloth1, cloth2, cloth3));
+
+            Cloth cloth4 = Cloth.createCloth("testImageUrl4", category, member1);
+            Cloth cloth5 = Cloth.createCloth("testImageUrl5", category, member1);
+            Cloth cloth6 = Cloth.createCloth("testImageUrl6", category, member1);
+            Cloth cloth7 = Cloth.createCloth("testImageUrl7", category, member1);
+            Cloth cloth8 = Cloth.createCloth("testImageUrl8", category, member1);
+            Cloth cloth9 = Cloth.createCloth("testImageUrl9", category, member1);
+            Cloth cloth10 = Cloth.createCloth("testImageUrl10", category, member1);
+            Cloth cloth11 = Cloth.createCloth("testImageUrl11", category, member1);
+            Cloth cloth12 = Cloth.createCloth("testImageUrl12", category, member1);
+            clothRepository.saveAll(
+                    List.of(
+                            cloth1, cloth2, cloth3, cloth4, cloth5, cloth6, cloth7, cloth8, cloth9,
+                            cloth10, cloth11, cloth12));
         }
 
         @AfterEach
@@ -156,6 +169,42 @@ class CoordinateServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> coordinateService.createDailyCoordinate(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CoordinateErrorCode.INVALID_ORDER.getMessage());
+        }
+
+        @Test
+        void 옷을_10개_초과로_등록하는_경우_예외가_발생한다() {
+            // given
+            DailyCoordinateCreateRequest request =
+                    new DailyCoordinateCreateRequest(
+                            "testUrl",
+                            List.of(
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 1),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            2L, 100.5, 200.25, 1.0, 2),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            3L, 100.5, 200.25, 1.0, 3),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            4L, 100.5, 200.25, 1.0, 4),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            5L, 100.5, 200.25, 1.0, 5),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            6L, 100.5, 200.25, 1.0, 6),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            7L, 100.5, 200.25, 1.0, 7),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            8L, 100.5, 200.25, 1.0, 8),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            9L, 100.5, 200.25, 1.0, 9),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            10L, 100.5, 200.25, 1.0, 10),
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            11L, 100.5, 200.25, 1.0, 11)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.createDailyCoordinate(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.CLOTHES_OVER_COORDINATION_LIMIT.getMessage());
         }
 
         @Test

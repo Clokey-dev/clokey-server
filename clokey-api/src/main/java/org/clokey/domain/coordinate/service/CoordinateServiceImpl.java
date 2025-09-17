@@ -60,6 +60,7 @@ public class CoordinateServiceImpl implements CoordinateService {
                         .toList();
 
         validateSequentialOrders(request);
+        validateExceedingCoordinationClothesLimit(request);
         validateDuplicatedClothes(clothes);
         validateAllClothesOwnership(currentMember, clothes);
         validateDailyCoordinateExist(currentMember.getId(), LocalDate.now());
@@ -116,12 +117,15 @@ public class CoordinateServiceImpl implements CoordinateService {
     }
 
     private void validateDuplicatedClothes(List<Cloth> clothes) {
-        List<Long> clothIds = clothes.stream().map(Cloth::getId).toList();
-
-        Set<Long> uniqueIds = new HashSet<>(clothIds);
-        if (uniqueIds.size() != clothIds.size()) {
-            throw new BaseCustomException(ClothErrorCode.DUPLICATED_CLOTH);
-        }
+        Set<Long> seen = new HashSet<>();
+        clothes.stream()
+                .map(Cloth::getId)
+                .forEach(
+                        id -> {
+                            if (!seen.add(id)) {
+                                throw new BaseCustomException(ClothErrorCode.DUPLICATED_CLOTH);
+                            }
+                        });
     }
 
     private void validateSequentialOrders(DailyCoordinateCreateRequest request) {
@@ -136,6 +140,12 @@ public class CoordinateServiceImpl implements CoordinateService {
 
         if (!isSequential) {
             throw new BaseCustomException(CoordinateErrorCode.INVALID_ORDER);
+        }
+    }
+
+    private void validateExceedingCoordinationClothesLimit(DailyCoordinateCreateRequest request) {
+        if (request.payloads().size() > 10) {
+            throw new BaseCustomException(CoordinateErrorCode.CLOTHES_OVER_COORDINATION_LIMIT);
         }
     }
 
