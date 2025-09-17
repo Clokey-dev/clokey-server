@@ -70,7 +70,6 @@ class CoordinateServiceImplTest extends IntegrationTest {
                             "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-            member2.changeVisibility();
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
@@ -109,7 +108,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
                             () -> {
                                 Coordinate loadedCoordinate =
                                         coordinateRepository.findById(1L).get();
-                                loadedCoordinate.getCoordinateCloths().get(0);
+                                loadedCoordinate.getCoordinateClothes().get(0);
                                 return loadedCoordinate;
                             });
 
@@ -129,7 +128,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
                                     .extracting("imageUrl", "member.id")
                                     .containsExactly("testUrl", 1L),
                     () ->
-                            assertThat(coordinate.getCoordinateCloths())
+                            assertThat(coordinate.getCoordinateClothes())
                                     .extracting(
                                             cc -> cc.getCloth().getId(),
                                             CoordinateCloth::getOrder,

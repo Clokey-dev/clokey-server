@@ -69,7 +69,7 @@ public class CoordinateServiceImpl implements CoordinateService {
         coordinateRepository.save(coordinate);
         saveDailyCoordinateToRedis(currentMember.getId(), coordinate.getId());
 
-        List<CoordinateCloth> coordinateCloths =
+        List<CoordinateCloth> coordinateClothes =
                 request.payloads().stream()
                         .map(
                                 payload ->
@@ -82,7 +82,7 @@ public class CoordinateServiceImpl implements CoordinateService {
                                                 clothMap.get(payload.clothId())))
                         .toList();
 
-        coordinateClothRepository.saveAll(coordinateCloths);
+        coordinateClothRepository.saveAll(coordinateClothes);
 
         return DailyCoordinateCreateResponse.from(coordinate);
     }

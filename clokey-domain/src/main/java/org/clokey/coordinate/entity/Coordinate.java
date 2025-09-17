@@ -40,7 +40,7 @@ public class Coordinate extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "coordinate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CoordinateCloth> coordinateCloths = new ArrayList<>();
+    private List<CoordinateCloth> coordinateClothes = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     public Coordinate(String name, String memo, String imageUrl, LookBook lookBook, Member member) {
