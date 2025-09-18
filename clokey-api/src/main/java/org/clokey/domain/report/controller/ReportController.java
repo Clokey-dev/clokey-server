@@ -26,6 +26,6 @@ public class ReportController {
     public BaseResponse<ReportCreateResponse> createNewReport(
             @Valid @RequestBody ReportCreateRequest reportCreatRequest) {
         ReportCreateResponse response = reportService.createReport(reportCreatRequest);
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, null);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, response);
     }
 }
