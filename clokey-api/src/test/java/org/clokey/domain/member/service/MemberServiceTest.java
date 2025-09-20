@@ -158,8 +158,7 @@ class MemberServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class 팔로우_언팔로우_할_때 {
-
+    class 공개계정_팔로우_언팔로우_할_때 {
         @BeforeEach
         void setUp() {
             Member me =
@@ -174,7 +173,6 @@ class MemberServiceTest extends IntegrationTest {
                             "publicId",
                             "pub",
                             OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
-
             Member privateUser =
                     Member.createMember(
                             "private@test.com",
@@ -209,6 +207,80 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             assertThat(followRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 2L)).isFalse();
+        }
+
+        @Test
+        void 자기자신의_공개계정을_팔로우하면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> memberService.toggleFollow(1L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
+        }
+
+        @Test
+        void 차단한_사용자를_팔로우하면_예외가_발생한다() {
+            // given
+            blockRepository.save(
+                    Block.createBlock(
+                            memberRepository.findById(1L).orElseThrow(),
+                            memberRepository.findById(2L).orElseThrow()));
+
+            // when & then
+            assertThatThrownBy(() -> memberService.toggleFollow(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_BLOCKED.getMessage());
+        }
+
+        @Test
+        void 차단된_사용자를_팔로우하면_예외가_발생한다() {
+            // given
+            blockRepository.save(
+                    Block.createBlock(
+                            memberRepository.findById(2L).orElseThrow(),
+                            memberRepository.findById(1L).orElseThrow()));
+
+            // when & then
+            assertThatThrownBy(() -> memberService.toggleFollow(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_BLOCKED.getMessage());
+        }
+
+        @Test
+        void 비공개계정을_팔로우하면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> memberService.toggleFollow(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.MUST_REQUEST_FOLLOW.getMessage());
+        }
+    }
+
+    @Nested
+    class 비공개계정_팔로우_언팔로우_할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member me =
+                    Member.createMember(
+                            "me@test.com",
+                            "meId",
+                            "me",
+                            OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
+            Member publicUser =
+                    Member.createMember(
+                            "public@test.com",
+                            "publicId",
+                            "pub",
+                            OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
+            Member privateUser =
+                    Member.createMember(
+                            "private@test.com",
+                            "privateId",
+                            "pri",
+                            OauthInfo.createOauthInfo("priOauth", OauthProvider.KAKAO));
+            privateUser.changeVisibility();
+
+            memberRepository.saveAll(List.of(me, publicUser, privateUser));
+            given(memberUtil.getCurrentMember()).willReturn(me);
         }
 
         @Test
@@ -253,19 +325,50 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 자기자신의_공개계정을_팔로우하면_예외가_발생한다() {
-            // when & then
-            assertThatThrownBy(() -> memberService.toggleFollow(1L))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
-        }
-
-        @Test
         void 자기자신의_비공개계정을_팔로우하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> memberService.togglePendingFollow(1L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
+        }
+
+        @Test
+        void 차단한_사용자를_팔로우요청하면_예외가_발생한다() {
+            // given
+            blockRepository.save(
+                    Block.createBlock(
+                            memberRepository.findById(1L).orElseThrow(),
+                            memberRepository.findById(3L).orElseThrow()));
+
+            // when & then
+            assertThatThrownBy(() -> memberService.togglePendingFollow(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_BLOCKED.getMessage());
+        }
+
+        @Test
+        void 차단된_사용자를_팔로우요청하면_예외가_발생한다() {
+            // given
+            blockRepository.save(
+                    Block.createBlock(
+                            memberRepository.findById(3L).orElseThrow(),
+                            memberRepository.findById(1L).orElseThrow()));
+
+            // when & then
+            assertThatThrownBy(() -> memberService.togglePendingFollow(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.CANNOT_FOLLOW_BLOCKED.getMessage());
+        }
+
+        @Test
+        void 공개계정을_팔로우요청하면_예외가_발생한다() {
+            // given
+            memberRepository.findById(2L).orElseThrow().changeVisibility();
+
+            // when & then
+            assertThatThrownBy(() -> memberService.togglePendingFollow(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.MUST_FOLLOW.getMessage());
         }
     }
 

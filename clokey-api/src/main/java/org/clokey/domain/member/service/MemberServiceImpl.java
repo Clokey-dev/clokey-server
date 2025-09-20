@@ -100,13 +100,14 @@ public class MemberServiceImpl implements MemberService {
         validateNotBlocked(followFrom.getId(), followTo.getId());
         validatePrivate(userId);
 
-        if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                followFrom.getId(), followTo.getId())) {
-            followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId());
+        Optional<Follow> existing =
+                followRepository.findByFollowFrom_IdAndFollowTo_Id(
+                        followFrom.getId(), followTo.getId());
+
+        if (existing.isPresent()) {
+            followRepository.delete(existing.get());
         } else {
-            Follow follow = Follow.createFollow(followFrom, followTo);
-            followRepository.save(follow);
+            followRepository.save(Follow.createFollow(followFrom, followTo));
         }
     }
 
@@ -120,23 +121,26 @@ public class MemberServiceImpl implements MemberService {
         validateNotBlocked(followFrom.getId(), followTo.getId());
         validatePublic(userId);
 
-        if (pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                followFrom.getId(), followTo.getId())) {
+        Optional<PendingFollow> pending =
+                pendingFollowRepository.findByFollowFrom_IdAndFollowTo_Id(
+                        followFrom.getId(), followTo.getId());
 
-            pendingFollowRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId());
-
-        } else if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                followFrom.getId(), followTo.getId())) {
-
-            followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId());
-
-        } else {
-            PendingFollow pendingFollow = PendingFollow.createPendingFollow(followFrom, followTo);
-
-            pendingFollowRepository.save(pendingFollow);
+        if (pending.isPresent()) {
+            pendingFollowRepository.delete(pending.get());
+            return;
         }
+
+        Optional<Follow> follow =
+                followRepository.findByFollowFrom_IdAndFollowTo_Id(
+                        followFrom.getId(), followTo.getId());
+
+        if (follow.isPresent()) {
+            followRepository.delete(follow.get());
+            return;
+        }
+
+        PendingFollow newPending = PendingFollow.createPendingFollow(followFrom, followTo);
+        pendingFollowRepository.save(newPending);
     }
 
     private void validateSelfBlock(Long blockerId, Long blockedId) {
