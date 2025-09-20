@@ -98,21 +98,15 @@ public class MemberServiceImpl implements MemberService {
 
         validateFollowMyself(followFrom, followTo);
         validateNotBlocked(followFrom.getId(), followTo.getId());
+        validatePrivate(userId);
 
-        if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_PRIVATE);
+        if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
+                followFrom.getId(), followTo.getId())) {
+            followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
+                    followFrom.getId(), followTo.getId());
         } else {
-            if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId())) {
-
-                followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                        followFrom.getId(), followTo.getId());
-
-            } else {
-                Follow follow = Follow.createFollow(followFrom, followTo);
-
-                followRepository.save(follow);
-            }
+            Follow follow = Follow.createFollow(followFrom, followTo);
+            followRepository.save(follow);
         }
     }
 
@@ -124,28 +118,24 @@ public class MemberServiceImpl implements MemberService {
 
         validateFollowMyself(followFrom, followTo);
         validateNotBlocked(followFrom.getId(), followTo.getId());
+        validatePublic(userId);
 
-        if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
-            if (pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId())) {
+        if (pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(
+                followFrom.getId(), followTo.getId())) {
 
-                pendingFollowRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                        followFrom.getId(), followTo.getId());
+            pendingFollowRepository.deleteByFollowFrom_IdAndFollowTo_Id(
+                    followFrom.getId(), followTo.getId());
 
-            } else if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
-                    followFrom.getId(), followTo.getId())) {
+        } else if (followRepository.existsByFollowFrom_IdAndFollowTo_Id(
+                followFrom.getId(), followTo.getId())) {
 
-                followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
-                        followFrom.getId(), followTo.getId());
+            followRepository.deleteByFollowFrom_IdAndFollowTo_Id(
+                    followFrom.getId(), followTo.getId());
 
-            } else {
-                PendingFollow pendingFollow =
-                        PendingFollow.createPendingFollow(followFrom, followTo);
-
-                pendingFollowRepository.save(pendingFollow);
-            }
         } else {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_PENDING_FOLLOW_PUBLIC);
+            PendingFollow pendingFollow = PendingFollow.createPendingFollow(followFrom, followTo);
+
+            pendingFollowRepository.save(pendingFollow);
         }
     }
 
@@ -171,6 +161,20 @@ public class MemberServiceImpl implements MemberService {
         if (blockRepository.existsByBlockerIdAndBlockedId(fromId, toId)
                 || blockRepository.existsByBlockerIdAndBlockedId(toId, fromId)) {
             throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_BLOCKED);
+        }
+    }
+
+    private void validatePrivate(Long userId) {
+        Member member = getMemberById(userId);
+        if (member.getVisibility().equals(Visibility.PRIVATE)) {
+            throw new BaseCustomException(MemberErrorCode.MUST_REQUEST_FOLLOW);
+        }
+    }
+
+    private void validatePublic(Long userId) {
+        Member member = getMemberById(userId);
+        if (member.getVisibility().equals(Visibility.PUBLIC)) {
+            throw new BaseCustomException(MemberErrorCode.MUST_FOLLOW);
         }
     }
 }
