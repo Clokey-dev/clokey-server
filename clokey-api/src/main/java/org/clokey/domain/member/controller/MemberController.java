@@ -58,7 +58,13 @@ public class MemberController {
     public BaseResponse<Void> togglePendingFollow(@RequestParam("userId") Long userId) {
 
         memberService.togglePendingFollow(userId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+    }
 
+    @PostMapping("/block/{memberId}")
+    @Operation(summary = "차단 토글 API", description = "차단 상태를 변경합니다.")
+    public BaseResponse<Void> toggleBlockStatus(@PathVariable Long memberId) {
+        memberService.toggleBlockStatus(memberId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

@@ -13,4 +13,6 @@ public interface MemberService {
     void toggleFollow(Long userId);
 
     void togglePendingFollow(Long userId);
+
+    void toggleBlockStatus(Long memberId);
 }

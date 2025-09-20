@@ -9,11 +9,13 @@ import org.clokey.TransactionUtil;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.exception.MemberErrorCode;
+import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.FollowRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.domain.member.repository.PendingFollowRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
+import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Follow;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
@@ -36,6 +38,7 @@ class MemberServiceTest extends IntegrationTest {
     @Autowired private MemberRepository memberRepository;
     @Autowired private FollowRepository followRepository;
     @Autowired private PendingFollowRepository pendingFollowRepository;
+    @Autowired private BlockRepository blockRepository;
 
     @Autowired private TransactionUtil transactionUtil;
     @MockitoBean private MemberUtil memberUtil;
@@ -263,6 +266,74 @@ class MemberServiceTest extends IntegrationTest {
             assertThatThrownBy(() -> memberService.togglePendingFollow(1L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.CANNOT_FOLLOW_MYSELF.getMessage());
+        }
+    }
+
+    @Nested
+    class 차단을_토글할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickname1",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickname2",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+        }
+
+        @Test
+        void 차단_상태가_아니라면_차단한다() {
+            // when
+            memberService.toggleBlockStatus(2L);
+
+            // then
+            assertThat(blockRepository.findById(1L).orElseThrow())
+                    .extracting("blocker.id", "blocked.id")
+                    .containsExactly(1L, 2L);
+        }
+
+        @Test
+        void 차단_상태라면_차단을_해제한다() {
+            // given
+            Member blocker = memberRepository.findById(1L).orElseThrow();
+            Member blocked = memberRepository.findById(2L).orElseThrow();
+            Block block = Block.createBlock(blocker, blocked);
+            blockRepository.save(block);
+
+            // when
+            memberService.toggleBlockStatus(2L);
+
+            // then
+            assertThat(
+                            blockRepository.findByBlockerIdAndBlockedId(
+                                    blocker.getId(), blocked.getId()))
+                    .isNotPresent();
+        }
+
+        @Test
+        void 자기_자신을_차단하면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> memberService.toggleBlockStatus(1L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.SELF_BLOCK_UNAVAILABLE.getMessage());
+        }
+
+        @Test
+        void 차단_대상이_존재하지_않으면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> memberService.toggleBlockStatus(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(MemberErrorCode.MEMBER_NOT_FOUND.getMessage());
         }
     }
 }

@@ -1,15 +1,18 @@
 package org.clokey.domain.member.service;
 
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
+import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.FollowRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.domain.member.repository.PendingFollowRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
+import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Follow;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.PendingFollow;
@@ -28,6 +31,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
     private final PendingFollowRepository pendingFollowRepository;
+    private final BlockRepository blockRepository;
 
     @Override
     @Transactional
@@ -57,6 +61,25 @@ public class MemberServiceImpl implements MemberService {
                         && memberRepository.existsByClokeyId(request.clokeyId());
 
         return DuplicatedIdCheckResponse.of(duplicated);
+    }
+
+    @Override
+    @Transactional
+    public void toggleBlockStatus(Long memberId) {
+        final Member blocker = memberUtil.getCurrentMember();
+        final Member blocked = getMemberById(memberId);
+
+        validateSelfBlock(blocker.getId(), blocked.getId());
+
+        Optional<Block> existingBlock =
+                blockRepository.findByBlockerIdAndBlockedId(blocker.getId(), blocked.getId());
+
+        if (existingBlock.isPresent()) {
+            blockRepository.delete(existingBlock.get());
+        } else {
+            Block block = Block.createBlock(blocker, blocked);
+            blockRepository.save(block);
+        }
     }
 
     private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {
@@ -121,6 +144,12 @@ public class MemberServiceImpl implements MemberService {
             }
         } else {
             throw new BaseCustomException(MemberErrorCode.CANNOT_PENDING_FOLLOW_PUBLIC);
+        }
+    }
+
+    private void validateSelfBlock(Long blockerId, Long blockedId) {
+        if (blockerId.equals(blockedId)) {
+            throw new BaseCustomException(MemberErrorCode.SELF_BLOCK_UNAVAILABLE);
         }
     }
 
