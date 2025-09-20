@@ -97,6 +97,7 @@ public class MemberServiceImpl implements MemberService {
         final Member followTo = getMemberById(userId);
 
         validateFollowMyself(followFrom, followTo);
+        validateNotBlocked(followFrom.getId(), followTo.getId());
 
         if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
             throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_PRIVATE);
@@ -122,6 +123,7 @@ public class MemberServiceImpl implements MemberService {
         final Member followTo = getMemberById(userId);
 
         validateFollowMyself(followFrom, followTo);
+        validateNotBlocked(followFrom.getId(), followTo.getId());
 
         if (followTo.getVisibility().equals(Visibility.PRIVATE)) {
             if (pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(
@@ -162,6 +164,13 @@ public class MemberServiceImpl implements MemberService {
     private void validateFollowMyself(Member followFrom, Member followTo) {
         if (followFrom.getId().equals(followTo.getId())) {
             throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
+        }
+    }
+
+    private void validateNotBlocked(Long fromId, Long toId) {
+        if (blockRepository.existsByBlockerIdAndBlockedId(fromId, toId)
+                || blockRepository.existsByBlockerIdAndBlockedId(toId, fromId)) {
+            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_BLOCKED);
         }
     }
 }
