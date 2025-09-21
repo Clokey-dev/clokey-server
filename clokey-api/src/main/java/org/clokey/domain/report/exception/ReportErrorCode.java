@@ -8,11 +8,9 @@ import org.clokey.exception.BaseErrorCode;
 @Getter
 @AllArgsConstructor
 public enum ReportErrorCode implements BaseErrorCode {
-    REPROT_DUPLICATED(400, "REPORT_4001", "신고는 한번만 가능합니다."),
+    REPORT_DUPLICATED(400, "REPORT_4001", "신고가 접수되어 운영 정책 위반 여부를 확인하고 있는 콘텐츠입니다."),
 
-    COMMENT_NOT_FOUND(404, "REPORT_4041", "존재하지 않는 댓글입니다."),
-    REPLY_NOT_FOUND(404, "REPORT_4042", "존재하지 않는 대댓글입니다."),
-    HISTORY_NOT_FOUND(404, "REPORT_4043", "존재하지 않는 기록입니다.");
+    REPORT_NOT_FOUND(404, "COMMENT_4041", "존재하지 않는 신고입니다.");
 
     private final int status;
     private final String code;
