@@ -1,5 +1,6 @@
 package org.clokey.report.enums;
 
+import java.util.Arrays;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -9,4 +10,11 @@ public enum TargetType {
     HISTORY("기록");
 
     private final String description;
+
+    public static TargetType from(String type) {
+        return Arrays.stream(values())
+                .filter(t -> t.name().equalsIgnoreCase(type))
+                .findFirst()
+                .orElse(null);
+    }
 }
