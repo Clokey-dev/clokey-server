@@ -1,8 +1,10 @@
 package org.clokey.domain.report.service;
 
 import lombok.RequiredArgsConstructor;
+import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.repository.CommentRepository;
 import org.clokey.domain.comment.repository.ReplyRepository;
+import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.report.dto.request.ReportCreateRequest;
 import org.clokey.domain.report.dto.response.ReportCreateResponse;
@@ -12,6 +14,7 @@ import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
 import org.clokey.report.entity.Report;
+import org.clokey.report.enums.ReportStatus;
 import org.clokey.report.enums.TargetType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,8 +35,8 @@ public class ReportServiceImpl implements ReportService {
     @Transactional
     public ReportCreateResponse createReport(ReportCreateRequest request) {
         Member reporter = memberUtil.getCurrentMember();
-        validateDuplicateReport(request, reporter);
         validateTargetExists(request.targetType(), request.targetId());
+        validateDuplicateReport(request);
 
         Report report =
                 Report.createReport(
@@ -48,34 +51,29 @@ public class ReportServiceImpl implements ReportService {
         return ReportCreateResponse.from(report);
     }
 
-    private void validateDuplicateReport(ReportCreateRequest request, Member reporter) {
+    private void validateDuplicateReport(ReportCreateRequest request) {
         boolean exists =
-                reportRepository.existsByReporterAndTargetTypeAndTargetId(
-                        reporter, request.targetType(), request.targetId());
+                reportRepository.existsByTargetTypeAndTargetIdAndReportStatusIsNot(
+                        request.targetType(), request.targetId(), ReportStatus.DISAPPROVED);
 
         if (exists) {
-            throw new BaseCustomException(ReportErrorCode.REPROT_DUPLICATED);
+            throw new BaseCustomException(ReportErrorCode.REPORT_DUPLICATED);
         }
     }
 
     private void validateTargetExists(TargetType targetType, Long targetId) {
-        boolean exists =
-                switch (targetType) {
-                    case COMMENT -> commentRepository.existsById(targetId);
-                    case REPLY -> replyRepository.existsById(targetId);
-                    case HISTORY -> historyRepository.existsById(targetId);
-                };
-
-        if (!exists) {
-            throw new BaseCustomException(getTargetNotFoundError(targetType));
+        if (targetType.equals(TargetType.COMMENT)) {
+            if (!commentRepository.existsById(targetId)) {
+                throw new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND);
+            }
+        } else if (targetType.equals(TargetType.REPLY)) {
+            if (!replyRepository.existsById(targetId)) {
+                throw new BaseCustomException(CommentErrorCode.REPLY_NOT_FOUND);
+            }
+        } else {
+            if (!historyRepository.existsById(targetId)) {
+                throw new BaseCustomException(HistoryErrorCode.HISTORY_NOT_FOUND);
+            }
         }
-    }
-
-    private ReportErrorCode getTargetNotFoundError(TargetType targetType) {
-        return switch (targetType) {
-            case COMMENT -> ReportErrorCode.COMMENT_NOT_FOUND;
-            case REPLY -> ReportErrorCode.REPLY_NOT_FOUND;
-            case HISTORY -> ReportErrorCode.HISTORY_NOT_FOUND;
-        };
     }
 }
