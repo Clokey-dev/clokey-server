@@ -35,7 +35,7 @@ class ReportControllerTest {
     @MockitoBean ReportService reportService;
 
     @Nested
-    class 신고_요청_시 {
+    class 신고_생성_요청_시 {
 
         @Test
         void 유효한_요청이면_신고를_생성하고_ID를_반환한다() throws Exception {

@@ -72,7 +72,7 @@ public class ReportServiceImplTest extends IntegrationTest {
         }
 
         @Test
-        void 유요한_요청이면_신고를_생성한다() {
+        void 유효한_요청이면_신고를_생성한다() {
             // given
             ReportCreateRequest request =
                     new ReportCreateRequest(
@@ -109,7 +109,7 @@ public class ReportServiceImplTest extends IntegrationTest {
             reportService.createReport(request1);
             Report disapprovedReport = reportRepository.findById(1L).orElseThrow();
             disapprovedReport.updateReportStatus(ReportStatus.DISAPPROVED);
-            reportRepository.saveAndFlush(disapprovedReport);
+            reportRepository.save(disapprovedReport);
 
             ReportCreateRequest request2 =
                     new ReportCreateRequest(

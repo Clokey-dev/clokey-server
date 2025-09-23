@@ -34,7 +34,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     @Transactional
     public ReportCreateResponse createReport(ReportCreateRequest request) {
-        Member reporter = memberUtil.getCurrentMember();
+        final Member reporter = memberUtil.getCurrentMember();
         validateTargetExists(request.targetType(), request.targetId());
         validateDuplicateReport(request);
 
