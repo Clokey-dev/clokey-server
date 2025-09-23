@@ -88,11 +88,11 @@ jobs:
             export REDIS_PORT=${{ secrets.REDIS_PORT }}
             export REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
 
-            export DEV_KAKAO_CLIENT_ID=${{ secrets.PROD_KAKAO_CLIENT_ID }}
-            export DEV_KAKAO_CLIENT_SECRET=${{ secrets.PROD_KAKAO_CLIENT_SECRET }}
+            export KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+            export KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
 
-            export DEV_APPLE_CLIENT_ID=${{ secrets.PROD_APPLE_CLIENT_ID }}
-            export DEV_APPLE_CLIENT_SECRET=${{ secrets.PROD_APPLE_CLIENT_SECRET }}
+            export APPLE_CLIENT_ID=${{ secrets.APPLE_CLIENT_ID }}
+            export APPLE_CLIENT_SECRET=${{ secrets.APPLE_CLIENT_SECRET }}
 
             export JWT_ACCESS_TOKEN_SECRET=${{ secrets.JWT_ACCESS_TOKEN_SECRET }}
             export JWT_REFRESH_TOKEN_SECRET=${{ secrets.JWT_REFRESH_TOKEN_SECRET }}
