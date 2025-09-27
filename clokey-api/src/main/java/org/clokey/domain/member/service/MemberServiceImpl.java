@@ -98,7 +98,7 @@ public class MemberServiceImpl implements MemberService {
 
         validateFollowMyself(followFrom, followTo);
         validateNotBlocked(followFrom.getId(), followTo.getId());
-        validatePrivate(userId);
+        validatePrivate(followTo);
 
         Optional<Follow> existing =
                 followRepository.findByFollowFrom_IdAndFollowTo_Id(
@@ -119,7 +119,7 @@ public class MemberServiceImpl implements MemberService {
 
         validateFollowMyself(followFrom, followTo);
         validateNotBlocked(followFrom.getId(), followTo.getId());
-        validatePublic(userId);
+        validatePublic(followTo);
 
         Optional<PendingFollow> pending =
                 pendingFollowRepository.findByFollowFrom_IdAndFollowTo_Id(
@@ -168,15 +168,13 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    private void validatePrivate(Long userId) {
-        Member member = getMemberById(userId);
+    private void validatePrivate(Member member) {
         if (member.getVisibility().equals(Visibility.PRIVATE)) {
             throw new BaseCustomException(MemberErrorCode.MUST_REQUEST_FOLLOW);
         }
     }
 
-    private void validatePublic(Long userId) {
-        Member member = getMemberById(userId);
+    private void validatePublic(Member member) {
         if (member.getVisibility().equals(Visibility.PUBLIC)) {
             throw new BaseCustomException(MemberErrorCode.MUST_FOLLOW);
         }

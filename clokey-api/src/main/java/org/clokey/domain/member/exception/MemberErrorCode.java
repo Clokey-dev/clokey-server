@@ -13,7 +13,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     CANNOT_FOLLOW_MYSELF(400, "MEMBER_4003", "자기 자신을 팔로우할 수 없습니다."),
     MUST_REQUEST_FOLLOW(400, "MEMBER_4004", "비공개 회원에게는 팔로우 요청을 보내야 합니다."),
     MUST_FOLLOW(400, "MEMBER_4005", "공개 회원에게는 팔로우를 보내야 합니다."),
-    CANNOT_FOLLOW_BLOCKED(400, "MEMBER_4006", "차단한 회원은 팔로우할 수 없습니다."),
+    CANNOT_FOLLOW_BLOCKED(400, "MEMBER_4006", "차단을 했거나 상대방에게 차단을 당한 경우 팔로우 할 수 없습니다."),
 
     MEMBER_NOT_FOUND(404, "MEMBER_4041", "해당 회원을 찾을 수 없습니다."),
     ;

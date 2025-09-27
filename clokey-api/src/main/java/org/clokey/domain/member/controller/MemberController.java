@@ -39,9 +39,7 @@ public class MemberController {
     }
 
     @PostMapping("/follow")
-    @Operation(
-            summary = "팔로우 API",
-            description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
+    @Operation(summary = "팔로우 API", description = "다른 사용자를 팔로우/취소하는 API입니다. 공개 계정에 팔로우시 팔로우 됩니다.")
     public BaseResponse<Void> toggleFollow(@RequestParam("userId") Long userId) {
 
         memberService.toggleFollow(userId);
@@ -49,12 +47,10 @@ public class MemberController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 
-    // 차단한 회원의 팔로우시 추후구현?
-
     @PostMapping("/pending-follow")
     @Operation(
             summary = "팔로우 API",
-            description = "다른 사용자를 팔로우/언팔로우하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
+            description = "다른 사용자를 팔로우/취소하는 API입니다. 비공개 계정에 팔로우시 요청이 들어갑니다.")
     public BaseResponse<Void> togglePendingFollow(@RequestParam("userId") Long userId) {
 
         memberService.togglePendingFollow(userId);

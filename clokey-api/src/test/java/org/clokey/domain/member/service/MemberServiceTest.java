@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
+import java.util.Optional;
 import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
@@ -210,7 +211,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 자기자신의_공개계정을_팔로우하면_예외가_발생한다() {
+        void 자기자신을_팔로우하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> memberService.toggleFollow(1L))
                     .isInstanceOf(BaseCustomException.class)
@@ -232,7 +233,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 차단된_사용자를_팔로우하면_예외가_발생한다() {
+        void 차단된_사용자가_팔로우하면_예외가_발생한다() {
             // given
             blockRepository.save(
                     Block.createBlock(
@@ -289,8 +290,10 @@ class MemberServiceTest extends IntegrationTest {
             memberService.togglePendingFollow(3L);
 
             // then
-            assertThat(pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
-                    .isTrue();
+            Optional<PendingFollow> pendingFollow =
+                    pendingFollowRepository.findByFollowFrom_IdAndFollowTo_Id(1L, 3L);
+
+            assertThat(pendingFollow).isPresent(); // 존재 여부 확인
         }
 
         @Test
@@ -305,8 +308,10 @@ class MemberServiceTest extends IntegrationTest {
             memberService.togglePendingFollow(3L);
 
             // then
-            assertThat(pendingFollowRepository.existsByFollowFrom_IdAndFollowTo_Id(1L, 3L))
-                    .isFalse();
+            Optional<PendingFollow> pendingFollow =
+                    pendingFollowRepository.findByFollowFrom_IdAndFollowTo_Id(1L, 3L);
+
+            assertThat(pendingFollow).isEmpty(); // 존재 여부 확인
         }
 
         @Test
@@ -325,7 +330,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 자기자신의_비공개계정을_팔로우하면_예외가_발생한다() {
+        void 자기자신을_팔로우하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> memberService.togglePendingFollow(1L))
                     .isInstanceOf(BaseCustomException.class)
@@ -347,7 +352,7 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 차단된_사용자를_팔로우요청하면_예외가_발생한다() {
+        void 차단된_사용자가_팔로우요청하면_예외가_발생한다() {
             // given
             blockRepository.save(
                     Block.createBlock(
