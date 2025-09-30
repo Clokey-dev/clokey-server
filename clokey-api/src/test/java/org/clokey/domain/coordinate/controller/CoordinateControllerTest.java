@@ -52,7 +52,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -79,7 +79,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -101,7 +101,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -125,7 +125,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -150,7 +150,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -174,7 +174,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -199,7 +199,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -223,7 +223,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -248,7 +248,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -272,7 +272,7 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/coordinate")
+                            post("/coordinate/daily")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
