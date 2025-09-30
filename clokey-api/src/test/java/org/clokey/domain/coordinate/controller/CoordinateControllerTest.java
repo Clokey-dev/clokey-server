@@ -45,7 +45,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, 200.25, 1.0, 1)));
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1)));
             DailyCoordinateCreateResponse response = new DailyCoordinateCreateResponse(1L);
             given(coordinateService.createDailyCoordinate(request)).willReturn(response);
 
@@ -74,7 +74,7 @@ class CoordinateControllerTest {
                             coordinateImageUrl,
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, 200.25, 1.0, 1)));
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -120,7 +120,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, null, 200.25, 1.0, 1)));
+                                            1L, null, 200.25, 1.0, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -145,7 +145,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, locationX, 200.25, 1.0, 1)));
+                                            1L, locationX, 200.25, 1.0, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -169,7 +169,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, null, 1.0, 1)));
+                                            1L, 100.5, null, 1.0, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -194,7 +194,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, locationY, 1.0, 1)));
+                                            1L, 100.5, locationY, 1.0, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -218,7 +218,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, 200.25, null, 1)));
+                                            1L, 100.5, 200.25, null, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -243,7 +243,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, 200.25, ratio, 1)));
+                                            1L, 100.5, 200.25, ratio, 50.0, 1)));
 
             // when & then
             ResultActions perform =
@@ -267,7 +267,7 @@ class CoordinateControllerTest {
                             "testUrl",
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
-                                            1L, 100.5, 200.25, 1.0, null)));
+                                            1L, 100.5, 200.25, 1.0, 50.0, null)));
 
             // when & then
             ResultActions perform =
@@ -281,6 +281,80 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.order").value("옷의 순서는 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 옷의_각도를_비워두면_예외가_발생한다() throws Exception {
+            // given
+            DailyCoordinateCreateRequest request =
+                    new DailyCoordinateCreateRequest(
+                            "testUrl",
+                            List.of(
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, null, 1)));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/coordinate/daily")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.degree").value("옷의 각도는 비워둘 수 없습니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(doubles = {-1.5, -2.0})
+        void 옷의_각도가_음수면_예외가_발생한다(Double degree) throws Exception {
+            // given
+            DailyCoordinateCreateRequest request =
+                    new DailyCoordinateCreateRequest(
+                            "testUrl",
+                            List.of(
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, degree, 1)));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/coordinate/daily")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.degree").value("각도는 0도 이상이어야 합니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(doubles = {360.1, 1000.1})
+        void 옷의_각도가_360도를_넘어가면_예외가_발생한다(Double degree) throws Exception {
+            // given
+            DailyCoordinateCreateRequest request =
+                    new DailyCoordinateCreateRequest(
+                            "testUrl",
+                            List.of(
+                                    new DailyCoordinateCreateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, degree, 1)));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/coordinate/daily")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.degree").value("각도는 360도 이하여야 합니다."));
         }
     }
 }
