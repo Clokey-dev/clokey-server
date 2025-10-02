@@ -7,11 +7,12 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.clokey.common.model.BaseEntity;
 import org.clokey.member.enums.OauthProvider;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OauthInfo {
+public class OauthInfo extends BaseEntity {
 
     @NotNull private String oauthId;
 
