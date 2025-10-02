@@ -8,10 +8,15 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.response.BaseResponse;
+import org.clokey.response.SliceResponse;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,12 +52,26 @@ public class MemberController {
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 
-    @GetMapping("check-myself")
+    @GetMapping("/check-myself")
     @Operation(summary = "본인인지 여부 확인", description = "클로키 아이디로 본인인지 확인합니다.")
     public BaseResponse<MyselfCheckResponse> checkIsMySelf(
             @Parameter(description = "본인인지 확인할 클로키 ID") @RequestParam("clokeyId") String clokeyId) {
 
         return BaseResponse.onSuccess(
                 GlobalBaseSuccessCode.OK, memberService.checkIsMyself(clokeyId));
+    }
+
+    @GetMapping("/blocks")
+    @Operation(summary = "차단한 멤버 조회", description = "사용자가 차단한 모든 멤버들을 조회합니다.")
+    public BaseResponse<SliceResponse<BlockedMemberResponse>> getBlockedMembers(
+            @PageableDefault(
+                            page = 0,
+                            size = 10,
+                            sort = "createdAt",
+                            direction = Sort.Direction.DESC)
+                    Pageable pageable) {
+        SliceResponse<BlockedMemberResponse> blockedMembersSlice =
+                memberService.getBlockedMembers(pageable);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, blockedMembersSlice);
     }
 }
