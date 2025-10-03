@@ -1,6 +1,5 @@
 package org.clokey.domain.coordinate.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -9,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
-import org.clokey.domain.coordinate.dto.response.DailyCoordinateCreateResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
 import org.clokey.domain.coordinate.service.CoordinateService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ class CoordinateControllerTest {
                             List.of(
                                     new DailyCoordinateCreateRequest.Payload(
                                             1L, 100.5, 200.25, 1.0, 50.0, 1)));
-            DailyCoordinateCreateResponse response = new DailyCoordinateCreateResponse(1L);
+            CoordinateCreateResponse response = new CoordinateCreateResponse(1L);
             given(coordinateService.createDailyCoordinate(request)).willReturn(response);
 
             // when & then
@@ -60,7 +59,7 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON201"))
                     .andExpect(jsonPath("$.message").value("요청 성공 및 리소스 생성됨"))
-                    .andExpect(jsonPath("$.result.dailyCoordinateId").value(1));
+                    .andExpect(jsonPath("$.result.coordinateId").value(1));
         }
 
         @ParameterizedTest
