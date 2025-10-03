@@ -2,8 +2,11 @@ package org.clokey.domain.member.service;
 
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
+import org.clokey.response.SliceResponse;
+import org.springframework.data.domain.Pageable;
 
 public interface MemberService {
 
@@ -14,4 +17,6 @@ public interface MemberService {
     void toggleBlockStatus(Long memberId);
 
     MyselfCheckResponse checkIsMyself(String clokeyId);
+
+    SliceResponse<BlockedMemberResponse> getBlockedMembers(Pageable pageable);
 }

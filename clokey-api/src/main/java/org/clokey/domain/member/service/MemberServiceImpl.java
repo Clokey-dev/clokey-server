@@ -4,6 +4,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
@@ -15,6 +16,9 @@ import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
+import org.clokey.response.SliceResponse;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,6 +89,16 @@ public class MemberServiceImpl implements MemberService {
         boolean isMyself = currentMember.getClokeyId().equals(clokeyId);
 
         return MyselfCheckResponse.of(isMyself);
+    }
+
+    @Override
+    public SliceResponse<BlockedMemberResponse> getBlockedMembers(Pageable pageable) {
+        Member currentMember = memberUtil.getCurrentMember();
+        Slice<Block> blockSlice =
+                blockRepository.findAllByBlockerId(currentMember.getId(), pageable);
+
+        return SliceResponse.from(
+                blockSlice.map(block -> BlockedMemberResponse.from(block.getBlocked())));
     }
 
     private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {
