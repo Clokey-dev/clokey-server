@@ -8,12 +8,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
+import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.member.enums.Visibility;
+import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +27,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -268,6 +274,85 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
                     .andExpect(jsonPath("$.result.isMyself").value(true));
+        }
+    }
+
+    @Nested
+    class 차단_회원_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_차단_회원_목록을_반환한다() throws Exception {
+            // given
+            List<BlockedMemberResponse> blockedMembers =
+                    List.of(new BlockedMemberResponse(1L, "testId", "testUrl"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            given(memberService.getBlockedMembers(pageable))
+                    .willReturn(new SliceResponse<BlockedMemberResponse>(blockedMembers, true));
+
+            // when
+            ResultActions perform = mockMvc.perform(get("/users/blocks"));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.content[0].id").value(1L))
+                    .andExpect(jsonPath("$.result.content[0].codiveId").value("testId"))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 정렬_조건이_ASC이면_createdAt을_오름차순으로_응답한다() throws Exception {
+            // given
+            List<BlockedMemberResponse> blockedMembers =
+                    List.of(
+                            new BlockedMemberResponse(1L, "testId1", "testUrl1"),
+                            new BlockedMemberResponse(2L, "testId2", "testUrl2"));
+            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdAt"));
+
+            given(memberService.getBlockedMembers(pageable))
+                    .willReturn(new SliceResponse<BlockedMemberResponse>(blockedMembers, true));
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(get("/users/blocks").param("sort", "createdAt,asc"));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.content[0].id").value(1L))
+                    .andExpect(jsonPath("$.result.content[0].codiveId").value("testId1"))
+                    .andExpect(jsonPath("$.result.content[1].id").value(2L))
+                    .andExpect(jsonPath("$.result.content[1].codiveId").value("testId2"))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_응답한다() throws Exception {
+            // given
+            List<BlockedMemberResponse> blockedMembers =
+                    List.of(
+                            new BlockedMemberResponse(1L, "testId1", "testUrl1"),
+                            new BlockedMemberResponse(2L, "testId2", "testUrl2"));
+            Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+            given(memberService.getBlockedMembers(pageable))
+                    .willReturn(new SliceResponse<BlockedMemberResponse>(blockedMembers, false));
+
+            // when
+            ResultActions perform = mockMvc.perform(get("/users/blocks").param("size", "1"));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.content[0].id").value(1L))
+                    .andExpect(jsonPath("$.result.content[0].codiveId").value("testId1"))
+                    .andExpect(jsonPath("$.result.content[1].id").value(2L))
+                    .andExpect(jsonPath("$.result.content[1].codiveId").value("testId2"))
+                    .andExpect(jsonPath("$.result.isLast").value(false));
         }
     }
 }
