@@ -15,6 +15,7 @@ import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Member;
@@ -294,19 +295,14 @@ class MemberServiceTest extends IntegrationTest {
             Block block2 = Block.createBlock(member1, member3);
             Block block3 = Block.createBlock(member2, member3);
 
-            blockRepository.save(block1);
-            blockRepository.save(block2);
-            blockRepository.save(block3);
+            blockRepository.saveAll(List.of(block1, block2, block3));
         }
 
         @Test
         void 유효한_요청이면_차단_멤버_목록을_반환한다() {
-            // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-
             // when
             SliceResponse<BlockedMemberResponse> response =
-                    memberService.getBlockedMembers(pageable);
+                    memberService.getBlockedMembers(null, 5, SortDirection.DESC);
 
             // then
             assertThat(response.content())
@@ -315,37 +311,36 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 정렬_조건이_ASC이면_createdAt을_오름차순으로_조회한다() {
-            // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdAt"));
-
+        void 정렬_조건이_DESC이면_BlockId를_내림차순으로_조회한다() {
             // when
             SliceResponse<BlockedMemberResponse> response =
-                    memberService.getBlockedMembers(pageable);
+                    memberService.getBlockedMembers(null, 5, SortDirection.DESC);
 
             // then
-            assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId2", "testCodiveId3");
+            assertThat(response.content()).extracting("blockId").containsExactly(2L, 1L);
+        }
+
+        @Test
+        void 정렬_조건이_ASC이면_BlockId를_오름차순으로_조회한다() {
+            // when
+            SliceResponse<BlockedMemberResponse> response =
+                    memberService.getBlockedMembers(null, 5, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("blockId").containsExactly(1L, 2L);
         }
 
         @Test
         void 차단한_멤버가_없으면_빈_리스트를_반환한다() {
             // given
-            Member member =
-                    Member.createMember(
-                            "testEmail",
-                            "testClokeyId",
-                            "testNickname",
-                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
-            memberRepository.save(member);
+            Member member = memberRepository.findById(3L).orElseThrow();
             given(memberUtil.getCurrentMember()).willReturn(member);
 
             Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
             // when
             SliceResponse<BlockedMemberResponse> response =
-                    memberService.getBlockedMembers(pageable);
+                    memberService.getBlockedMembers(null, 5, SortDirection.DESC);
 
             // then
             Assertions.assertAll(
@@ -354,13 +349,10 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 마지막_페이지가_아닌_경우_isLast를_true로_반환한다() {
-            // given
-            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-
+        void 마지막_페이지인_경우_isLast를_true로_반환한다() {
             // when
             SliceResponse<BlockedMemberResponse> response =
-                    memberService.getBlockedMembers(pageable);
+                    memberService.getBlockedMembers(null, 5, SortDirection.DESC);
 
             // then
             Assertions.assertAll(
@@ -370,12 +362,9 @@ class MemberServiceTest extends IntegrationTest {
 
         @Test
         void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
-            // given
-            Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt"));
-
             // when
             SliceResponse<BlockedMemberResponse> response =
-                    memberService.getBlockedMembers(pageable);
+                    memberService.getBlockedMembers(null, 1, SortDirection.DESC);
 
             // then
             Assertions.assertAll(

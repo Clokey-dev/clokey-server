@@ -15,6 +15,7 @@ import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.service.MemberService;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.member.enums.Visibility;
 import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.Nested;
@@ -27,9 +28,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -281,24 +279,27 @@ class MemberControllerTest {
     class 차단_회원_조회_요청_시 {
 
         @Test
-        void 유효한_요청이면_차단_회원_목록을_반환한다() throws Exception {
+        void 정렬_조건이_DESC이면_blockId를_내림차순으로_응답한다() throws Exception {
             // given
             List<BlockedMemberResponse> blockedMembers =
-                    List.of(new BlockedMemberResponse(1L, "testId", "testUrl"));
-            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
+                    List.of(
+                            new BlockedMemberResponse(2L, 2L, "testId2", "testUrl2"),
+                            new BlockedMemberResponse(1L, 1L, "testId1", "testUrl1"));
 
-            given(memberService.getBlockedMembers(pageable))
+            given(memberService.getBlockedMembers(null, 2, SortDirection.DESC))
                     .willReturn(new SliceResponse<BlockedMemberResponse>(blockedMembers, true));
 
             // when
-            ResultActions perform = mockMvc.perform(get("/users/blocks"));
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/blocks").param("size", "2").param("direction", "DESC"));
 
             // then
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result.content[0].id").value(1L))
-                    .andExpect(jsonPath("$.result.content[0].codiveId").value("testId"))
+                    .andExpect(jsonPath("$.result.content[0].blockId").value(2L))
+                    .andExpect(jsonPath("$.result.content[1].blockId").value(1L))
                     .andExpect(jsonPath("$.result.isLast").value(true));
         }
 
@@ -307,25 +308,23 @@ class MemberControllerTest {
             // given
             List<BlockedMemberResponse> blockedMembers =
                     List.of(
-                            new BlockedMemberResponse(1L, "testId1", "testUrl1"),
-                            new BlockedMemberResponse(2L, "testId2", "testUrl2"));
-            Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "createdAt"));
+                            new BlockedMemberResponse(1L, 1L, "testId1", "testUrl1"),
+                            new BlockedMemberResponse(2L, 2L, "testId2", "testUrl2"));
 
-            given(memberService.getBlockedMembers(pageable))
+            given(memberService.getBlockedMembers(null, 2, SortDirection.ASC))
                     .willReturn(new SliceResponse<BlockedMemberResponse>(blockedMembers, true));
 
             // when
             ResultActions perform =
-                    mockMvc.perform(get("/users/blocks").param("sort", "createdAt,asc"));
+                    mockMvc.perform(
+                            get("/users/blocks").param("size", "2").param("direction", "ASC"));
 
             // then
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result.content[0].id").value(1L))
-                    .andExpect(jsonPath("$.result.content[0].codiveId").value("testId1"))
-                    .andExpect(jsonPath("$.result.content[1].id").value(2L))
-                    .andExpect(jsonPath("$.result.content[1].codiveId").value("testId2"))
+                    .andExpect(jsonPath("$.result.content[0].blockId").value(1L))
+                    .andExpect(jsonPath("$.result.content[1].blockId").value(2L))
                     .andExpect(jsonPath("$.result.isLast").value(true));
         }
 
@@ -333,26 +332,36 @@ class MemberControllerTest {
         void 마지막_페이지가_아닌_경우_isLast를_false로_응답한다() throws Exception {
             // given
             List<BlockedMemberResponse> blockedMembers =
-                    List.of(
-                            new BlockedMemberResponse(1L, "testId1", "testUrl1"),
-                            new BlockedMemberResponse(2L, "testId2", "testUrl2"));
-            Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt"));
+                    List.of(new BlockedMemberResponse(1L, 1L, "testId1", "testUrl1"));
 
-            given(memberService.getBlockedMembers(pageable))
+            given(memberService.getBlockedMembers(null, 1, SortDirection.DESC))
                     .willReturn(new SliceResponse<BlockedMemberResponse>(blockedMembers, false));
 
             // when
-            ResultActions perform = mockMvc.perform(get("/users/blocks").param("size", "1"));
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/blocks").param("size", "1").param("direction", "DESC"));
 
             // then
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result.content[0].id").value(1L))
-                    .andExpect(jsonPath("$.result.content[0].codiveId").value("testId1"))
-                    .andExpect(jsonPath("$.result.content[1].id").value(2L))
-                    .andExpect(jsonPath("$.result.content[1].codiveId").value("testId2"))
+                    .andExpect(jsonPath("$.result.content[0].blockId").value(1L))
                     .andExpect(jsonPath("$.result.isLast").value(false));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-1", "-999", "0"})
+        void 페이지_크기를_0_이하로_설정하면_예외가_발생한다(String pageSize) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/blocks").param("size", pageSize).param("direction", "ASC"));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
         }
     }
 }
