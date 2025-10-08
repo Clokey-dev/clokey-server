@@ -18,8 +18,6 @@ import org.clokey.member.entity.Member;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
 import org.clokey.response.SliceResponse;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,15 +91,13 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public SliceResponse<BlockedMemberResponse> getBlockedMembers(Pageable pageable) {
+    public SliceResponse<BlockedMemberResponse> getBlockedMembers(
+            Long lastBlockedId, Integer size, SortDirection direction) {
         Member currentMember = memberUtil.getCurrentMember();
 
-        Sort.Direction direction = pageable.getSort().iterator().next().getDirection();
-        SortDirection sortDirection =
-                direction.equals(Sort.Direction.ASC) ? SortDirection.ASC : SortDirection.DESC;
-
         return SliceResponse.from(
-                blockRepository.findAllByBlockerId(currentMember.getId(), pageable, sortDirection));
+                blockRepository.findAllByBlockerId(
+                        currentMember.getId(), lastBlockedId, size, direction));
     }
 
     private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {

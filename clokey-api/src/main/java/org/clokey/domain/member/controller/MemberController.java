@@ -12,11 +12,10 @@ import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.service.MemberService;
+import org.clokey.global.annotation.PageSize;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.response.BaseResponse;
 import org.clokey.response.SliceResponse;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,14 +63,15 @@ public class MemberController {
     @GetMapping("/blocks")
     @Operation(summary = "차단한 멤버 조회", description = "사용자가 차단한 모든 멤버들을 조회합니다.")
     public BaseResponse<SliceResponse<BlockedMemberResponse>> getBlockedMembers(
-            @PageableDefault(
-                            page = 0,
-                            size = 10,
-                            sort = "createdAt",
-                            direction = Sort.Direction.DESC)
-                    Pageable pageable) {
+            @Parameter(description = "이전 페이지의 마지막 Block ID (첫 요청 시 생략)")
+                    @RequestParam(required = false)
+                    Long lastBlockId,
+            @Parameter(description = "페이지당 조회할 멤버 수") @RequestParam @PageSize Integer size,
+            @Parameter(description = "정렬 방향 (ASC: 오래된순, DESC: 최신순)")
+                    @RequestParam(defaultValue = "DESC")
+                    SortDirection direction) {
         SliceResponse<BlockedMemberResponse> blockedMembersSlice =
-                memberService.getBlockedMembers(pageable);
+                memberService.getBlockedMembers(lastBlockId, size, direction);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, blockedMembersSlice);
     }
 }
