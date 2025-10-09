@@ -16,17 +16,20 @@ import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
+import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
+import org.clokey.domain.image.event.ImageDeleteEvent;
 import org.clokey.domain.lookbook.exception.LookBookErrorCode;
 import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +46,8 @@ public class CoordinateServiceImpl implements CoordinateService {
     private final LookBookRepository lookBookRepository;
     private final CoordinateClothRepository coordinateClothRepository;
     private final RedisTemplate<String, String> redisTemplate;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -181,6 +186,100 @@ public class CoordinateServiceImpl implements CoordinateService {
 
         return CoordinateCreateResponse.from(dailyCoordinate);
     }
+
+    @Override
+    @Transactional
+    public void updateCoordinate(Long coordinateId, CoordinateUpdateRequest request) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Coordinate coordinate = getCoordinateById(coordinateId);
+
+        validateCoordinateOwner(coordinate, currentMember.getId());
+
+        final Map<Long, Cloth> clothMap =
+                clothRepository
+                        .findAllById(
+                                request.payloads().stream()
+                                        .map(CoordinateUpdateRequest.Payload::clothId)
+                                        .toList())
+                        .stream()
+                        .collect(Collectors.toMap(Cloth::getId, Function.identity()));
+
+        validateAllClothesExist(
+                request.payloads().stream().map(CoordinateUpdateRequest.Payload::clothId).toList(),
+                clothMap);
+
+        final List<Cloth> clothes =
+                request.payloads().stream()
+                        .map(payload -> clothMap.get(payload.clothId()))
+                        .toList();
+
+        validateSequentialOrders(
+                request.payloads().stream()
+                        .map(CoordinateUpdateRequest.Payload::order)
+                        .sorted()
+                        .toList());
+        validateExceedingCoordinationClothesLimit(request.payloads());
+        validateDuplicatedClothes(clothes);
+        validateAllClothesOwnership(currentMember, clothes);
+
+        /** Coordinate 업데이트 로직 */
+        if (!Objects.equals(coordinate.getImageUrl(), request.coordinateImageUrl())) {
+            eventPublisher.publishEvent(ImageDeleteEvent.of(coordinate.getImageUrl()));
+        }
+        coordinate.updateCoordinate(request.name(), request.memo(), request.coordinateImageUrl());
+
+        /** CoordinateCloth 업데이트 로직 */
+        List<CoordinateCloth> coordinateCloths = coordinate.getCoordinateClothes();
+
+        Set<Long> requestedClothIds =
+                clothes.stream().map(Cloth::getId).collect(Collectors.toSet());
+
+        // 새로운 요청이 포함하지 않는 CoordinateCloth는 삭제한다.
+        List<CoordinateCloth> toDelete =
+                coordinateCloths.stream()
+                        .filter(cc -> !requestedClothIds.contains(cc.getCloth().getId()))
+                        .toList();
+
+        coordinateClothRepository.deleteAllInBatch(toDelete);
+
+        List<CoordinateCloth> toAdd = new ArrayList<>();
+
+        for (CoordinateUpdateRequest.Payload payload : request.payloads()) {
+            Cloth cloth = clothMap.get(payload.clothId());
+            Optional<CoordinateCloth> existing =
+                    coordinateCloths.stream()
+                            .filter(cc -> cc.getCloth().getId().equals(payload.clothId()))
+                            .findFirst();
+
+            if (existing.isPresent()) {
+                // 요청에도 포함되고 기존에도 존재하는 CoordinateCloth는 업데이트 한다.
+                CoordinateCloth existingCloth = existing.get();
+                existingCloth.updateCoordinateCloth(
+                        payload.locationX(),
+                        payload.locationY(),
+                        payload.degree(),
+                        payload.ratio(),
+                        payload.order());
+            } else {
+                // 요청에 포함되고 기존에 존재하지 않던 CoordinateCloth는 생성한다.
+                CoordinateCloth newCloth =
+                        CoordinateCloth.createCoordinateCloth(
+                                payload.locationX(),
+                                payload.locationY(),
+                                payload.ratio(),
+                                payload.degree(),
+                                payload.order(),
+                                coordinate,
+                                cloth);
+                toAdd.add(newCloth);
+            }
+        }
+
+        coordinateClothRepository.saveAll(toAdd);
+    }
+
+    @Override
+    public void deleteCoordinate(Long coordinateId) {}
 
     private void validateAllClothesExist(List<Long> clothIds, Map<Long, Cloth> clothMap) {
         boolean hasMissing = clothIds.stream().anyMatch(clothId -> !clothMap.containsKey(clothId));

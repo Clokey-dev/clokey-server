@@ -72,4 +72,10 @@ public class Coordinate extends BaseEntity {
         this.memo = memo;
         this.lookBook = lookBook;
     }
+
+    public void updateCoordinate(String name, String memo, String imageUrl) {
+        this.name = name;
+        this.memo = memo;
+        this.imageUrl = imageUrl;
+    }
 }
