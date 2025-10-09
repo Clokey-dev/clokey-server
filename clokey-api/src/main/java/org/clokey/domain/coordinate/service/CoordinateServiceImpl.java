@@ -257,8 +257,8 @@ public class CoordinateServiceImpl implements CoordinateService {
                 existingCloth.updateCoordinateCloth(
                         payload.locationX(),
                         payload.locationY(),
-                        payload.degree(),
                         payload.ratio(),
+                        payload.degree(),
                         payload.order());
             } else {
                 // 요청에 포함되고 기존에 존재하지 않던 CoordinateCloth는 생성한다.

@@ -24,10 +24,12 @@ import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
+import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
+import org.clokey.domain.image.event.ImageDeleteEvent;
 import org.clokey.domain.lookbook.exception.LookBookErrorCode;
 import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.domain.member.repository.MemberRepository;
@@ -41,11 +43,15 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
+@RecordApplicationEvents
 class CoordinateServiceImplTest extends IntegrationTest {
 
     @Autowired private TransactionUtil transactionUtil;
     @Autowired private RedisCleaner redisCleaner;
+    @Autowired private ApplicationEvents applicationEvents;
 
     @Autowired private CoordinateRepository coordinateRepository;
     @Autowired private MemberRepository memberRepository;
@@ -612,6 +618,363 @@ class CoordinateServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> coordinateService.createCoordinateAuto(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CoordinateErrorCode.NOT_DAILY_COORDINATE.getMessage());
+        }
+    }
+
+    @Nested
+    class 코디_업데이트_요청_시 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member2);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
+
+            Category category = Category.createCategory("testCategory", null);
+            categoryRepository.save(category);
+
+            Cloth cloth1 = Cloth.createCloth("testImageUrl", category, member1);
+            Cloth cloth2 = Cloth.createCloth("testImageUrl", category, member1);
+            Cloth cloth3 = Cloth.createCloth("testImageUrl", category, member1);
+            Cloth cloth4 = Cloth.createCloth("testImageUrl", category, member2);
+
+            Cloth cloth5 = Cloth.createCloth("testImageUrl4", category, member1);
+            Cloth cloth6 = Cloth.createCloth("testImageUrl5", category, member1);
+            Cloth cloth7 = Cloth.createCloth("testImageUrl6", category, member1);
+            Cloth cloth8 = Cloth.createCloth("testImageUrl7", category, member1);
+            Cloth cloth9 = Cloth.createCloth("testImageUrl8", category, member1);
+            Cloth cloth10 = Cloth.createCloth("testImageUrl9", category, member1);
+            Cloth cloth11 = Cloth.createCloth("testImageUrl10", category, member1);
+            Cloth cloth12 = Cloth.createCloth("testImageUrl11", category, member1);
+            clothRepository.saveAll(
+                    List.of(
+                            cloth1, cloth2, cloth3, cloth4, cloth5, cloth6, cloth7, cloth8, cloth9,
+                            cloth10, cloth11, cloth12));
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member2, lookBook2);
+            coordinateRepository.saveAll(List.of(coordinate1, coordinate2));
+
+            CoordinateCloth coordinateCloth1 =
+                    CoordinateCloth.createCoordinateCloth(
+                            1.0, 1.0, 1.0, 50.0, 1, coordinate1, cloth1);
+            CoordinateCloth coordinateCloth2 =
+                    CoordinateCloth.createCoordinateCloth(
+                            2.0, 2.0, 2.0, 60.0, 2, coordinate1, cloth2);
+            coordinateClothRepository.saveAll(List.of(coordinateCloth1, coordinateCloth2));
+        }
+
+        @Test
+        void 유효한_요청이면_코디_정보가_업데이트된다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "updatedTestUrl",
+                            "updatedTestName",
+                            "updatedTestMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.0, 100.0, 1.5, 100.0, 2),
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.0, 100.0, 1.5, 100.0, 1)));
+
+            // when
+            coordinateService.updateCoordinate(1L, request);
+
+            // then
+            Coordinate coordinate =
+                    transactionUtil.getResult(
+                            () -> {
+                                Coordinate loadedCoordinate =
+                                        coordinateRepository.findById(1L).get();
+                                loadedCoordinate.getCoordinateClothes().get(0);
+                                return loadedCoordinate;
+                            });
+
+            Assertions.assertAll(
+                    () ->
+                            assertThat(coordinate)
+                                    .extracting("imageUrl", "name", "memo")
+                                    .containsExactly(
+                                            "updatedTestUrl", "updatedTestName", "updatedTestMemo"),
+                    () ->
+                            assertThat(coordinate.getCoordinateClothes())
+                                    .extracting(
+                                            cc -> cc.getCloth().getId(),
+                                            cc -> cc.getLocation().getLocationX(),
+                                            cc -> cc.getLocation().getLocationY(),
+                                            CoordinateCloth::getRatio,
+                                            CoordinateCloth::getDegree,
+                                            CoordinateCloth::getOrder)
+                                    .containsExactlyInAnyOrder(
+                                            tuple(1L, 100.0, 100.0, 1.5, 100.0, 2),
+                                            tuple(2L, 100.0, 100.0, 1.5, 100.0, 1)));
+        }
+
+        @Test
+        void 기존의_등록된_옷을_제외하고_요청하면_CoordinateCloth를_삭제한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "updatedTestUrl",
+                            "updatedTestName",
+                            "updatedTestMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.0, 100.0, 1.5, 100.0, 1)));
+
+            // when
+            coordinateService.updateCoordinate(1L, request);
+
+            // then
+
+            assertThat(coordinateClothRepository.findById(1L).isPresent()).isFalse();
+        }
+
+        @Test
+        void 새로운_옷을_요청하면_CoordinateCloth를_생성한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "updatedTestUrl",
+                            "updatedTestName",
+                            "updatedTestMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.0, 100.0, 1.5, 100.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            3L, 100.0, 100.0, 1.5, 100.0, 2)));
+
+            // when
+            coordinateService.updateCoordinate(1L, request);
+
+            // then
+            assertThat(coordinateClothRepository.findById(3L).orElseThrow())
+                    .extracting(
+                            "cloth.id",
+                            "location.locationX",
+                            "location.locationY",
+                            "ratio",
+                            "degree",
+                            "order")
+                    .containsExactly(3L, 100.0, 100.0, 1.5, 100.0, 2);
+        }
+
+        @Test
+        void 코디_사진을_수정하면_기존의_사진을_S3에서_삭제하는_이벤트를_발행한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "updatedTestUrl",
+                            "updatedTestName",
+                            "updatedTestMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.0, 100.0, 1.5, 100.0, 1)));
+
+            // when
+            coordinateService.updateCoordinate(1L, request);
+
+            // then
+            var events = applicationEvents.stream(ImageDeleteEvent.class).toList();
+            assertThat(events).hasSize(1);
+            assertThat(events.getFirst().imageUrl()).isEqualTo("testUrl");
+        }
+
+        @Test
+        void 코디_사진을_수정하지_않으면_기존의_사진을_S3에서_삭제하는_이벤트를_발행하지_않는다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "updatedTestName",
+                            "updatedTestMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.0, 100.0, 1.5, 100.0, 1)));
+
+            // when
+            coordinateService.updateCoordinate(1L, request);
+
+            // then
+            var events = applicationEvents.stream(ImageDeleteEvent.class).toList();
+            assertThat(events).isEmpty();
+        }
+
+        @Test
+        void 옷의_ORDER가_유효하지_않은_경우_에외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.5, 200.25, 1.0, 50.0, 3)));
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.INVALID_ORDER.getMessage());
+        }
+
+        @Test
+        void 옷을_10개_초과로_등록하는_경우_예외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.5, 200.25, 1.0, 50.0, 2),
+                                    new CoordinateUpdateRequest.Payload(
+                                            3L, 100.5, 200.25, 1.0, 50.0, 3),
+                                    new CoordinateUpdateRequest.Payload(
+                                            5L, 100.5, 200.25, 1.0, 50.0, 4),
+                                    new CoordinateUpdateRequest.Payload(
+                                            6L, 100.5, 200.25, 1.0, 50.0, 5),
+                                    new CoordinateUpdateRequest.Payload(
+                                            7L, 100.5, 200.25, 1.0, 50.0, 6),
+                                    new CoordinateUpdateRequest.Payload(
+                                            8L, 100.5, 200.25, 1.0, 50.0, 7),
+                                    new CoordinateUpdateRequest.Payload(
+                                            9L, 100.5, 200.25, 1.0, 50.0, 8),
+                                    new CoordinateUpdateRequest.Payload(
+                                            10L, 100.5, 200.25, 1.0, 50.0, 9),
+                                    new CoordinateUpdateRequest.Payload(
+                                            11L, 100.5, 200.25, 1.0, 50.0, 10),
+                                    new CoordinateUpdateRequest.Payload(
+                                            12L, 100.5, 200.25, 1.0, 50.0, 11)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.CLOTHES_OVER_COORDINATION_LIMIT.getMessage());
+        }
+
+        @Test
+        void 중복된_옷을_입력하면_예외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 2)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.DUPLICATED_CLOTH.getMessage());
+        }
+
+        @Test
+        void 존재하지_않는_옷을_포함하는_경우_예외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            999L, 100.5, 200.25, 1.0, 50.0, 3)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.ClOTH_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_옷이_아닌_옷이_포함된_경우_예외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            4L, 100.5, 200.25, 1.0, 50.0, 2)));
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.NOT_CLOTH_OWNER.getMessage());
+        }
+
+        @Test
+        void 존재하지_않는_코디를_입력하면_예외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.5, 200.25, 1.0, 50.0, 2)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(999L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_코디가_아닌_경우_예외가_발생한다() {
+            // given
+            CoordinateUpdateRequest request =
+                    new CoordinateUpdateRequest(
+                            "testUrl",
+                            "testName",
+                            "testMemo",
+                            List.of(
+                                    new CoordinateUpdateRequest.Payload(
+                                            1L, 100.5, 200.25, 1.0, 50.0, 1),
+                                    new CoordinateUpdateRequest.Payload(
+                                            2L, 100.5, 200.25, 1.0, 50.0, 2)));
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.updateCoordinate(2L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.NOT_COORDINATE_OWNER.getMessage());
         }
     }
 }
