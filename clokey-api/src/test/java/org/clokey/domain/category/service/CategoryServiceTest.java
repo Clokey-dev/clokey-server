@@ -49,8 +49,6 @@ public class CategoryServiceTest extends IntegrationTest {
             assertThat(result).hasSize(2);
             assertThat(result.get(0).name()).isEqualTo("상의");
             assertThat(result.get(1).name()).isEqualTo("하의");
-
-            // 하위 카테고리 검증
             assertThat(result.get(0).children())
                     .extracting(GetCategoryListResponse::name)
                     .containsExactly("상의1", "상의2");
