@@ -15,9 +15,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
 
+    @Override
+    @Transactional
     public List<GetCategoryListResponse> getCategoryList() {
 
-        List<Category> parentCategories = categoryRepository.findAllByParentIsNull();
+        final List<Category> parentCategories = categoryRepository.findAllByParentIsNull();
 
         return parentCategories.stream()
                 .map(
