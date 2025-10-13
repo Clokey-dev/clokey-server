@@ -37,6 +37,7 @@ public class CoordinateRepositoryImpl implements CoordinateRepositoryCustom {
                         .from(coordinate)
                         .join(coordinate.member, member)
                         .where(
+                                coordinate.member.id.eq(currentMemberId),
                                 coordinate.coordinateType.eq(CoordinateType.DAILY),
                                 coordinate.lookBook.isNull(),
                                 lastCoordinateIdCondition(lastCoordinateId, direction))

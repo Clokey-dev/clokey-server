@@ -21,6 +21,7 @@ import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
+import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
@@ -29,11 +30,13 @@ import org.clokey.domain.lookbook.exception.LookBookErrorCode;
 import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
+import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -1066,6 +1069,134 @@ class CoordinateServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> coordinateService.deleteCoordinate(3L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
+        }
+    }
+
+    @Nested
+    class 오늘의_코디_목록을_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook = LookBook.createLookBook("testName", member1);
+            lookBookRepository.save(lookBook);
+
+            Coordinate coordinate1 = Coordinate.createDailyCoordinate("testImageUrl1", member1);
+            Coordinate coordinate2 = Coordinate.createDailyCoordinate("testImageUrl2", member1);
+            Coordinate coordinate3 = Coordinate.createDailyCoordinate("testImageUrl3", member1);
+
+            /** 이와 같은 조건이 보이지 않습니다. */
+            Coordinate customCoordinate =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testImageUrl4", member1, lookBook);
+            Coordinate dailyCoordinateAlreadyAdded =
+                    Coordinate.createDailyCoordinate("testImageUrl5", member1);
+            dailyCoordinateAlreadyAdded.addToDailyCoordinateToLookBook(
+                    "testName", "testMemo", lookBook);
+            coordinateRepository.saveAll(
+                    List.of(
+                            coordinate1,
+                            coordinate2,
+                            coordinate3,
+                            customCoordinate,
+                            dailyCoordinateAlreadyAdded));
+        }
+
+        @Test
+        void 정렬_조건이_ASC이면_coordinateId를_오름차순으로_조회한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("coordinateId").containsExactly(1L, 2L, 3L);
+        }
+
+        @Test
+        void 정렬_조건이_DESC면_coordinateId를_내림차순으로_조회한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.DESC);
+
+            // then
+            assertThat(response.content()).extracting("coordinateId").containsExactly(3L, 2L, 1L);
+        }
+
+        @Test
+        void lastCoordinateId를_입력하면_다음_coordinate_부터_조회한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(1L, 2, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("coordinateId").containsExactly(2L, 3L);
+        }
+
+        @Test
+        void 조건에_맞는_오늘의_코디가_없는_경우_빈_리스트를_조회한다() {
+            // given
+            Member member = memberRepository.findById(2L).orElseThrow();
+            given(memberUtil.getCurrentMember()).willReturn(member);
+
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.ASC);
+
+            // when & then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isZero(),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지인_경우_isLast를_true로_반환한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(3),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 2, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(2),
+                    () -> assertThat(response.isLast()).isFalse());
+        }
+
+        @Test
+        void 오늘의_코디가_아니거나_이미_룩북에_추가된_오늘의_코디는_조회되지_않는다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(3L, 2, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isZero(),
+                    () -> assertThat(response.isLast()).isTrue());
         }
     }
 }
