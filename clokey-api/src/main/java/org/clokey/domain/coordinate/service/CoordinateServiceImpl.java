@@ -1,9 +1,6 @@
 package org.clokey.domain.coordinate.service;
 
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -12,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.coordinate.entity.Coordinate;
 import org.clokey.coordinate.entity.CoordinateCloth;
+import org.clokey.coordinate.enums.CoordinateType;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
@@ -86,7 +84,6 @@ public class CoordinateServiceImpl implements CoordinateService {
         Coordinate coordinate =
                 Coordinate.createDailyCoordinate(request.coordinateImageUrl(), currentMember);
         coordinateRepository.save(coordinate);
-        saveDailyCoordinateToRedis(currentMember.getId(), coordinate.getId());
 
         List<CoordinateCloth> coordinateClothes =
                 request.payloads().stream()
@@ -300,7 +297,7 @@ public class CoordinateServiceImpl implements CoordinateService {
     }
 
     private void validateDailyCoordinateExist(Long memberId, LocalDate date) {
-        if (hasDailyCoordinate(memberId, date)) {
+        if (coordinateRepository.existsDailyCoordinateByDateAndMemberId(date, memberId)) {
             throw new BaseCustomException(CoordinateErrorCode.DAILY_COORDINATE_ALREADY_EXISTS);
         }
     }
@@ -332,27 +329,6 @@ public class CoordinateServiceImpl implements CoordinateService {
         }
     }
 
-    private Long getDailyCoordinateId(Long memberId, LocalDate date) {
-        String key = String.format("dailyCoordinate:%d:%s", memberId, date);
-        String value = redisTemplate.opsForValue().get(key);
-        return value != null ? Long.valueOf(value) : null;
-    }
-
-    private boolean hasDailyCoordinate(Long memberId, LocalDate date) {
-        String key = String.format("dailyCoordinate:%d:%s", memberId, date);
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
-    }
-
-    private void saveDailyCoordinateToRedis(Long memberId, Long coordinateId) {
-        String key = String.format("dailyCoordinate:%d:%s", memberId, LocalDate.now());
-
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime midnight = LocalDate.now().atTime(LocalTime.MAX);
-        Duration ttl = Duration.between(now, midnight);
-
-        redisTemplate.opsForValue().set(key, coordinateId.toString(), ttl);
-    }
-
     private void validateLookBookOwner(LookBook lookBook, Long memberId) {
         if (!Objects.equals(lookBook.getMember().getId(), memberId)) {
             throw new BaseCustomException(LookBookErrorCode.NOT_LOOK_BOOK_OWNER);
@@ -365,9 +341,8 @@ public class CoordinateServiceImpl implements CoordinateService {
         }
     }
 
-    /** 일일 코디는 특정 룩북에 속해 있지 않는 상태라는 것을 검증. */
     private void validateDailyCoordinate(Coordinate coordinate) {
-        if (coordinate.getLookBook() != null) {
+        if (coordinate.getCoordinateType() != CoordinateType.DAILY) {
             throw new BaseCustomException(CoordinateErrorCode.NOT_DAILY_COORDINATE);
         }
     }

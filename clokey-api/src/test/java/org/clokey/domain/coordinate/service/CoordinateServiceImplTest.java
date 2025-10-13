@@ -3,15 +3,9 @@ package org.clokey.domain.coordinate.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.assertj.core.api.AssertionsForClassTypes.within;
 import static org.mockito.BDDMockito.given;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.clokey.IntegrationTest;
 import org.clokey.RedisCleaner;
 import org.clokey.TransactionUtil;
@@ -19,6 +13,7 @@ import org.clokey.category.entity.Category;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.coordinate.entity.Coordinate;
 import org.clokey.coordinate.entity.CoordinateCloth;
+import org.clokey.coordinate.enums.CoordinateType;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
@@ -107,11 +102,6 @@ class CoordinateServiceImplTest extends IntegrationTest {
                             cloth10, cloth11, cloth12));
         }
 
-        @AfterEach
-        void cleanUp() {
-            redisCleaner.flushAll();
-        }
-
         @Test
         void 유효한_요청이면_오늘의_코디를_생성한다() {
             // given
@@ -137,21 +127,11 @@ class CoordinateServiceImplTest extends IntegrationTest {
                                 return loadedCoordinate;
                             });
 
-            String key = String.format("dailyCoordinate:%d:%s", 1L, LocalDate.now());
-            String savedValue = redisTemplate.opsForValue().get(key);
-
-            Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
-
-            // 오늘 자정까지 남은 예상 TTL (초 단위)
-            long expectedTtl =
-                    Duration.between(LocalDateTime.now(), LocalDate.now().atTime(LocalTime.MAX))
-                            .getSeconds();
-
             Assertions.assertAll(
                     () ->
                             assertThat(coordinate)
-                                    .extracting("imageUrl", "member.id")
-                                    .containsExactly("testUrl", 1L),
+                                    .extracting("imageUrl", "member.id", "coordinateType")
+                                    .containsExactly("testUrl", 1L, CoordinateType.DAILY),
                     () ->
                             assertThat(coordinate.getCoordinateClothes())
                                     .extracting(
@@ -159,10 +139,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
                                             CoordinateCloth::getOrder,
                                             CoordinateCloth::getRatio)
                                     .containsExactlyInAnyOrder(
-                                            tuple(1L, 1, 1.0), tuple(2L, 2, 1.0)),
-                    () -> assertThat(savedValue).isEqualTo(coordinate.getId().toString()),
-                    () -> assertThat(ttl).isCloseTo(expectedTtl, within(5L)) // 오차 범위 5초
-                    );
+                                            tuple(1L, 1, 1.0), tuple(2L, 2, 1.0)));
         }
 
         @Test
@@ -285,11 +262,9 @@ class CoordinateServiceImplTest extends IntegrationTest {
                                     new DailyCoordinateCreateRequest.Payload(
                                             2L, 100.5, 200.25, 1.0, 50.0, 2)));
 
-            String key = String.format("dailyCoordinate:%d:%s", 1L, LocalDate.now());
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime midnight = LocalDate.now().atTime(LocalTime.MAX);
-            Duration ttl = Duration.between(now, midnight);
-            redisTemplate.opsForValue().set(key, "1", ttl);
+            Member member = memberRepository.findById(1L).orElseThrow();
+            Coordinate coordinate = Coordinate.createDailyCoordinate("testImageUrl", member);
+            coordinateRepository.save(coordinate);
 
             // when & then
             assertThatThrownBy(() -> coordinateService.createDailyCoordinate(request))
@@ -557,10 +532,11 @@ class CoordinateServiceImplTest extends IntegrationTest {
             lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
 
             Coordinate coordinate1 = Coordinate.createDailyCoordinate("testUrl1", member1);
-            Coordinate coordinate2 = Coordinate.createDailyCoordinate("testUrl2", member1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testCoordinate", "testMemo", "testUrl2", member1, lookBook1);
             Coordinate coordinate3 = Coordinate.createDailyCoordinate("testUrl3", member2);
 
-            coordinate2.addToDailyCoordinateToLookBook("testName", "testMemo", lookBook1);
             coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
         }
 
@@ -607,9 +583,8 @@ class CoordinateServiceImplTest extends IntegrationTest {
                     .hasMessage(LookBookErrorCode.NOT_LOOK_BOOK_OWNER.getMessage());
         }
 
-        /** 과거의 오늘의 코디가 아니라고 판단되는 경우 */
         @Test
-        void 이미_룩북에_속하는_경우_예외가_발생한다() {
+        void 오늘의_코디가_아닌_경우_예외가_발생한다() {
             // given
             CoordinateAutoCreateRequest request =
                     new CoordinateAutoCreateRequest("testName", "testMemo", 2L, 1L);
