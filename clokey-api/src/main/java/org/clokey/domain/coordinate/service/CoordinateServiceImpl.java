@@ -282,6 +282,7 @@ public class CoordinateServiceImpl implements CoordinateService {
         final Coordinate coordinate = getCoordinateById(coordinateId);
 
         validateCoordinateOwner(coordinate, currentMember.getId());
+        validateCoordinateInLookBook(coordinate);
 
         /** 일일 코디였던 경우, 통계값을 위해 데이터를 보존합니다. */
         if (coordinate.getCoordinateType() == CoordinateType.DAILY) {
@@ -360,6 +361,12 @@ public class CoordinateServiceImpl implements CoordinateService {
     private void validateDailyCoordinate(Coordinate coordinate) {
         if (coordinate.getCoordinateType() != CoordinateType.DAILY) {
             throw new BaseCustomException(CoordinateErrorCode.NOT_DAILY_COORDINATE);
+        }
+    }
+
+    private void validateCoordinateInLookBook(Coordinate coordinate) {
+        if (coordinate.getLookBook() == null) {
+            throw new BaseCustomException(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK);
         }
     }
 
