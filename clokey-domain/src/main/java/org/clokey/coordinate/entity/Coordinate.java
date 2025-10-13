@@ -97,4 +97,11 @@ public class Coordinate extends BaseEntity {
         this.memo = memo;
         this.imageUrl = imageUrl;
     }
+
+    public void detachDailyCoordinate() {
+        this.name = null;
+        this.memo = null;
+        this.liked = false;
+        this.lookBook = null;
+    }
 }

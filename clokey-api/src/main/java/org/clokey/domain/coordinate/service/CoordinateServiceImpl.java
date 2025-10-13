@@ -276,7 +276,23 @@ public class CoordinateServiceImpl implements CoordinateService {
     }
 
     @Override
-    public void deleteCoordinate(Long coordinateId) {}
+    @Transactional
+    public void deleteCoordinate(Long coordinateId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Coordinate coordinate = getCoordinateById(coordinateId);
+
+        validateCoordinateOwner(coordinate, currentMember.getId());
+
+        /** 일일 코디였던 경우, 통계값을 위해 데이터를 보존합니다. */
+        if (coordinate.getCoordinateType() == CoordinateType.DAILY) {
+            coordinate.detachDailyCoordinate();
+            return;
+        }
+
+        coordinateClothRepository.deleteAllByCoordinateId(coordinate.getId());
+        eventPublisher.publishEvent(ImageDeleteEvent.of(coordinate.getImageUrl()));
+        coordinateRepository.delete(coordinate);
+    }
 
     private void validateAllClothesExist(List<Long> clothIds, Map<Long, Cloth> clothMap) {
         boolean hasMissing = clothIds.stream().anyMatch(clothId -> !clothMap.containsKey(clothId));
