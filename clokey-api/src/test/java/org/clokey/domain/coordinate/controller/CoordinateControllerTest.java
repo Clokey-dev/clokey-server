@@ -2,8 +2,7 @@ package org.clokey.domain.coordinate.controller;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -1311,6 +1310,26 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.degree").value("각도는 360도 이하여야 합니다."));
+        }
+    }
+
+    @Nested
+    class 코디ㅡ삭제_요청_시 {
+
+        @Test
+        void 유효한_요청이면_코디를_삭제_한다() throws Exception {
+            // given
+            willDoNothing().given(coordinateService).deleteCoordinate(1L);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            delete("/coordinate/1").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
         }
     }
 }

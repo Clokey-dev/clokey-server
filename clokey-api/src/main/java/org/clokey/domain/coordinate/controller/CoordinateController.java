@@ -58,6 +58,6 @@ public class CoordinateController {
     @Operation(summary = "코디 삭제", description = "코디를 룩북에서 삭제하는 API입니다.")
     public BaseResponse<Void> deleteCoordinate(@PathVariable Long coordinateId) {
         coordinateService.deleteCoordinate(coordinateId);
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, null);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }
