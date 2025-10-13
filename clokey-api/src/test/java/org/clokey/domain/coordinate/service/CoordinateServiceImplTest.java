@@ -986,18 +986,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Cloth cloth3 = Cloth.createCloth("testImageUrl", category, member1);
             Cloth cloth4 = Cloth.createCloth("testImageUrl", category, member2);
 
-            Cloth cloth5 = Cloth.createCloth("testImageUrl4", category, member1);
-            Cloth cloth6 = Cloth.createCloth("testImageUrl5", category, member1);
-            Cloth cloth7 = Cloth.createCloth("testImageUrl6", category, member1);
-            Cloth cloth8 = Cloth.createCloth("testImageUrl7", category, member1);
-            Cloth cloth9 = Cloth.createCloth("testImageUrl8", category, member1);
-            Cloth cloth10 = Cloth.createCloth("testImageUrl9", category, member1);
-            Cloth cloth11 = Cloth.createCloth("testImageUrl10", category, member1);
-            Cloth cloth12 = Cloth.createCloth("testImageUrl11", category, member1);
-            clothRepository.saveAll(
-                    List.of(
-                            cloth1, cloth2, cloth3, cloth4, cloth5, cloth6, cloth7, cloth8, cloth9,
-                            cloth10, cloth11, cloth12));
+            clothRepository.saveAll(List.of(cloth1, cloth2, cloth3, cloth4));
 
             Coordinate coordinate1 =
                     Coordinate.createCoordinateManual(
@@ -1006,7 +995,10 @@ class CoordinateServiceImplTest extends IntegrationTest {
                     Coordinate.createCoordinateManual(
                             "testName", "testMemo", "testUrl", member2, lookBook2);
             Coordinate coordinate3 = Coordinate.createDailyCoordinate("testImageUrl", member1);
-            coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
+            Coordinate coordinate4 = Coordinate.createDailyCoordinate("testImageUrl", member1);
+            coordinate4.addToDailyCoordinateToLookBook("testName", "testMemo", lookBook1);
+            coordinateRepository.saveAll(
+                    List.of(coordinate1, coordinate2, coordinate3, coordinate4));
 
             CoordinateCloth coordinateCloth1 =
                     CoordinateCloth.createCoordinateCloth(
@@ -1014,11 +1006,15 @@ class CoordinateServiceImplTest extends IntegrationTest {
             CoordinateCloth coordinateCloth2 =
                     CoordinateCloth.createCoordinateCloth(
                             2.0, 2.0, 2.0, 60.0, 2, coordinate1, cloth2);
-            coordinateClothRepository.saveAll(List.of(coordinateCloth1, coordinateCloth2));
+            CoordinateCloth coordinateCloth3 =
+                    CoordinateCloth.createCoordinateCloth(
+                            2.0, 2.0, 2.0, 60.0, 2, coordinate4, cloth1);
+            coordinateClothRepository.saveAll(
+                    List.of(coordinateCloth1, coordinateCloth2, coordinateCloth3));
         }
 
         @Test
-        void 유효한_요청이면_코디와_관련된_모든것을_삭제한다() {
+        void 수동으로_만들어진_코디는_유관_정보를_모두_삭제한다() {
             // when
             coordinateService.deleteCoordinate(1L);
 
@@ -1032,6 +1028,20 @@ class CoordinateServiceImplTest extends IntegrationTest {
                     () -> assertThat(events.getFirst().imageUrl()).isEqualTo("testUrl"),
                     () -> assertThat(coordinateClothRepository.findById(1L).isPresent()).isFalse(),
                     () -> assertThat(coordinateClothRepository.findById(2L).isPresent()).isFalse());
+        }
+
+        @Test
+        void 오늘의_코디에서_추가된_코디는_룩북에서만_제거한다() {
+            // when
+            coordinateService.deleteCoordinate(4L);
+
+            // then
+            Assertions.assertAll(
+                    () ->
+                            assertThat(coordinateRepository.findById(3L).orElseThrow())
+                                    .extracting("name", "memo", "liked", "lookBook")
+                                    .containsExactly(null, null, false, null),
+                    () -> assertThat(coordinateClothRepository.findById(3L)).isPresent());
         }
 
         @Test
