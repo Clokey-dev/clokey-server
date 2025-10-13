@@ -1,6 +1,7 @@
 package org.clokey.domain.coordinate.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +11,12 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
+import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.service.CoordinateService;
+import org.clokey.global.annotation.PageSize;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.response.BaseResponse;
+import org.clokey.response.SliceResponse;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -59,5 +64,20 @@ public class CoordinateController {
     public BaseResponse<Void> deleteCoordinate(@PathVariable Long coordinateId) {
         coordinateService.deleteCoordinate(coordinateId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+    }
+
+    @GetMapping("/daily")
+    @Operation(summary = "과거 일일 코디 조회", description = "룩북 추가를 위해 과거 일일 코디를 조회하는 API입니다.")
+    public BaseResponse<SliceResponse<DailyCoordinateListResponse>> getDailyCoordinates(
+            @Parameter(description = "이전 페이지의 마지막 코디 ID (첫 요청 시 생략)")
+                    @RequestParam(required = false)
+                    Long lastCoordinateId,
+            @Parameter(description = "페이지당 조회할 코디 수") @RequestParam @PageSize Integer size,
+            @Parameter(description = "정렬 방향 (ASC: 오래된순, DESC: 최신순)")
+                    @RequestParam(defaultValue = "DESC")
+                    SortDirection direction) {
+        SliceResponse<DailyCoordinateListResponse> response =
+                coordinateService.getDailyCoordinates(lastCoordinateId, size, direction);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

@@ -1,0 +1,74 @@
+package org.clokey.domain.coordinate.repository;
+
+import static org.clokey.coordinate.entity.QCoordinate.coordinate;
+import static org.clokey.member.entity.QMember.member;
+
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.clokey.coordinate.enums.CoordinateType;
+import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
+import org.clokey.global.paging.SortDirection;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class CoordinateRepositoryImpl implements CoordinateRepositoryCustom {
+
+    private final JPAQueryFactory queryFactory;
+
+    @Override
+    public Slice<DailyCoordinateListResponse> findAllDailyCoordinateByMemberId(
+            Long currentMemberId, Long lastCoordinateId, int size, SortDirection direction) {
+
+        List<DailyCoordinateListResponse> results =
+                queryFactory
+                        .select(
+                                Projections.constructor(
+                                        DailyCoordinateListResponse.class,
+                                        coordinate.id,
+                                        coordinate.imageUrl,
+                                        coordinate.createdAt))
+                        .from(coordinate)
+                        .join(coordinate.member, member)
+                        .where(
+                                coordinate.coordinateType.eq(CoordinateType.DAILY),
+                                coordinate.lookBook.isNull(),
+                                lastCoordinateIdCondition(lastCoordinateId, direction))
+                        .orderBy(
+                                direction == SortDirection.DESC
+                                        ? coordinate.id.desc()
+                                        : coordinate.id.asc())
+                        .limit(size + 1)
+                        .fetch();
+
+        return checkLastPage(size, results);
+    }
+
+    private BooleanExpression lastCoordinateIdCondition(
+            Long coordinateId, SortDirection direction) {
+        if (coordinateId == null) {
+            return null;
+        }
+
+        return direction == SortDirection.DESC
+                ? coordinate.id.lt(coordinateId)
+                : coordinate.id.gt(coordinateId);
+    }
+
+    private <T> Slice<T> checkLastPage(int pageSize, List<T> results) {
+        boolean hasNext = false;
+
+        if (results.size() > pageSize) {
+            hasNext = true;
+            results.remove(pageSize);
+        }
+
+        return new SliceImpl<>(results, PageRequest.of(0, pageSize), hasNext);
+    }
+}
