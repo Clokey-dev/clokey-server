@@ -19,12 +19,14 @@ import org.clokey.global.annotation.PageSize;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.response.BaseResponse;
 import org.clokey.response.SliceResponse;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/coordinate")
 @RequiredArgsConstructor
 @Tag(name = "5. 코디 API", description = "코디 관련 API입니다.")
+@Validated
 public class CoordinateController {
 
     private final CoordinateService coordinateService;
