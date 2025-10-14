@@ -14,6 +14,8 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.service.CoordinateService;
 import org.clokey.global.paging.SortDirection;
@@ -1512,6 +1514,94 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+        }
+    }
+
+    @Nested
+    class 코디_Preview_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_코디_Preview를_반환한다() throws Exception {
+            // given
+            CoordinatePreviewResponse response =
+                    new CoordinatePreviewResponse(1L, "testImageUrl", "testName", "testMemo");
+            given(coordinateService.getCoordinatePreview(1L)).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/coordinate/1/preview").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.coordinateId").value(1))
+                    .andExpect(jsonPath("$.result.coordinateId").value("testImageUrl"))
+                    .andExpect(jsonPath("$.result.coordinateId").value("testName"))
+                    .andExpect(jsonPath("$.result.coordinateId").value("testMemo"));
+        }
+    }
+
+    @Nested
+    class 코디_Details_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_코디_Details를_반환한다() throws Exception {
+            // given
+            CoordinateDetailsResponse response =
+                    new CoordinateDetailsResponse(
+                            List.of(
+                                    new CoordinateDetailsResponse.Payload(
+                                            1L,
+                                            50.2,
+                                            60.1,
+                                            1.5,
+                                            240.1,
+                                            1,
+                                            "testImageUrl1",
+                                            "testBrand1",
+                                            "testName1"),
+                                    new CoordinateDetailsResponse.Payload(
+                                            2L,
+                                            50.2,
+                                            60.1,
+                                            1.5,
+                                            240.1,
+                                            2,
+                                            "testImageUrl2",
+                                            "testBrand2",
+                                            "testName2")));
+
+            given(coordinateService.getCoordinateDetails(1L)).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/coordinate/1/details").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.payloads[0].coordinateClothId").value(1))
+                    .andExpect(jsonPath("$.result.payloads[0].locationX").value(50.2))
+                    .andExpect(jsonPath("$.result.payloads[0].locationY").value(60.1))
+                    .andExpect(jsonPath("$.result.payloads[0].ratio").value(1.5))
+                    .andExpect(jsonPath("$.result.payloads[0].degree").value(240.1))
+                    .andExpect(jsonPath("$.result.payloads[0].order").value(1))
+                    .andExpect(jsonPath("$.result.payloads[0].imageUrl").value("testImageUrl1"))
+                    .andExpect(jsonPath("$.result.payloads[0].brand").value("testBrand1"))
+                    .andExpect(jsonPath("$.result.payloads[0].name").value("testName1"))
+                    .andExpect(jsonPath("$.result.payloads[1].coordinateClothId").value(2))
+                    .andExpect(jsonPath("$.result.payloads[1].locationX").value(50.2))
+                    .andExpect(jsonPath("$.result.payloads[1].locationY").value(60.1))
+                    .andExpect(jsonPath("$.result.payloads[1].ratio").value(1.5))
+                    .andExpect(jsonPath("$.result.payloads[1].degree").value(240.1))
+                    .andExpect(jsonPath("$.result.payloads[1].order").value(2))
+                    .andExpect(jsonPath("$.result.payloads[1].imageUrl").value("testImageUrl2"))
+                    .andExpect(jsonPath("$.result.payloads[1].brand").value("testBrand2"))
+                    .andExpect(jsonPath("$.result.payloads[1].name").value("testName2"));
         }
     }
 }
