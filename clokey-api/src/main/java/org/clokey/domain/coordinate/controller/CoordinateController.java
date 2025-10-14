@@ -11,6 +11,8 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.service.CoordinateService;
 import org.clokey.global.annotation.PageSize;
@@ -78,6 +80,22 @@ public class CoordinateController {
                     SortDirection direction) {
         SliceResponse<DailyCoordinateListResponse> response =
                 coordinateService.getDailyCoordinates(lastCoordinateId, size, direction);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/{coordinateId}/preview")
+    @Operation(summary = "코디 Preview 조회", description = "룩북에 존재하는 코디의 Preview를 조회하는 API입니다.")
+    public BaseResponse<CoordinatePreviewResponse> getCoordinatePreview(
+            @PathVariable Long coordinateId) {
+        CoordinatePreviewResponse response = coordinateService.getCoordinatePreview(coordinateId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/{coordinateId}/details")
+    @Operation(summary = "코디 Details 조회", description = "룩북에 존재하는 코디의 Details를 조회하는 API입니다.")
+    public BaseResponse<CoordinateDetailsResponse> getCoordinateDetails(
+            @PathVariable Long coordinateId) {
+        CoordinateDetailsResponse response = coordinateService.getCoordinateDetails(coordinateId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

@@ -5,6 +5,8 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.response.SliceResponse;
@@ -23,4 +25,8 @@ public interface CoordinateService {
 
     SliceResponse<DailyCoordinateListResponse> getDailyCoordinates(
             Long lastCoordinateId, int size, SortDirection direction);
+
+    CoordinatePreviewResponse getCoordinatePreview(Long coordinateId);
+
+    CoordinateDetailsResponse getCoordinateDetails(Long coordinateId);
 }
