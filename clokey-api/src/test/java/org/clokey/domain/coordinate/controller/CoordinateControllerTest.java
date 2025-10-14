@@ -1537,9 +1537,9 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
                     .andExpect(jsonPath("$.result.coordinateId").value(1))
-                    .andExpect(jsonPath("$.result.coordinateId").value("testImageUrl"))
-                    .andExpect(jsonPath("$.result.coordinateId").value("testName"))
-                    .andExpect(jsonPath("$.result.coordinateId").value("testMemo"));
+                    .andExpect(jsonPath("$.result.imageUrl").value("testImageUrl"))
+                    .andExpect(jsonPath("$.result.coordinateName").value("testName"))
+                    .andExpect(jsonPath("$.result.coordinateMemo").value("testMemo"));
         }
     }
 
