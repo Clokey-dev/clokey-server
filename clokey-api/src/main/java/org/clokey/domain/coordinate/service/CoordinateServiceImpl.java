@@ -319,6 +319,7 @@ public class CoordinateServiceImpl implements CoordinateService {
         final Coordinate coordinate = getCoordinateById(coordinateId);
 
         validateCoordinateOwner(coordinate, currentMember.getId());
+        validateCoordinateInLookBook(coordinate);
 
         return CoordinatePreviewResponse.from(coordinate);
     }
@@ -329,6 +330,7 @@ public class CoordinateServiceImpl implements CoordinateService {
         final Coordinate coordinate = getCoordinateById(coordinateId);
 
         validateCoordinateOwner(coordinate, currentMember.getId());
+        validateCoordinateInLookBook(coordinate);
 
         List<CoordinateCloth> coordinateCloths =
                 coordinateClothRepository.findAllCoordinateClothFetchClothByCoordinateId(

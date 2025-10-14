@@ -21,6 +21,8 @@ import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
@@ -1197,6 +1199,181 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Assertions.assertAll(
                     () -> assertThat(response.content().size()).isZero(),
                     () -> assertThat(response.isLast()).isTrue());
+        }
+    }
+
+    @Nested
+    class 코디_Preview를_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member2);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName1", "testMemo1", "testImageUrl1", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName2", "testMemo2", "testImageUrl2", member2, lookBook2);
+            Coordinate coordinate3 =
+                    Coordinate.createCoordinateManual(
+                            "testName3", "testMemo3", "testImageUrl3", member1, null);
+
+            coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
+        }
+
+        @Test
+        void 유효한_요청이면_Preview를_반환한다() {
+            // when
+            CoordinatePreviewResponse response = coordinateService.getCoordinatePreview(1L);
+
+            // then
+            assertThat(response)
+                    .extracting("coordinateId", "imageUrl", "coordinateName", "coordinateMemo")
+                    .containsExactly(1L, "testImageUrl1", "testName1", "testMemo1");
+        }
+
+        @Test
+        void 코디가_존재하지_않으면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinatePreview(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinatePreview(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.NOT_COORDINATE_OWNER.getMessage());
+        }
+
+        @Test
+        void 룩북에_속한_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinatePreview(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
+        }
+    }
+
+    @Nested
+    class 코디_Details를_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member2);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName1", "testMemo1", "testImageUrl1", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName2", "testMemo2", "testImageUrl2", member2, lookBook2);
+            Coordinate coordinate3 =
+                    Coordinate.createCoordinateManual(
+                            "testName3", "testMemo3", "testImageUrl3", member1, null);
+            coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
+
+            Category category = Category.createCategory("testCategory", null);
+            categoryRepository.save(category);
+
+            Cloth cloth1 = Cloth.createCloth("testImageUrl1", category, member1);
+            Cloth cloth2 = Cloth.createCloth("testImageUrl2", category, member1);
+            clothRepository.saveAll(List.of(cloth1, cloth2));
+
+            CoordinateCloth coordinateCloth1 =
+                    CoordinateCloth.createCoordinateCloth(
+                            50.1, 120.1, 1.5, 240.1, 1, coordinate1, cloth1);
+
+            CoordinateCloth coordinateCloth2 =
+                    CoordinateCloth.createCoordinateCloth(
+                            50.1, 120.1, 1.5, 240.1, 2, coordinate1, cloth2);
+
+            coordinateClothRepository.saveAll(List.of(coordinateCloth1, coordinateCloth2));
+        }
+
+        @Test
+        void 유효한_요청이면_코디_Details를_반환한다() {
+            // when
+            CoordinateDetailsResponse response = coordinateService.getCoordinateDetails(1L);
+
+            // then
+            assertThat(response.payloads())
+                    .extracting(
+                            CoordinateDetailsResponse.Payload::coordinateClothId,
+                            CoordinateDetailsResponse.Payload::locationX,
+                            CoordinateDetailsResponse.Payload::locationY,
+                            CoordinateDetailsResponse.Payload::ratio,
+                            CoordinateDetailsResponse.Payload::degree,
+                            CoordinateDetailsResponse.Payload::order,
+                            CoordinateDetailsResponse.Payload::imageUrl,
+                            CoordinateDetailsResponse.Payload::brand,
+                            CoordinateDetailsResponse.Payload::name)
+                    .containsExactly(
+                            tuple(1L, 50.1, 120.1, 1.5, 240.1, 1, "testImageUrl1", null, null),
+                            tuple(2L, 50.1, 120.1, 1.5, 240.1, 2, "testImageUrl2", null, null));
+        }
+
+        @Test
+        void 코디가_존재하지_않으면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinateDetails(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinateDetails(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.NOT_COORDINATE_OWNER.getMessage());
+        }
+
+        @Test
+        void 룩북에_속한_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinateDetails(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
         }
     }
 }
