@@ -110,7 +110,7 @@ jobs:
             export SWAGGER_PASSWORD=${{ secrets.SWAGGER_PASSWORD }}
 
             cd /home/ubuntu
-            docker compose -f prod-docker-compose.yml up -d
+            docker compose -f clokey-api/prod-docker-compose.yml up -d
 
             echo "Cleaning up dangling Docker images..."
             docker image prune -f
