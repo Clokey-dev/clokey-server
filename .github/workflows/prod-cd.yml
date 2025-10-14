@@ -109,6 +109,8 @@ jobs:
             export SWAGGER_USERNAME=${{ secrets.SWAGGER_USERNAME }}
             export SWAGGER_PASSWORD=${{ secrets.SWAGGER_PASSWORD }}
 
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            
             cd /home/ubuntu
             docker compose -f clokey-api/prod-compose.yml up -d
 
