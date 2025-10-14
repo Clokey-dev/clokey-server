@@ -64,7 +64,7 @@ jobs:
           username: ubuntu
           host: ${{ secrets.PROD_EC2_HOST }}
           key: ${{ secrets.PROD_EC2_SSH_KEY }}
-          source: ./clokey-api/prod-docker-compose.yml
+          source: ./clokey-api/prod-compose.yml
           target: /home/ubuntu/
 
       - name: Deploy App
