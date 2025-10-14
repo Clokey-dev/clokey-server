@@ -54,7 +54,7 @@ jobs:
           docker buildx build \
             --platform linux/amd64 \
             --push \
-            --file Dockerfile \
+            --file clokey-api/Dockerfile \
             --tag ${{ secrets.DOCKERHUB_USERNAME }}/clokey-docker-2025:prod-app \
             .
 
