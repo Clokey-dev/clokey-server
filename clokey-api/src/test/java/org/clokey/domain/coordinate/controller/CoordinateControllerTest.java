@@ -1561,7 +1561,8 @@ class CoordinateControllerTest {
                                             1,
                                             "testImageUrl1",
                                             "testBrand1",
-                                            "testName1"),
+                                            "testName1",
+                                            "testCategoryName1"),
                                     new CoordinateDetailsResponse.Payload(
                                             2L,
                                             50.2,
@@ -1571,7 +1572,8 @@ class CoordinateControllerTest {
                                             2,
                                             "testImageUrl2",
                                             "testBrand2",
-                                            "testName2")));
+                                            "testName2",
+                                            "testCategoryName2")));
 
             given(coordinateService.getCoordinateDetails(1L)).willReturn(response);
 
@@ -1593,6 +1595,7 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.result.payloads[0].imageUrl").value("testImageUrl1"))
                     .andExpect(jsonPath("$.result.payloads[0].brand").value("testBrand1"))
                     .andExpect(jsonPath("$.result.payloads[0].name").value("testName1"))
+                    .andExpect(jsonPath("$.result.payloads[0].category").value("testCategoryName1"))
                     .andExpect(jsonPath("$.result.payloads[1].coordinateClothId").value(2))
                     .andExpect(jsonPath("$.result.payloads[1].locationX").value(50.2))
                     .andExpect(jsonPath("$.result.payloads[1].locationY").value(60.1))
@@ -1601,7 +1604,9 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.result.payloads[1].order").value(2))
                     .andExpect(jsonPath("$.result.payloads[1].imageUrl").value("testImageUrl2"))
                     .andExpect(jsonPath("$.result.payloads[1].brand").value("testBrand2"))
-                    .andExpect(jsonPath("$.result.payloads[1].name").value("testName2"));
+                    .andExpect(jsonPath("$.result.payloads[1].name").value("testName2"))
+                    .andExpect(
+                            jsonPath("$.result.payloads[1].category").value("testCategoryName2"));
         }
     }
 }

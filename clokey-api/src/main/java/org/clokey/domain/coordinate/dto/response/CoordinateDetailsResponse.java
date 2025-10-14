@@ -17,7 +17,8 @@ public record CoordinateDetailsResponse(
             @Schema(description = "코디-옷의 순서", example = "1") int order,
             @Schema(description = "옷의 imageUrl", example = "https://example.jpg") String imageUrl,
             @Schema(description = "옷 브랜드", example = "나이키") String brand,
-            @Schema(description = "옷 이름", example = "나이키 맨투맨") String name) {}
+            @Schema(description = "옷 이름", example = "나이키 맨투맨") String name,
+            @Schema(description = "옷 이름", example = "맨투맨") String category) {}
 
     public static CoordinateDetailsResponse from(List<CoordinateCloth> coordinateClothes) {
         List<Payload> payloads =
@@ -33,7 +34,8 @@ public record CoordinateDetailsResponse(
                                                 cc.getOrder(),
                                                 cc.getCloth().getClothImageUrl(),
                                                 cc.getCloth().getBrand(),
-                                                cc.getCloth().getName()))
+                                                cc.getCloth().getName(),
+                                                cc.getCloth().getCategory().getName()))
                         .collect(Collectors.toList());
 
         return new CoordinateDetailsResponse(payloads);

@@ -1346,10 +1346,31 @@ class CoordinateServiceImplTest extends IntegrationTest {
                             CoordinateDetailsResponse.Payload::order,
                             CoordinateDetailsResponse.Payload::imageUrl,
                             CoordinateDetailsResponse.Payload::brand,
-                            CoordinateDetailsResponse.Payload::name)
+                            CoordinateDetailsResponse.Payload::name,
+                            CoordinateDetailsResponse.Payload::category)
                     .containsExactly(
-                            tuple(1L, 50.1, 120.1, 1.5, 240.1, 1, "testImageUrl1", null, null),
-                            tuple(2L, 50.1, 120.1, 1.5, 240.1, 2, "testImageUrl2", null, null));
+                            tuple(
+                                    1L,
+                                    50.1,
+                                    120.1,
+                                    1.5,
+                                    240.1,
+                                    1,
+                                    "testImageUrl1",
+                                    null,
+                                    null,
+                                    "testCategory"),
+                            tuple(
+                                    2L,
+                                    50.1,
+                                    120.1,
+                                    1.5,
+                                    240.1,
+                                    2,
+                                    "testImageUrl2",
+                                    null,
+                                    null,
+                                    "testCategory"));
         }
 
         @Test
