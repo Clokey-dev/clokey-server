@@ -18,7 +18,7 @@ public record CoordinateDetailsResponse(
             @Schema(description = "옷의 imageUrl", example = "https://example.jpg") String imageUrl,
             @Schema(description = "옷 브랜드", example = "나이키") String brand,
             @Schema(description = "옷 이름", example = "나이키 맨투맨") String name,
-            @Schema(description = "옷 이름", example = "맨투맨") String category) {}
+            @Schema(description = "옷의 카테고리", example = "맨투맨") String category) {}
 
     public static CoordinateDetailsResponse from(List<CoordinateCloth> coordinateClothes) {
         List<Payload> payloads =
