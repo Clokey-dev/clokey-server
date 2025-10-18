@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.clokey.common.model.BaseEntity;
+import org.clokey.coordinate.enums.CoordinateType;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
 
@@ -30,6 +31,10 @@ public class Coordinate extends BaseEntity {
 
     @NotNull private String imageUrl;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private CoordinateType coordinateType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "look_book_id")
     private LookBook lookBook;
@@ -39,20 +44,64 @@ public class Coordinate extends BaseEntity {
     @NotNull
     private Member member;
 
-    @OneToMany(mappedBy = "coordinate", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "coordinate")
     private List<CoordinateCloth> coordinateClothes = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
-    public Coordinate(String name, String memo, String imageUrl, LookBook lookBook, Member member) {
+    public Coordinate(
+            String name,
+            String memo,
+            String imageUrl,
+            CoordinateType coordinateType,
+            LookBook lookBook,
+            Member member) {
         this.name = name;
         this.memo = memo;
         this.liked = false;
         this.imageUrl = imageUrl;
+        this.coordinateType = coordinateType;
         this.lookBook = lookBook;
         this.member = member;
     }
 
     public static Coordinate createDailyCoordinate(String imageUrl, Member member) {
-        return Coordinate.builder().name(null).memo(null).imageUrl(imageUrl).member(member).build();
+        return Coordinate.builder()
+                .name(null)
+                .memo(null)
+                .imageUrl(imageUrl)
+                .coordinateType(CoordinateType.DAILY)
+                .member(member)
+                .build();
+    }
+
+    public static Coordinate createCoordinateManual(
+            String name, String memo, String imageUrl, Member member, LookBook lookBook) {
+        return Coordinate.builder()
+                .name(name)
+                .memo(memo)
+                .imageUrl(imageUrl)
+                .coordinateType(CoordinateType.DEFAULT)
+                .member(member)
+                .lookBook(lookBook)
+                .build();
+    }
+
+    public void addToDailyCoordinateToLookBook(String name, String memo, LookBook lookBook) {
+        this.name = name;
+        this.memo = memo;
+        this.lookBook = lookBook;
+    }
+
+    public void updateCoordinate(String name, String memo, String imageUrl) {
+        this.name = name;
+        this.memo = memo;
+        this.imageUrl = imageUrl;
+    }
+
+    public void detachDailyCoordinate() {
+        this.name = null;
+        this.memo = null;
+        this.liked = false;
+        this.lookBook = null;
     }
 }

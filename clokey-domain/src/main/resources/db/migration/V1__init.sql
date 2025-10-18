@@ -273,86 +273,35 @@ CREATE TABLE clokey_notification (
                                      CONSTRAINT fk_clokey_notification_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
 
-CREATE TABLE comment_report (
-                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE report (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-                                comment_report_type VARCHAR(255) NOT NULL CHECK (
-                                    comment_report_type IN (
-                                                            'SWEARING_AND_CURSING',
-                                                            'DISCRIMINATORY_AND_HATEFUL',
-                                                            'SPAM_OR_PROMOTION',
-                                                            'PRIVATE_INFO',
-                                                            'ANNOYING',
-                                                            'ETC'
-                                        )
-                                    ),
-                                report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
-                                    report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
-                                    ),
-                                content VARCHAR(200),
-                                comment_id BIGINT NOT NULL,
-                                member_id BIGINT NOT NULL,
+                        target_id BIGINT NOT NULL,
+                        member_id BIGINT NOT NULL,
 
+                        report_reason VARCHAR(255) NOT NULL CHECK (
+                            report_reason IN (
+                                              'ANNOYING_COMMENT', 'ANNOYING_HISTORY', 'DISCRIMINATORY_AND_HATEFUL',
+                                              'ETC_COMMENT', 'ETC_HISTORY', 'HARMFUL_TO_MINORS', 'PRIVACY_EXPOSURE',
+                                              'PRIVATE_INFO', 'SEXUAL', 'SPAM_OR_PROMOTION', 'SWEARING_AND_CURSING', 'VIOLENT'
+                                )
+                            ),
 
-                                created_at DATETIME(6) NOT NULL,
-                                updated_at DATETIME(6) NOT NULL,
+                        target_type VARCHAR(255) NOT NULL CHECK (
+                            target_type IN ('COMMENT', 'HISTORY', 'REPLY')
+                            ),
 
-                                CONSTRAINT fk_comment_report_comment FOREIGN KEY (comment_id) REFERENCES comment(id),
-                                CONSTRAINT fk_comment_report_member FOREIGN KEY (member_id) REFERENCES member(id)
+                        report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
+                            report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
+                            ),
+
+                        content VARCHAR(200),
+
+                        created_at DATETIME(6) NOT NULL,
+                        updated_at DATETIME(6) NOT NULL,
+
+                        CONSTRAINT fk_report_member FOREIGN KEY (member_id) REFERENCES member(id)
 );
-
-
-CREATE TABLE history_report (
-                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-                                history_report_type VARCHAR(255) NOT NULL CHECK (
-                                    history_report_type IN (
-                                                            'SPAM',
-                                                            'INAPPROPRIATE',
-                                                            'OFFENSIVE',
-                                                            'VIOLENT',
-                                                            'ETC'
-                                        )
-                                    ),
-                                report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
-                                    report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
-                                    ),
-
-                                history_id BIGINT NOT NULL,
-                                member_id BIGINT NOT NULL,
-
-                                content VARCHAR(200),
-                                created_at DATETIME(6) NOT NULL,
-                                updated_at DATETIME(6) NOT NULL,
-
-                                CONSTRAINT fk_history_report_history FOREIGN KEY (history_id) REFERENCES history(id),
-                                CONSTRAINT fk_history_report_member FOREIGN KEY (member_id) REFERENCES member(id)
-);
-
-
-CREATE TABLE profile_report (
-                                id BIGINT AUTO_INCREMENT PRIMARY KEY,
-
-                                reporter_id BIGINT NOT NULL,
-                                reported_id BIGINT NOT NULL,
-
-                                profile_report_type VARCHAR(255) NOT NULL CHECK (
-                                    profile_report_type IN ('FAKE', 'SPAM_OR_PROMOTION', 'INAPPROPRIATE', 'ETC')
-                                    ),
-
-                                content VARCHAR(200),
-
-                                report_status VARCHAR(255) NOT NULL DEFAULT 'UNCHECKED' CHECK (
-                                    report_status IN ('APPROVED', 'DISAPPROVED', 'UNCHECKED')
-                                    ),
-
-                                created_at DATETIME(6) NOT NULL,
-                                updated_at DATETIME(6) NOT NULL,
-
-                                CONSTRAINT fk_profile_report_reporter FOREIGN KEY (reporter_id) REFERENCES member(id),
-                                CONSTRAINT fk_profile_report_reported FOREIGN KEY (reported_id) REFERENCES member(id)
-);
-
 
 CREATE TABLE member_term (
                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -386,6 +335,11 @@ CREATE TABLE coordinate (
                            name VARCHAR(50),
                            memo VARCHAR(100),
                            liked BOOLEAN NOT NULL,
+
+                           coordinate_type VARCHAR(255) NOT NULL CHECK (
+                               coordinate_type IN ('DEFAULT', 'DAILY')
+                               ),
+
                            image_url VARCHAR(255),
                            member_id BIGINT NOT NULL,
                            look_book_id BIGINT,
@@ -405,6 +359,7 @@ CREATE TABLE coordinate_cloth (
                                   location_y DOUBLE NOT NULL,
 
                                   ratio DOUBLE NOT NULL CHECK (ratio > 0),
+                                  degree DOUBLE NOT NULL,
                                   `order` INT NOT NULL,
 
                                   coordinate_id BIGINT NOT NULL,

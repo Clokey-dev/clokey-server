@@ -97,7 +97,8 @@ public class CommentServiceImpl implements CommentService {
         validateHistoryAuthority(currentMember, history);
 
         Slice<CommentListResponse> result =
-                commentRepository.findAllByHistoryId(historyId, lastCommentId, size, direction);
+                commentRepository.findAllByHistoryId(
+                        historyId, currentMember.getId(), lastCommentId, size, direction);
         return SliceResponse.from(result);
     }
 
@@ -110,7 +111,8 @@ public class CommentServiceImpl implements CommentService {
         validateHistoryAuthority(currentMember, comment.getHistory());
 
         Slice<ReplyListResponse> result =
-                replyRepository.findAllByCommentId(commentId, lastReplyId, size, direction);
+                replyRepository.findAllByCommentId(
+                        commentId, currentMember.getId(), lastReplyId, size, direction);
 
         return SliceResponse.from(result);
     }
@@ -123,6 +125,7 @@ public class CommentServiceImpl implements CommentService {
 
         validateCommentOwner(currentMember, comment);
 
+        replyRepository.deleteByCommentId(comment.getId());
         commentRepository.delete(comment);
     }
 

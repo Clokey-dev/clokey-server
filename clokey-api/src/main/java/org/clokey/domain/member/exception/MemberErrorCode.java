@@ -16,7 +16,7 @@ public enum MemberErrorCode implements BaseErrorCode {
     CANNOT_FOLLOW_BLOCKED(400, "MEMBER_4006", "차단을 했거나 상대방에게 차단을 당한 경우 팔로우 할 수 없습니다."),
 
     MEMBER_NOT_FOUND(404, "MEMBER_4041", "해당 회원을 찾을 수 없습니다."),
-    ;
+    CLOKEY_ID_NOT_FOUND(404, "MEMBER_4042", "해당 클로키 아이디를 찾을 수 없습니다.");
 
     private final int status;
     private final String code;
