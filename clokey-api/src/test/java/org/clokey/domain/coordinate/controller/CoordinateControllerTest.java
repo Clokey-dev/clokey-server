@@ -1549,31 +1549,32 @@ class CoordinateControllerTest {
         @Test
         void 유효한_요청이면_코디_Details를_반환한다() throws Exception {
             // given
-            CoordinateDetailsListResponse response =
-                    new CoordinateDetailsListResponse(
-                            List.of(
-                                    new CoordinateDetailsListResponse.Payload(
-                                            1L,
-                                            50.2,
-                                            60.1,
-                                            1.5,
-                                            240.1,
-                                            1,
-                                            "testImageUrl1",
-                                            "testBrand1",
-                                            "testName1",
-                                            "testCategoryName1"),
-                                    new CoordinateDetailsListResponse.Payload(
-                                            2L,
-                                            50.2,
-                                            60.1,
-                                            1.5,
-                                            240.1,
-                                            2,
-                                            "testImageUrl2",
-                                            "testBrand2",
-                                            "testName2",
-                                            "testCategoryName2")));
+            List<CoordinateDetailsListResponse> response =
+                    List.of(
+                            new CoordinateDetailsListResponse(
+                                    1L,
+                                    50.2,
+                                    60.1,
+                                    1.5,
+                                    240.1,
+                                    1,
+                                    "testImageUrl1",
+                                    "testBrand1",
+                                    "testName1",
+                                    "testCategoryName1",
+                                    "testParentCategoryName1"),
+                            new CoordinateDetailsListResponse(
+                                    2L,
+                                    50.2,
+                                    60.1,
+                                    1.5,
+                                    240.1,
+                                    2,
+                                    "testImageUrl2",
+                                    "testBrand2",
+                                    "testName2",
+                                    "testCategoryName2",
+                                    "testParentCategoryName2"));
 
             given(coordinateService.getCoordinateDetails(1L)).willReturn(response);
 
@@ -1586,27 +1587,31 @@ class CoordinateControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result.payloads[0].coordinateClothId").value(1))
-                    .andExpect(jsonPath("$.result.payloads[0].locationX").value(50.2))
-                    .andExpect(jsonPath("$.result.payloads[0].locationY").value(60.1))
-                    .andExpect(jsonPath("$.result.payloads[0].ratio").value(1.5))
-                    .andExpect(jsonPath("$.result.payloads[0].degree").value(240.1))
-                    .andExpect(jsonPath("$.result.payloads[0].order").value(1))
-                    .andExpect(jsonPath("$.result.payloads[0].imageUrl").value("testImageUrl1"))
-                    .andExpect(jsonPath("$.result.payloads[0].brand").value("testBrand1"))
-                    .andExpect(jsonPath("$.result.payloads[0].name").value("testName1"))
-                    .andExpect(jsonPath("$.result.payloads[0].category").value("testCategoryName1"))
-                    .andExpect(jsonPath("$.result.payloads[1].coordinateClothId").value(2))
-                    .andExpect(jsonPath("$.result.payloads[1].locationX").value(50.2))
-                    .andExpect(jsonPath("$.result.payloads[1].locationY").value(60.1))
-                    .andExpect(jsonPath("$.result.payloads[1].ratio").value(1.5))
-                    .andExpect(jsonPath("$.result.payloads[1].degree").value(240.1))
-                    .andExpect(jsonPath("$.result.payloads[1].order").value(2))
-                    .andExpect(jsonPath("$.result.payloads[1].imageUrl").value("testImageUrl2"))
-                    .andExpect(jsonPath("$.result.payloads[1].brand").value("testBrand2"))
-                    .andExpect(jsonPath("$.result.payloads[1].name").value("testName2"))
+                    .andExpect(jsonPath("$.result[0].coordinateClothId").value(1))
+                    .andExpect(jsonPath("$.result[0].locationX").value(50.2))
+                    .andExpect(jsonPath("$.result[0].locationY").value(60.1))
+                    .andExpect(jsonPath("$.result[0].ratio").value(1.5))
+                    .andExpect(jsonPath("$.result[0].degree").value(240.1))
+                    .andExpect(jsonPath("$.result[0].order").value(1))
+                    .andExpect(jsonPath("$.result[0].imageUrl").value("testImageUrl1"))
+                    .andExpect(jsonPath("$.result[0].brand").value("testBrand1"))
+                    .andExpect(jsonPath("$.result[0].name").value("testName1"))
+                    .andExpect(jsonPath("$.result[0].category").value("testCategoryName1"))
                     .andExpect(
-                            jsonPath("$.result.payloads[1].category").value("testCategoryName2"));
+                            jsonPath("$.result[0].parentCategory").value("testParentCategoryName1"))
+                    .andExpect(jsonPath("$.result[1].coordinateClothId").value(2))
+                    .andExpect(jsonPath("$.result[1].locationX").value(50.2))
+                    .andExpect(jsonPath("$.result[1].locationY").value(60.1))
+                    .andExpect(jsonPath("$.result[1].ratio").value(1.5))
+                    .andExpect(jsonPath("$.result[1].degree").value(240.1))
+                    .andExpect(jsonPath("$.result[1].order").value(2))
+                    .andExpect(jsonPath("$.result[1].imageUrl").value("testImageUrl2"))
+                    .andExpect(jsonPath("$.result[1].brand").value("testBrand2"))
+                    .andExpect(jsonPath("$.result[1].name").value("testName2"))
+                    .andExpect(jsonPath("$.result[1].category").value("testCategoryName2"))
+                    .andExpect(
+                            jsonPath("$.result[1].parentCategory")
+                                    .value("testParentCategoryName2"));
         }
     }
 }

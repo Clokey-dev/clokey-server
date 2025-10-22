@@ -1312,8 +1312,9 @@ class CoordinateServiceImplTest extends IntegrationTest {
                             "testName3", "testMemo3", "testImageUrl3", member1, null);
             coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
 
-            Category category = Category.createCategory("testCategory", null);
-            categoryRepository.save(category);
+            Category parentCategory = Category.createCategory("testParentCategory", null);
+            Category category = Category.createCategory("testCategory", parentCategory);
+            categoryRepository.saveAll(List.of(parentCategory, category));
 
             Cloth cloth1 = Cloth.createCloth("testImageUrl1", category, member1);
             Cloth cloth2 = Cloth.createCloth("testImageUrl2", category, member1);
@@ -1333,21 +1334,23 @@ class CoordinateServiceImplTest extends IntegrationTest {
         @Test
         void 유효한_요청이면_코디_Details를_반환한다() {
             // when
-            CoordinateDetailsListResponse response = coordinateService.getCoordinateDetails(1L);
+            List<CoordinateDetailsListResponse> response =
+                    coordinateService.getCoordinateDetails(1L);
 
             // then
-            assertThat(response.payloads())
+            assertThat(response)
                     .extracting(
-                            CoordinateDetailsListResponse.Payload::coordinateClothId,
-                            CoordinateDetailsListResponse.Payload::locationX,
-                            CoordinateDetailsListResponse.Payload::locationY,
-                            CoordinateDetailsListResponse.Payload::ratio,
-                            CoordinateDetailsListResponse.Payload::degree,
-                            CoordinateDetailsListResponse.Payload::order,
-                            CoordinateDetailsListResponse.Payload::imageUrl,
-                            CoordinateDetailsListResponse.Payload::brand,
-                            CoordinateDetailsListResponse.Payload::name,
-                            CoordinateDetailsListResponse.Payload::category)
+                            CoordinateDetailsListResponse::coordinateClothId,
+                            CoordinateDetailsListResponse::locationX,
+                            CoordinateDetailsListResponse::locationY,
+                            CoordinateDetailsListResponse::ratio,
+                            CoordinateDetailsListResponse::degree,
+                            CoordinateDetailsListResponse::order,
+                            CoordinateDetailsListResponse::imageUrl,
+                            CoordinateDetailsListResponse::brand,
+                            CoordinateDetailsListResponse::name,
+                            CoordinateDetailsListResponse::category,
+                            CoordinateDetailsListResponse::parentCategory)
                     .containsExactly(
                             tuple(
                                     1L,
@@ -1359,7 +1362,8 @@ class CoordinateServiceImplTest extends IntegrationTest {
                                     "testImageUrl1",
                                     null,
                                     null,
-                                    "testCategory"),
+                                    "testCategory",
+                                    "testParentCategory"),
                             tuple(
                                     2L,
                                     50.1,
@@ -1370,7 +1374,8 @@ class CoordinateServiceImplTest extends IntegrationTest {
                                     "testImageUrl2",
                                     null,
                                     null,
-                                    "testCategory"));
+                                    "testCategory",
+                                    "testParentCategory"));
         }
 
         @Test

@@ -11,6 +11,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.clokey.category.entity.QCategory;
 import org.clokey.coordinate.enums.CoordinateType;
 import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
@@ -59,6 +60,8 @@ public class CoordinateRepositoryImpl implements CoordinateRepositoryCustom {
     public List<CoordinateDetailsListResponse> findAllCoordinateDetailsByCoordinateId(
             Long coordinateId) {
 
+        QCategory parentCategory = new QCategory("parentCategory");
+
         return queryFactory
                 .select(
                         Projections.constructor(
@@ -72,12 +75,12 @@ public class CoordinateRepositoryImpl implements CoordinateRepositoryCustom {
                                 coordinateCloth.cloth.clothImageUrl,
                                 coordinateCloth.cloth.brand,
                                 coordinateCloth.cloth.name,
-                                coordinateCloth.cloth.category.name,
-                                coordinateCloth.cloth.category.parent.name))
+                                category.name,
+                                parentCategory.name))
                 .from(coordinateCloth)
                 .join(coordinateCloth.cloth, cloth)
                 .join(cloth.category, category)
-                .join(category.parent, category)
+                .leftJoin(category.parent, parentCategory)
                 .where(coordinateCloth.coordinate.id.eq(coordinateId))
                 .orderBy(coordinateCloth.id.asc())
                 .fetch();
