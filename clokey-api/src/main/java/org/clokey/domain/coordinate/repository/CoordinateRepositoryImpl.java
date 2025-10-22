@@ -1,6 +1,9 @@
 package org.clokey.domain.coordinate.repository;
 
+import static org.clokey.category.entity.QCategory.category;
+import static org.clokey.cloth.entity.QCloth.cloth;
 import static org.clokey.coordinate.entity.QCoordinate.coordinate;
+import static org.clokey.coordinate.entity.QCoordinateCloth.coordinateCloth;
 import static org.clokey.member.entity.QMember.member;
 
 import com.querydsl.core.types.Projections;
@@ -9,6 +12,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.clokey.coordinate.enums.CoordinateType;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.global.paging.SortDirection;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +53,34 @@ public class CoordinateRepositoryImpl implements CoordinateRepositoryCustom {
                         .fetch();
 
         return checkLastPage(size, results);
+    }
+
+    @Override
+    public List<CoordinateDetailsListResponse> findAllCoordinateDetailsByCoordinateId(
+            Long coordinateId) {
+
+        return queryFactory
+                .select(
+                        Projections.constructor(
+                                CoordinateDetailsListResponse.class,
+                                coordinateCloth.id,
+                                coordinateCloth.location.locationX,
+                                coordinateCloth.location.locationY,
+                                coordinateCloth.ratio,
+                                coordinateCloth.degree,
+                                coordinateCloth.order,
+                                coordinateCloth.cloth.clothImageUrl,
+                                coordinateCloth.cloth.brand,
+                                coordinateCloth.cloth.name,
+                                coordinateCloth.cloth.category.name,
+                                coordinateCloth.cloth.category.parent.name))
+                .from(coordinateCloth)
+                .join(coordinateCloth.cloth, cloth)
+                .join(cloth.category, category)
+                .join(category.parent, category)
+                .where(coordinateCloth.coordinate.id.eq(coordinateId))
+                .orderBy(coordinateCloth.id.asc())
+                .fetch();
     }
 
     private BooleanExpression lastCoordinateIdCondition(

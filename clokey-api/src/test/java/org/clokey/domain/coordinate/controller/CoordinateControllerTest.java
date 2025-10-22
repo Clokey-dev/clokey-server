@@ -14,7 +14,7 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
-import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.service.CoordinateService;
@@ -1549,10 +1549,10 @@ class CoordinateControllerTest {
         @Test
         void 유효한_요청이면_코디_Details를_반환한다() throws Exception {
             // given
-            CoordinateDetailsResponse response =
-                    new CoordinateDetailsResponse(
+            CoordinateDetailsListResponse response =
+                    new CoordinateDetailsListResponse(
                             List.of(
-                                    new CoordinateDetailsResponse.Payload(
+                                    new CoordinateDetailsListResponse.Payload(
                                             1L,
                                             50.2,
                                             60.1,
@@ -1563,7 +1563,7 @@ class CoordinateControllerTest {
                                             "testBrand1",
                                             "testName1",
                                             "testCategoryName1"),
-                                    new CoordinateDetailsResponse.Payload(
+                                    new CoordinateDetailsListResponse.Payload(
                                             2L,
                                             50.2,
                                             60.1,

@@ -17,7 +17,7 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
-import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
@@ -325,18 +325,14 @@ public class CoordinateServiceImpl implements CoordinateService {
     }
 
     @Override
-    public CoordinateDetailsResponse getCoordinateDetails(Long coordinateId) {
+    public List<CoordinateDetailsListResponse> getCoordinateDetails(Long coordinateId) {
         final Member currentMember = memberUtil.getCurrentMember();
         final Coordinate coordinate = getCoordinateById(coordinateId);
 
         validateCoordinateOwner(coordinate, currentMember.getId());
         validateCoordinateInLookBook(coordinate);
 
-        List<CoordinateCloth> coordinateCloths =
-                coordinateClothRepository.findAllCoordinateClothFetchClothByCoordinateId(
-                        coordinate.getId());
-
-        return CoordinateDetailsResponse.from(coordinateCloths);
+        return coordinateRepository.findAllCoordinateDetailsByCoordinateId(coordinate.getId());
     }
 
     private void validateAllClothesExist(List<Long> clothIds, Map<Long, Cloth> clothMap) {

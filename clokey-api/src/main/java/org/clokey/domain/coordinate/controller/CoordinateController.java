@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
@@ -11,7 +12,7 @@ import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
-import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.service.CoordinateService;
@@ -95,9 +96,10 @@ public class CoordinateController {
 
     @GetMapping("/{coordinateId}/details")
     @Operation(summary = "코디 Details 조회", description = "룩북에 존재하는 코디의 Details를 조회하는 API입니다.")
-    public BaseResponse<CoordinateDetailsResponse> getCoordinateDetails(
+    public BaseResponse<List<CoordinateDetailsListResponse>> getCoordinateDetails(
             @PathVariable Long coordinateId) {
-        CoordinateDetailsResponse response = coordinateService.getCoordinateDetails(coordinateId);
+        List<CoordinateDetailsListResponse> response =
+                coordinateService.getCoordinateDetails(coordinateId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

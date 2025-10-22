@@ -1,11 +1,12 @@
 package org.clokey.domain.coordinate.service;
 
+import java.util.List;
 import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
 import org.clokey.domain.coordinate.dto.response.CoordinateCreateResponse;
-import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.global.paging.SortDirection;
@@ -28,5 +29,5 @@ public interface CoordinateService {
 
     CoordinatePreviewResponse getCoordinatePreview(Long coordinateId);
 
-    CoordinateDetailsResponse getCoordinateDetails(Long coordinateId);
+    List<CoordinateDetailsListResponse> getCoordinateDetails(Long coordinateId);
 }

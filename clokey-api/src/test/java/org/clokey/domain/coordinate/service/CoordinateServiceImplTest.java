@@ -21,7 +21,7 @@ import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
-import org.clokey.domain.coordinate.dto.response.CoordinateDetailsResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
 import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
 import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
@@ -1333,21 +1333,21 @@ class CoordinateServiceImplTest extends IntegrationTest {
         @Test
         void 유효한_요청이면_코디_Details를_반환한다() {
             // when
-            CoordinateDetailsResponse response = coordinateService.getCoordinateDetails(1L);
+            CoordinateDetailsListResponse response = coordinateService.getCoordinateDetails(1L);
 
             // then
             assertThat(response.payloads())
                     .extracting(
-                            CoordinateDetailsResponse.Payload::coordinateClothId,
-                            CoordinateDetailsResponse.Payload::locationX,
-                            CoordinateDetailsResponse.Payload::locationY,
-                            CoordinateDetailsResponse.Payload::ratio,
-                            CoordinateDetailsResponse.Payload::degree,
-                            CoordinateDetailsResponse.Payload::order,
-                            CoordinateDetailsResponse.Payload::imageUrl,
-                            CoordinateDetailsResponse.Payload::brand,
-                            CoordinateDetailsResponse.Payload::name,
-                            CoordinateDetailsResponse.Payload::category)
+                            CoordinateDetailsListResponse.Payload::coordinateClothId,
+                            CoordinateDetailsListResponse.Payload::locationX,
+                            CoordinateDetailsListResponse.Payload::locationY,
+                            CoordinateDetailsListResponse.Payload::ratio,
+                            CoordinateDetailsListResponse.Payload::degree,
+                            CoordinateDetailsListResponse.Payload::order,
+                            CoordinateDetailsListResponse.Payload::imageUrl,
+                            CoordinateDetailsListResponse.Payload::brand,
+                            CoordinateDetailsListResponse.Payload::name,
+                            CoordinateDetailsListResponse.Payload::category)
                     .containsExactly(
                             tuple(
                                     1L,
