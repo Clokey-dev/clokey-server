@@ -30,4 +30,14 @@ public class Follow extends BaseEntity {
     @JoinColumn(name = "follow_from_id")
     @NotNull
     private Member followFrom;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    public Follow(Member followTo, Member followFrom) {
+        this.followTo = followTo;
+        this.followFrom = followFrom;
+    }
+
+    public static Follow createFollow(Member followFrom, Member followTo) {
+        return Follow.builder().followFrom(followFrom).followTo(followTo).build();
+    }
 }
