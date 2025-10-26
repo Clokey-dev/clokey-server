@@ -6,9 +6,11 @@ import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
+import org.clokey.domain.member.dto.response.FollowMemberResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.BlockRepository;
+import org.clokey.domain.member.repository.FollowRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
@@ -30,6 +32,7 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final BlockRepository blockRepository;
+    private final FollowRepository followRepository;
 
     @Override
     @Transactional
@@ -100,6 +103,30 @@ public class MemberServiceImpl implements MemberService {
                         currentMember.getId(), lastBlockedId, size, direction));
     }
 
+    @Override
+    public SliceResponse<FollowMemberResponse> getFollows(
+            String codiveId, Long lastFollowId, boolean isFollowing, Integer size) {
+        Member currentMember = memberUtil.getCurrentMember();
+        Member targetMember = getMemberByCodiveId(codiveId);
+        SliceResponse<FollowMemberResponse> response;
+
+        if (!currentMember.equals(targetMember)) {
+            validatePrivacy(currentMember, targetMember);
+
+            validateBlocked(currentMember, targetMember);
+        }
+
+        if (isFollowing) {
+            return SliceResponse.from(
+                    followRepository.findAllFollowingsByMemberId(
+                            currentMember.getId(), targetMember.getId(), lastFollowId, size));
+        } else {
+            return SliceResponse.from(
+                    followRepository.findAllFollowersByMemberId(
+                            currentMember.getId(), targetMember.getId(), lastFollowId, size));
+        }
+    }
+
     private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {
         boolean banned = member.getMemberStatus().equals(MemberStatus.BANNED);
         boolean changeToPublic = request.visibility().equals(Visibility.PUBLIC);
@@ -120,9 +147,30 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
+    private void validatePrivacy(Member currentMember, Member targetMember) {
+        if (!currentMember.getId().equals(targetMember.getId())
+                && targetMember.getVisibility().equals(Visibility.PRIVATE)) {
+            if (!followRepository.existsByFollowFromAndFollowTo(currentMember, targetMember)) {
+                throw new BaseCustomException(MemberErrorCode.PRIVATE_MEMBER_ACCESS_DENIED);
+            }
+        }
+    }
+
+    private void validateBlocked(Member currentMember, Member targetMember) {
+        if (blockRepository.existsByBlockedAndBlocker(currentMember, targetMember)) {
+            throw new BaseCustomException(MemberErrorCode.BLOCKED_MEMBER_ACCESS_DENIED);
+        }
+    }
+
     private Member getMemberById(Long memberId) {
         return memberRepository
                 .findById(memberId)
+                .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private Member getMemberByCodiveId(String codiveId) {
+        return memberRepository
+                .findByClokeyId(codiveId)
                 .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 }

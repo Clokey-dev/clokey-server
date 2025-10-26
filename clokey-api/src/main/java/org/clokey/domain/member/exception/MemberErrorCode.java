@@ -11,6 +11,9 @@ public enum MemberErrorCode implements BaseErrorCode {
     BANNED_MEMBER_TO_PUBLIC(400, "MEMBER_4001", "신고당한 회원은 공개로 전환할 수 없습니다."),
     SELF_BLOCK_UNAVAILABLE(400, "MEMBER_4002", "자기 자신을 차단할 수 없습니다"),
 
+    PRIVATE_MEMBER_ACCESS_DENIED(403, "MEMBER_4031", "비공개 회원의 리소스에 접근할 수 없습니다."),
+    BLOCKED_MEMBER_ACCESS_DENIED(403, "MEMBER_4032", "차단된 사용자의 리소스에 접근할 수 없습니다"),
+
     MEMBER_NOT_FOUND(404, "MEMBER_4041", "해당 회원을 찾을 수 없습니다."),
     CLOKEY_ID_NOT_FOUND(404, "MEMBER_4042", "해당 클로키 아이디를 찾을 수 없습니다.");
 
