@@ -2,12 +2,11 @@ package org.clokey.domain.member.repository;
 
 import java.util.Optional;
 import org.clokey.member.entity.Block;
-import org.clokey.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BlockRepository extends JpaRepository<Block, Long>, BlockRepositoryCustom {
 
     Optional<Block> findByBlockerIdAndBlockedId(Long blockerId, Long blockedId);
 
-    boolean existsByBlockedAndBlocker(Member currentMember, Member targetMember);
+    boolean existsByBlockerIdAndBlockedId(Long blockerId, Long blockedId);
 }
