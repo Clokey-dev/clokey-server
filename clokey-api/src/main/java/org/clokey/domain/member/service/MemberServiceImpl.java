@@ -257,29 +257,4 @@ public class MemberServiceImpl implements MemberService {
                 .findById(memberId)
                 .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
-
-    private void validateFollowMyself(Member followFrom, Member followTo) {
-        if (followFrom.getId().equals(followTo.getId())) {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_MYSELF);
-        }
-    }
-
-    private void validateNotBlocked(Long fromId, Long toId) {
-        if (blockRepository.existsByBlockerIdAndBlockedId(fromId, toId)
-                || blockRepository.existsByBlockerIdAndBlockedId(toId, fromId)) {
-            throw new BaseCustomException(MemberErrorCode.CANNOT_FOLLOW_BLOCKED);
-        }
-    }
-
-    private void validatePrivate(Member member) {
-        if (member.getVisibility().equals(Visibility.PRIVATE)) {
-            throw new BaseCustomException(MemberErrorCode.MUST_REQUEST_FOLLOW);
-        }
-    }
-
-    private void validatePublic(Member member) {
-        if (member.getVisibility().equals(Visibility.PUBLIC)) {
-            throw new BaseCustomException(MemberErrorCode.MUST_FOLLOW);
-        }
-    }
 }
