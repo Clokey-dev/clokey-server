@@ -1,7 +1,13 @@
 package org.clokey.domain.lookbook.service;
 
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.clokey.coordinate.entity.Coordinate;
+import org.clokey.coordinate.enums.CoordinateType;
+import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
+import org.clokey.domain.coordinate.repository.CoordinateRepository;
+import org.clokey.domain.image.event.ImagesDeleteEvent;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
 import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
 import org.clokey.domain.lookbook.dto.response.LookBookCreateResponse;
@@ -11,6 +17,7 @@ import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class LookBookServiceImpl implements LookBookService {
 
     private final LookBookRepository lookBookRepository;
+    private final CoordinateRepository coordinateRepository;
+    private final CoordinateClothRepository coordinateClothRepository;
 
     private final MemberUtil memberUtil;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -42,6 +52,34 @@ public class LookBookServiceImpl implements LookBookService {
 
         validateLookBookOwner(lookBook, currentMember.getId());
         lookBook.updateLookBook(request.name());
+    }
+
+    @Override
+    @Transactional
+    public void deleteLookBook(Long lookBookId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final LookBook lookBook = getLookBookById(lookBookId);
+
+        validateLookBookOwner(lookBook, currentMember.getId());
+
+        List<Coordinate> coordinates = coordinateRepository.findAllByLookBookId(lookBook.getId());
+
+        /** 일일 코디였던 경우, 통계값을 위해 데이터를 보존합니다. */
+        coordinates.stream()
+                .filter(c -> c.getCoordinateType() == CoordinateType.DAILY)
+                .forEach(Coordinate::detachDailyCoordinate);
+
+        List<Coordinate> defaultCoordinates =
+                coordinates.stream()
+                        .filter(c -> c.getCoordinateType() != CoordinateType.DAILY)
+                        .toList();
+
+        coordinateClothRepository.deleteAllByCoordinateIds(
+                defaultCoordinates.stream().map(Coordinate::getId).toList());
+        eventPublisher.publishEvent(
+                ImagesDeleteEvent.of(
+                        defaultCoordinates.stream().map(Coordinate::getImageUrl).toList()));
+        coordinateRepository.deleteAllInBatch(defaultCoordinates);
     }
 
     private void validateLookBookOwner(LookBook lookBook, Long memberId) {

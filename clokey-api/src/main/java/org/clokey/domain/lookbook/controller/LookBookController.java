@@ -31,10 +31,17 @@ public class LookBookController {
     }
 
     @PatchMapping("/{lookBookId}")
-    @Operation(summary = "룩북 수정", description = "룩북을 수정할 수 있는 API입니다.")
+    @Operation(summary = "룩북 수정", description = "룩북을 수정하는 API입니다.")
     public BaseResponse<Void> updateLookBook(
             @PathVariable Long lookBookId, @Valid @RequestBody LookBookUpdateRequest request) {
         lookBookService.updateLookBook(lookBookId, request);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+    }
+
+    @DeleteMapping("/{lookBookId}")
+    @Operation(summary = "룩북 삭제", description = "룩북을 삭제하는 API입니다.")
+    public BaseResponse<Void> deleteLookBook(@PathVariable Long lookBookId) {
+        lookBookService.deleteLookBook(lookBookId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

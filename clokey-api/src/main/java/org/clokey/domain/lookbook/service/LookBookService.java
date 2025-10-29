@@ -9,4 +9,6 @@ public interface LookBookService {
     LookBookCreateResponse createLookBook(LookBookCreateRequest request);
 
     void updateLookBook(Long lookBookId, LookBookUpdateRequest request);
+
+    void deleteLookBook(Long lookBookId);
 }
