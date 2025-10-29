@@ -343,6 +343,7 @@ public class CoordinateServiceImpl implements CoordinateService {
 
         validateCoordinateOwner(coordinate, currentMember.getId());
         validateCoordinateInLookBook(coordinate);
+        validateCoordinateLikeLimit(currentMember.getId(), coordinate);
 
         coordinate.toggleLike();
     }
@@ -419,6 +420,14 @@ public class CoordinateServiceImpl implements CoordinateService {
     private void validateCoordinateInLookBook(Coordinate coordinate) {
         if (coordinate.getLookBook() == null) {
             throw new BaseCustomException(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK);
+        }
+    }
+
+    private void validateCoordinateLikeLimit(Long memberId, Coordinate coordinate) {
+
+        if (coordinate.getLiked().equals(false)
+                && coordinateRepository.countByMemberIdAndLikedTrue(memberId) >= 5) {
+            throw new BaseCustomException(CoordinateErrorCode.COORDINATE_LIKE_LIMIT);
         }
     }
 
