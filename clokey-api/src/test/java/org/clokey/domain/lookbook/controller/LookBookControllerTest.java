@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
 import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
+import org.clokey.domain.lookbook.dto.response.CoordinateListResponse;
 import org.clokey.domain.lookbook.dto.response.LookBookCreateResponse;
 import org.clokey.domain.lookbook.dto.response.LookBookListResponse;
 import org.clokey.domain.lookbook.service.LookBookService;
@@ -150,7 +151,7 @@ class LookBookControllerTest {
             // given
             List<LookBookListResponse> responses =
                     List.of(
-                            new LookBookListResponse(1L, "testName", "testImageUrl1"),
+                            new LookBookListResponse(1L, "testName", "testImageUrl"),
                             new LookBookListResponse(2L, "testName", "testImageUrl"),
                             new LookBookListResponse(3L, "testName", "testImageUrl"));
 
@@ -200,7 +201,7 @@ class LookBookControllerTest {
             // given
             List<LookBookListResponse> responses =
                     List.of(
-                            new LookBookListResponse(1L, "testName", "testImageUrl1"),
+                            new LookBookListResponse(1L, "testName", "testImageUrl"),
                             new LookBookListResponse(2L, "testName", "testImageUrl"),
                             new LookBookListResponse(3L, "testName", "testImageUrl"));
 
@@ -222,7 +223,7 @@ class LookBookControllerTest {
             // given
             List<LookBookListResponse> responses =
                     List.of(
-                            new LookBookListResponse(1L, "testName", "testImageUrl1"),
+                            new LookBookListResponse(1L, "testName", "testImageUrl"),
                             new LookBookListResponse(2L, "testName", "testImageUrl"),
                             new LookBookListResponse(3L, "testName", "testImageUrl"));
 
@@ -278,6 +279,156 @@ class LookBookControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(get("/lookbooks").param("size", "1").param("direction", sort));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+        }
+    }
+
+    @Nested
+    class 개별_룩북_코디_목록_조회_요청_시 {
+
+        @Test
+        void 정렬_조건이_ASC이면_coordinateId를_오름차순으로_응답한다() throws Exception {
+            // given
+            List<CoordinateListResponse> responses =
+                    List.of(
+                            new CoordinateListResponse(1L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(2L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(3L, "testName", true, "testImageUrl"));
+
+            given(lookBookService.getCoordinates(1L, null, 3, SortDirection.ASC))
+                    .willReturn(new SliceResponse<>(responses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", "3").param("direction", "ASC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].coordinateId").value(1))
+                    .andExpect(jsonPath("$.result.content[1].coordinateId").value(2))
+                    .andExpect(jsonPath("$.result.content[2].coordinateId").value(3))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 정렬_조건이_DESC이면_coordinateId를_내림차순으로_응답한다() throws Exception {
+            // given
+            List<CoordinateListResponse> responses =
+                    List.of(
+                            new CoordinateListResponse(3L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(2L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(1L, "testName", true, "testImageUrl"));
+
+            given(lookBookService.getCoordinates(1L, null, 3, SortDirection.DESC))
+                    .willReturn(new SliceResponse<>(responses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", "3").param("direction", "DESC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].coordinateId").value(3))
+                    .andExpect(jsonPath("$.result.content[1].coordinateId").value(2))
+                    .andExpect(jsonPath("$.result.content[2].coordinateId").value(1))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지인_경우_isLast를_true로_응답한다() throws Exception {
+            // given
+            List<CoordinateListResponse> responses =
+                    List.of(
+                            new CoordinateListResponse(3L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(2L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(1L, "testName", true, "testImageUrl"));
+
+            given(lookBookService.getCoordinates(1L, null, 3, SortDirection.DESC))
+                    .willReturn(new SliceResponse<>(responses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", "3").param("direction", "DESC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_응답한다() throws Exception {
+            // given
+            List<CoordinateListResponse> responses =
+                    List.of(
+                            new CoordinateListResponse(3L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(2L, "testName", true, "testImageUrl"),
+                            new CoordinateListResponse(1L, "testName", true, "testImageUrl"));
+
+            given(lookBookService.getCoordinates(1L, null, 3, SortDirection.DESC))
+                    .willReturn(new SliceResponse<>(responses, false));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", "3").param("direction", "DESC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.isLast").value(false));
+        }
+
+        @Test
+        void 룩북에_코디가_없는_경우_빈_리스트를_응답한다() throws Exception {
+            // given
+            List<CoordinateListResponse> responses = List.of();
+
+            given(lookBookService.getCoordinates(1L, null, 3, SortDirection.ASC))
+                    .willReturn(new SliceResponse<>(responses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", "3").param("direction", "ASC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content").isEmpty())
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-1", "-999", "0"})
+        void 페이지_크기를_0_이하로_설정하면_예외가_발생한다(String pageSize) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", pageSize).param("direction", "ASC"));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"ASCC", "DESCC", "OLDEST", "NEWEST"})
+        void 존재하지_않는_정렬_기준을_입력한_경우_예외가_발생한다(String sort) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/lookbooks/1").param("size", "1").param("direction", sort));
 
             perform.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.isSuccess").value(false))
