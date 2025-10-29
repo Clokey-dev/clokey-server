@@ -2,12 +2,15 @@ package org.clokey.domain.lookbook.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
+import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
 import org.clokey.domain.lookbook.dto.response.LookBookCreateResponse;
 import org.clokey.domain.lookbook.service.LookBookService;
 import org.junit.jupiter.api.Nested;
@@ -62,6 +65,48 @@ class LookBookControllerTest {
             ResultActions perform =
                     mockMvc.perform(
                             post("/lookbooks")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.name").value("룩북의 이름은 비워둘 수 없습니다."));
+        }
+    }
+
+    @Nested
+    class 룩북_수정_요청_시 {
+
+        @Test
+        void 유효한_요청이면_룩북을_수정한다() throws Exception {
+            // given
+            LookBookUpdateRequest request = new LookBookUpdateRequest("testName");
+            willDoNothing().given(lookBookService).updateLookBook(1L, request);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/lookbooks/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+
+        @Test
+        void 룩북의_이름을_비워둔_경우_예외가_발생한다() throws Exception {
+            // given
+            LookBookUpdateRequest request = new LookBookUpdateRequest(null);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/lookbooks/1")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
