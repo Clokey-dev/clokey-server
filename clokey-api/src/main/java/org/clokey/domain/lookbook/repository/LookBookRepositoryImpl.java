@@ -30,6 +30,7 @@ public class LookBookRepositoryImpl implements LookBookRepositoryCustom {
                         .select(
                                 Projections.constructor(
                                         LookBookListResponse.class,
+                                        lookBook.id,
                                         lookBook.name,
                                         JPAExpressions.select(coordinate.imageUrl)
                                                 .from(coordinate)
