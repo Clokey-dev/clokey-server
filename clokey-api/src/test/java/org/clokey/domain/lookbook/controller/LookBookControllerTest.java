@@ -3,8 +3,7 @@ package org.clokey.domain.lookbook.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -115,6 +114,25 @@ class LookBookControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.name").value("룩북의 이름은 비워둘 수 없습니다."));
+        }
+    }
+
+    @Nested
+    class 룩북_삭제_요청_시 {
+
+        @Test
+        void 유효한_요청이면_룩북을_삭제한다() throws Exception {
+            // given
+            willDoNothing().given(lookBookService).deleteLookBook(1L);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(delete("/lookbooks/1").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
         }
     }
 }
