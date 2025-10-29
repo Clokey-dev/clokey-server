@@ -19,15 +19,18 @@ import org.clokey.domain.coordinate.repository.CoordinateRepository;
 import org.clokey.domain.image.event.ImagesDeleteEvent;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
 import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
+import org.clokey.domain.lookbook.dto.response.LookBookListResponse;
 import org.clokey.domain.lookbook.exception.LookBookErrorCode;
 import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
+import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -250,6 +253,123 @@ class LookBookServiceTest extends IntegrationTest {
             assertThatThrownBy(() -> lookBookService.deleteLookBook(2L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(LookBookErrorCode.NOT_LOOK_BOOK_OWNER.getMessage());
+        }
+    }
+
+    @Nested
+    class 룩북_전체_조회_요청_시 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member1);
+            LookBook lookBook3 = LookBook.createLookBook("testName3", member1);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2, lookBook3));
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName1", "testMemo1", "testImageUrl1", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName2", "testMemo2", "testImageUrl2", member1, lookBook2);
+            coordinateRepository.saveAll(List.of(coordinate1, coordinate2));
+        }
+
+        @Test
+        void 정렬_조건이_ASC이면_lookBookId를_오름차순으로_조회한다() {
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(null, 3, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("lookBookId").containsExactly(1L, 2L, 3L);
+        }
+
+        @Test
+        void 정렬_조건이_DESC면_lookBookId를_내림차순으로_조회한다() {
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(null, 3, SortDirection.DESC);
+
+            // then
+            assertThat(response.content()).extracting("lookBookId").containsExactly(3L, 2L, 1L);
+        }
+
+        @Test
+        void lastLookBookId를_입력하면_다음_lookBook_부터_조회한다() {
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(1L, 3, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("lookBookId").containsExactly(2L, 3L);
+        }
+
+        @Test
+        void 조건에_맞는_룩북이_없는_경우_빈_리스트를_조회한다() {
+            // given
+            Member member = memberRepository.findById(2L).orElseThrow();
+            given(memberUtil.getCurrentMember()).willReturn(member);
+
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(1L, 3, SortDirection.ASC);
+
+            // when & then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isZero(),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지인_경우_isLast를_true로_반환한다() {
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(null, 3, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(3),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(null, 2, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(2),
+                    () -> assertThat(response.isLast()).isFalse());
+        }
+
+        @Test
+        void 룩북에_코디가_존재하지_않으면_imageUrl이_null로_반환된다() {
+            // when
+            SliceResponse<LookBookListResponse> response =
+                    lookBookService.getLookBooks(2L, 1, SortDirection.ASC);
+
+            // then
+            assertThat(response.content().get(0).imageUrl()).isNull();
         }
     }
 }
