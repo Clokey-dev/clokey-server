@@ -335,6 +335,18 @@ public class CoordinateServiceImpl implements CoordinateService {
         return coordinateRepository.findAllCoordinateDetailsByCoordinateId(coordinate.getId());
     }
 
+    @Override
+    @Transactional
+    public void toggleCoordinateLike(Long coordinateId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Coordinate coordinate = getCoordinateById(coordinateId);
+
+        validateCoordinateOwner(coordinate, currentMember.getId());
+        validateCoordinateInLookBook(coordinate);
+
+        coordinate.toggleLike();
+    }
+
     private void validateAllClothesExist(List<Long> clothIds, Map<Long, Cloth> clothMap) {
         boolean hasMissing = clothIds.stream().anyMatch(clothId -> !clothMap.containsKey(clothId));
 
