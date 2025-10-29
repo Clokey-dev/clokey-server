@@ -6,14 +6,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
+import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
 import org.clokey.domain.lookbook.dto.response.LookBookCreateResponse;
 import org.clokey.domain.lookbook.service.LookBookService;
 import org.clokey.response.BaseResponse;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/lookbooks")
@@ -30,5 +28,13 @@ public class LookBookController {
             @Valid @RequestBody LookBookCreateRequest request) {
         LookBookCreateResponse response = lookBookService.createLookBook(request);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, response);
+    }
+
+    @PatchMapping("/{lookBookId}")
+    @Operation(summary = "룩북 수정", description = "룩북을 수정할 수 있는 API입니다.")
+    public BaseResponse<Void> updateLookBook(
+            @PathVariable Long lookBookId, @Valid @RequestBody LookBookUpdateRequest request) {
+        lookBookService.updateLookBook(lookBookId, request);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }
