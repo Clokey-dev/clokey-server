@@ -11,13 +11,17 @@ import org.clokey.domain.image.event.ImagesDeleteEvent;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
 import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
 import org.clokey.domain.lookbook.dto.response.LookBookCreateResponse;
+import org.clokey.domain.lookbook.dto.response.LookBookListResponse;
 import org.clokey.domain.lookbook.exception.LookBookErrorCode;
 import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
+import org.clokey.response.SliceResponse;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,6 +84,18 @@ public class LookBookServiceImpl implements LookBookService {
                 ImagesDeleteEvent.of(
                         defaultCoordinates.stream().map(Coordinate::getImageUrl).toList()));
         coordinateRepository.deleteAllInBatch(defaultCoordinates);
+    }
+
+    @Override
+    public SliceResponse<LookBookListResponse> getLookBooks(
+            Long lastLookBookId, int size, SortDirection direction) {
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        Slice<LookBookListResponse> result =
+                lookBookRepository.findAllLookBookByMemberId(
+                        currentMember.getId(), lastLookBookId, size, direction);
+
+        return SliceResponse.from(result);
     }
 
     private void validateLookBookOwner(LookBook lookBook, Long memberId) {
