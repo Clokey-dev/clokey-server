@@ -10,6 +10,7 @@ import org.clokey.domain.coordinate.repository.CoordinateRepository;
 import org.clokey.domain.image.event.ImagesDeleteEvent;
 import org.clokey.domain.lookbook.dto.request.LookBookCreateRequest;
 import org.clokey.domain.lookbook.dto.request.LookBookUpdateRequest;
+import org.clokey.domain.lookbook.dto.response.CoordinateListResponse;
 import org.clokey.domain.lookbook.dto.response.LookBookCreateResponse;
 import org.clokey.domain.lookbook.dto.response.LookBookListResponse;
 import org.clokey.domain.lookbook.exception.LookBookErrorCode;
@@ -94,6 +95,21 @@ public class LookBookServiceImpl implements LookBookService {
         Slice<LookBookListResponse> result =
                 lookBookRepository.findAllLookBookByMemberId(
                         currentMember.getId(), lastLookBookId, size, direction);
+
+        return SliceResponse.from(result);
+    }
+
+    @Override
+    public SliceResponse<CoordinateListResponse> getCoordinates(
+            Long lookBookId, Long lastCoordinateId, int size, SortDirection direction) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final LookBook lookBook = getLookBookById(lookBookId);
+
+        validateLookBookOwner(lookBook, currentMember.getId());
+
+        Slice<CoordinateListResponse> result =
+                coordinateRepository.findAllCoordinateByLookBookId(
+                        lookBook.getId(), lastCoordinateId, size, direction);
 
         return SliceResponse.from(result);
     }
