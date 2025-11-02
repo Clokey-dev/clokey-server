@@ -33,6 +33,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                                 Projections.constructor(
                                         FollowMemberResponse.class,
                                         follow.id,
+                                        member.id,
                                         member.nickname,
                                         member.clokeyId,
                                         member.profileImageUrl,
@@ -41,7 +42,8 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                                                 .where(
                                                         followSub.followFrom.id.eq(currentId),
                                                         followSub.followTo.id.eq(member.id))
-                                                .exists()))
+                                                .exists(),
+                                        member.id.eq(currentId)))
                         .from(follow)
                         .join(follow.followTo, member)
                         .where(
@@ -65,6 +67,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                                 Projections.constructor(
                                         FollowMemberResponse.class,
                                         follow.id,
+                                        member.id,
                                         member.nickname,
                                         member.clokeyId,
                                         member.profileImageUrl,
@@ -73,7 +76,8 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                                                 .where(
                                                         followSub.followFrom.id.eq(currentId),
                                                         followSub.followTo.id.eq(member.id))
-                                                .exists()))
+                                                .exists(),
+                                        member.id.eq(currentId)))
                         .from(follow)
                         .join(follow.followFrom, member)
                         .where(follow.followTo.id.eq(targetId), lastFollowIdCondition(lastFollowId))
