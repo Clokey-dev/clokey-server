@@ -27,5 +27,5 @@ public interface MemberService {
             Long lastBlockedId, Integer size, SortDirection direction);
 
     SliceResponse<FollowMemberResponse> getFollows(
-            String codiveId, Long lastFollowId, boolean isFollowing, Integer size);
+            Long memberId, Long lastFollowId, boolean isFollowing, Integer size);
 }

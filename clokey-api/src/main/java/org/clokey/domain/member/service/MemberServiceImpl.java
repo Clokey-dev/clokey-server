@@ -109,9 +109,9 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public SliceResponse<FollowMemberResponse> getFollows(
-            String codiveId, Long lastFollowId, boolean isFollowing, Integer size) {
+            Long memberId, Long lastFollowId, boolean isFollowing, Integer size) {
         Member currentMember = memberUtil.getCurrentMember();
-        Member targetMember = getMemberByCodiveId(codiveId);
+        Member targetMember = getMemberById(memberId);
         SliceResponse<FollowMemberResponse> response;
 
         if (!currentMember.equals(targetMember)) {
@@ -123,11 +123,11 @@ public class MemberServiceImpl implements MemberService {
         if (isFollowing) {
             return SliceResponse.from(
                     followRepository.findAllFollowingsByMemberId(
-                            currentMember.getId(), targetMember.getId(), lastFollowId, size));
+                            currentMember.getId(), memberId, lastFollowId, size));
         } else {
             return SliceResponse.from(
                     followRepository.findAllFollowersByMemberId(
-                            currentMember.getId(), targetMember.getId(), lastFollowId, size));
+                            currentMember.getId(), memberId, lastFollowId, size));
         }
     }
 
