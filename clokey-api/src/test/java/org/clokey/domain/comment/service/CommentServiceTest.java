@@ -186,8 +186,8 @@ class CommentServiceTest extends IntegrationTest {
                             LocalDate.of(2025, 1, 1), "testContent2", member2, historyType);
             historyRepository.saveAll(List.of(history1, history2));
 
-            Comment comment1 = Comment.createComment("testContent1", member1, history1);
-            Comment comment2 = Comment.createComment("testContent2", member2, history2);
+            Comment comment1 = Comment.createParentComment("testContent1", member1, history1);
+            Comment comment2 = Comment.createParentComment("testContent2", member2, history2);
             commentRepository.saveAll(List.of(comment1, comment2));
         }
 
@@ -291,9 +291,9 @@ class CommentServiceTest extends IntegrationTest {
                             LocalDate.of(2025, 1, 2), "testContent3", member1, historyType);
             historyRepository.saveAll(List.of(history1, history2, history3));
 
-            Comment comment1 = Comment.createComment("testContent1", member1, history1);
-            Comment comment2 = Comment.createComment("testContent2", member2, history1);
-            Comment comment3 = Comment.createComment("testContent3", member2, history1);
+            Comment comment1 = Comment.createParentComment("testContent1", member1, history1);
+            Comment comment2 = Comment.createParentComment("testContent2", member2, history1);
+            Comment comment3 = Comment.createParentComment("testContent3", member2, history1);
             commentRepository.saveAll(List.of(comment1, comment2, comment3));
         }
 
@@ -417,9 +417,9 @@ class CommentServiceTest extends IntegrationTest {
                             LocalDate.of(2025, 1, 1), "testContent2", member2, historyType);
             historyRepository.saveAll(List.of(history1, history2));
 
-            Comment comment1 = Comment.createComment("testContent1", member1, history1);
-            Comment comment2 = Comment.createComment("testContent2", member2, history2);
-            Comment comment3 = Comment.createComment("testContent3", member1, history1);
+            Comment comment1 = Comment.createParentComment("testContent1", member1, history1);
+            Comment comment2 = Comment.createParentComment("testContent2", member2, history2);
+            Comment comment3 = Comment.createParentComment("testContent3", member1, history1);
             commentRepository.saveAll(List.of(comment1, comment2, comment3));
 
             Reply reply1 = Reply.createReply("testContent1", member1, comment1);
@@ -544,8 +544,8 @@ class CommentServiceTest extends IntegrationTest {
                             LocalDate.of(2025, 1, 1), "testContent", member1, historyType);
             historyRepository.save(history);
 
-            Comment comment1 = Comment.createComment("testContent1", member1, history);
-            Comment comment2 = Comment.createComment("testContent2", member1, history);
+            Comment comment1 = Comment.createParentComment("testContent1", member1, history);
+            Comment comment2 = Comment.createParentComment("testContent2", member1, history);
             commentRepository.saveAll(List.of(comment1, comment2));
 
             Reply reply1 = Reply.createReply("testContent1", member1, comment1);
@@ -615,8 +615,8 @@ class CommentServiceTest extends IntegrationTest {
                             LocalDate.of(2025, 1, 1), "testContent", member1, historyType);
             historyRepository.save(history);
 
-            Comment comment1 = Comment.createComment("testContent1", member1, history);
-            Comment comment2 = Comment.createComment("testContent2", member1, history);
+            Comment comment1 = Comment.createParentComment("testContent1", member1, history);
+            Comment comment2 = Comment.createParentComment("testContent2", member1, history);
             commentRepository.saveAll(List.of(comment1, comment2));
 
             Reply reply1 = Reply.createReply("testContent1", member1, comment1);

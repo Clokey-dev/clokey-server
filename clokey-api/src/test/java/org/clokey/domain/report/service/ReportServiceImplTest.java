@@ -67,7 +67,7 @@ public class ReportServiceImplTest extends IntegrationTest {
                             LocalDate.of(2025, 1, 1), "testContent1", member1, historyType);
             historyRepository.save(history1);
 
-            Comment comment1 = Comment.createComment("옷이 예쁘네요", member1, history1);
+            Comment comment1 = Comment.createParentComment("옷이 예쁘네요", member1, history1);
             commentRepository.save(comment1);
         }
 

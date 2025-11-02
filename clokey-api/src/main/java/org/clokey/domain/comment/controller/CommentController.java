@@ -7,10 +7,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.comment.dto.request.CommentCreateRequest;
-import org.clokey.domain.comment.dto.request.ReplyCreateRequest;
 import org.clokey.domain.comment.dto.response.CommentCreateResponse;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
-import org.clokey.domain.comment.dto.response.ReplyCreateResponse;
 import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.domain.comment.service.CommentService;
 import org.clokey.global.annotation.PageSize;
@@ -39,9 +37,9 @@ public class CommentController {
 
     @PostMapping("/{commentId}/replies")
     @Operation(summary = "대댓글 작성", description = "대댓글을 작성합니다.")
-    public BaseResponse<ReplyCreateResponse> createReply(
-            @PathVariable Long commentId, @Valid @RequestBody ReplyCreateRequest request) {
-        ReplyCreateResponse response = commentService.createReply(commentId, request);
+    public BaseResponse<CommentCreateResponse> createReply(
+            @PathVariable Long commentId, @Valid @RequestBody CommentCreateRequest request) {
+        CommentCreateResponse response = commentService.createReply(commentId, request);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.CREATED, response);
     }
 
@@ -81,14 +79,6 @@ public class CommentController {
     @Operation(summary = "댓글 삭제 API", description = "댓글을 삭제합니다.")
     public BaseResponse<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
-    }
-
-    @DeleteMapping("/{commentId}/replies/{replyId}")
-    @Operation(summary = "대댓글 삭제 API", description = "대댓글을 삭제합니다.")
-    public BaseResponse<Void> deleteReply(
-            @PathVariable Long commentId, @PathVariable Long replyId) {
-        commentService.deleteReply(commentId, replyId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

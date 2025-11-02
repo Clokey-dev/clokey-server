@@ -10,10 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.domain.comment.dto.request.CommentCreateRequest;
-import org.clokey.domain.comment.dto.request.ReplyCreateRequest;
 import org.clokey.domain.comment.dto.response.CommentCreateResponse;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
-import org.clokey.domain.comment.dto.response.ReplyCreateResponse;
 import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.service.CommentService;
@@ -176,8 +174,8 @@ class CommentControllerTest {
         @Test
         void 유효한_요청이면_대댓글을_생성하고_ID를_반환한다() throws Exception {
             // given
-            ReplyCreateRequest request = new ReplyCreateRequest("testContent");
-            ReplyCreateResponse response = new ReplyCreateResponse(1L);
+            CommentCreateRequest request = new CommentCreateRequest(1L, "testContent");
+            CommentCreateResponse response = new CommentCreateResponse(1L);
 
             given(commentService.createReply(1L, request)).willReturn(response);
 
@@ -201,7 +199,7 @@ class CommentControllerTest {
         @ValueSource(strings = {" "})
         void 대댓글_내용이_null_또는_공백이면_예외가_발생한다(String content) throws Exception {
             // given
-            ReplyCreateRequest request = new ReplyCreateRequest(content);
+            CommentCreateRequest request = new CommentCreateRequest(1L, content);
 
             // when & then
             ResultActions perform =
@@ -220,7 +218,7 @@ class CommentControllerTest {
         @Test
         void 대댓글_내용이_100를_넘어가면_예외가_발생한다() throws Exception {
             // given
-            ReplyCreateRequest request = new ReplyCreateRequest("t".repeat(101));
+            CommentCreateRequest request = new CommentCreateRequest(1L, "t".repeat(101));
 
             // when & then
             ResultActions perform =
@@ -239,7 +237,7 @@ class CommentControllerTest {
         @Test
         void 댓글이_존재하지_않는_경우_예외가_발생한다() throws Exception {
             // given
-            ReplyCreateRequest request = new ReplyCreateRequest("testContent");
+            CommentCreateRequest request = new CommentCreateRequest(1L, "testContent");
             given(commentService.createReply(1L, request))
                     .willThrow(new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND));
 
@@ -259,7 +257,7 @@ class CommentControllerTest {
         @Test
         void 내가_아닌_비공개_계정의_기록의_댓글에_대댓글을_작성하면_예외가_발생한다() throws Exception {
             // given
-            ReplyCreateRequest request = new ReplyCreateRequest("testContent");
+            CommentCreateRequest request = new CommentCreateRequest(1L, "testContent");
             given(commentService.createReply(1L, request))
                     .willThrow(new BaseCustomException(HistoryErrorCode.LIMITED_AUTHORITY));
 
@@ -668,26 +666,6 @@ class CommentControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(delete("/comments/1").contentType(MediaType.APPLICATION_JSON));
-
-            perform.andExpect(status().isOk())
-                    .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andExpect(jsonPath("$.code").value("COMMON204"))
-                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
-        }
-    }
-
-    @Nested
-    class 대댓글_삭제_요청_시 {
-
-        @Test
-        void 유효한_요청이면_대댓글을_삭제하고_NO_CONTENT를_반환한다() throws Exception {
-            willDoNothing().given(commentService).deleteReply(1L, 1L);
-
-            // when & then
-            ResultActions perform =
-                    mockMvc.perform(
-                            delete("/comments/1/replies/1")
-                                    .contentType(MediaType.APPLICATION_JSON));
 
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))

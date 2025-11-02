@@ -1,7 +1,6 @@
 package org.clokey.domain.comment.repository;
 
 import static org.clokey.comment.entitiy.QComment.comment;
-import static org.clokey.comment.entitiy.QReply.reply;
 import static org.clokey.member.entity.QMember.member;
 
 import com.querydsl.core.group.GroupBy;
@@ -13,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
+import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.global.paging.SortDirection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
@@ -26,14 +26,14 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<CommentListResponse> findAllByHistoryId(
+    public Slice<CommentListResponse> findAllParentCommentByHistoryId(
             Long historyId,
             Long currentMemberId,
             Long lastCommentId,
             int size,
             SortDirection direction) {
 
-        // 삼중 조인을 피하기 위해 댓글 존재 여부는 처음에는 false로 가져옵니다.
+        // 부모 댓글만 조회
         List<CommentListResponse> results =
                 queryFactory
                         .select(
@@ -50,6 +50,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                         .join(comment.member, member)
                         .where(
                                 comment.history.id.eq(historyId),
+                                comment.comment.isNull(),
                                 lastCommentIdCondition(lastCommentId, direction))
                         .orderBy(
                                 direction == SortDirection.DESC
@@ -63,20 +64,21 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
             results = results.subList(0, size);
         }
 
+        // 각 부모 댓글이 대댓글을 가지고 있는지 여부 조회
         Map<Long, Boolean> repliedMap =
                 results.isEmpty()
                         ? Map.of()
                         : queryFactory
-                                .select(reply.comment.id)
-                                .from(reply)
+                                .select(comment.comment.id)
+                                .from(comment)
                                 .where(
-                                        reply.comment.id.in(
+                                        comment.comment.id.in(
                                                 results.stream()
                                                         .map(CommentListResponse::commentId)
                                                         .toList()))
-                                .groupBy(reply.comment.id)
+                                .groupBy(comment.comment.id)
                                 .transform(
-                                        GroupBy.groupBy(reply.comment.id)
+                                        GroupBy.groupBy(comment.comment.id)
                                                 .as(Expressions.constant(true)));
 
         List<CommentListResponse> finalResults =
@@ -93,7 +95,41 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                                 c.isMine()))
                         .toList();
 
-        return new SliceImpl<>(finalResults, PageRequest.of(0, size), hasNext);
+        return checkLastPage(size, finalResults);
+    }
+
+    @Override
+    public Slice<ReplyListResponse> findAllRepliesByCommentId(
+            Long commentId,
+            Long currentMemberId,
+            Long lastReplyId,
+            int size,
+            SortDirection direction) {
+
+        List<ReplyListResponse> results =
+                queryFactory
+                        .select(
+                                Projections.constructor(
+                                        ReplyListResponse.class,
+                                        comment.id,
+                                        member.id,
+                                        member.nickname,
+                                        member.profileImageUrl,
+                                        comment.content,
+                                        member.id.eq(currentMemberId)))
+                        .from(comment)
+                        .join(comment.member, member)
+                        .where(
+                                comment.comment.id.eq(commentId),
+                                lastCommentIdCondition(lastReplyId, direction))
+                        .orderBy(
+                                direction == SortDirection.DESC
+                                        ? comment.id.desc()
+                                        : comment.id.asc())
+                        .limit(size + 1)
+                        .fetch();
+
+        return checkLastPage(size, results);
     }
 
     private BooleanExpression lastCommentIdCondition(Long commentId, SortDirection direction) {
@@ -104,5 +140,16 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         return direction == SortDirection.DESC
                 ? comment.id.lt(commentId)
                 : comment.id.gt(commentId);
+    }
+
+    private <T> Slice<T> checkLastPage(int pageSize, List<T> results) {
+        boolean hasNext = false;
+
+        if (results.size() > pageSize) {
+            hasNext = true;
+            results.remove(pageSize);
+        }
+
+        return new SliceImpl<>(results, PageRequest.of(0, pageSize), hasNext);
     }
 }
