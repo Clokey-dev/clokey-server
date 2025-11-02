@@ -120,7 +120,7 @@ class LookBookServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 존재하지_않는_룩북을_입려하면_예외가_발생한다() {
+        void 존재하지_않는_룩북을_입력하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(
                             () ->
@@ -241,7 +241,7 @@ class LookBookServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 존재하지_않는_룩북을_입려하면_예외가_발생한다() {
+        void 존재하지_않는_룩북을_입력하면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> lookBookService.deleteLookBook(999L))
                     .isInstanceOf(BaseCustomException.class)
