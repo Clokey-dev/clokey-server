@@ -649,18 +649,18 @@ class MemberServiceTest extends IntegrationTest {
         void 유효한_요청이면_팔로잉_목록을_반환한다() {
             // when
             SliceResponse<FollowMemberResponse> response =
-                    memberService.getFollows("testCodiveId1", null, true, 10);
+                    memberService.getFollows(1L, null, true, 10);
             // then
             assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId3", "testCodiveId2");
+                    .extracting("codiveId", "isMe")
+                    .containsExactly(tuple("testCodiveId3", false), tuple("testCodiveId2", false));
         }
 
         @Test
         void 유효한_요청이면_팔로워_목록을_반환한다() {
             // when
             SliceResponse<FollowMemberResponse> response =
-                    memberService.getFollows("testCodiveId2", null, false, 10);
+                    memberService.getFollows(2L, null, false, 10);
             // then
             assertThat(response.content())
                     .extracting("codiveId")
@@ -668,9 +668,21 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @Test
+        void 조회된_멤버가_요청자일_경우_isMe에_true를_반환한다() {
+            // when
+            SliceResponse<FollowMemberResponse> response =
+                    memberService.getFollows(2L, null, false, 10);
+
+            // then
+            assertThat(response.content())
+                    .extracting("codiveId", "isMe")
+                    .containsExactly(tuple("testCodiveId3", false), tuple("testCodiveId1", true));
+        }
+
+        @Test
         void 비공개_계정의_팔로잉_또는_팔로우_목록을_요청할_경우_예외가_발생한다() {
             // then
-            assertThatThrownBy(() -> memberService.getFollows("testCodiveId4", null, true, 10))
+            assertThatThrownBy(() -> memberService.getFollows(4L, null, true, 10))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.PRIVATE_MEMBER_ACCESS_DENIED.getMessage());
         }
@@ -678,7 +690,7 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 차단_당한_계정의_팔로잉_또는_팔로우_목록을_요청할_경우_예외가_발생한다() {
             // then
-            assertThatThrownBy(() -> memberService.getFollows("testCodiveId3", null, true, 10))
+            assertThatThrownBy(() -> memberService.getFollows(3L, null, true, 10))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.BLOCKED_MEMBER_ACCESS_DENIED.getMessage());
         }
@@ -687,7 +699,7 @@ class MemberServiceTest extends IntegrationTest {
         void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
             // when
             SliceResponse<FollowMemberResponse> response =
-                    memberService.getFollows("testCodiveId2", null, false, 1);
+                    memberService.getFollows(2L, null, false, 1);
 
             // then
             Assertions.assertAll(

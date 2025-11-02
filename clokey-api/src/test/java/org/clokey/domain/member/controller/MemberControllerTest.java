@@ -425,25 +425,29 @@ class MemberControllerTest {
                     List.of(
                             new FollowMemberResponse(
                                     2L,
+                                    2L,
                                     "nickname1",
                                     "codive123",
                                     "https://img.example.com/bg.jpg",
+                                    false,
                                     false),
                             new FollowMemberResponse(
+                                    1L,
                                     1L,
                                     "nickname2",
                                     "codive456",
                                     "https://img.example2.com/bg.jpg",
-                                    true));
+                                    true,
+                                    false));
 
-            given(memberService.getFollows("targetCodive", null, true, 5))
+            given(memberService.getFollows(3L, null, true, 5))
                     .willReturn(new SliceResponse<FollowMemberResponse>(followMembers, true));
 
             // when
             ResultActions perform =
                     mockMvc.perform(
                             get("/users/follows")
-                                    .param("codiveId", "targetCodive")
+                                    .param("memberId", "3")
                                     .param("isFollowing", "true")
                                     .param("size", "5"));
             // then
@@ -462,25 +466,29 @@ class MemberControllerTest {
                     List.of(
                             new FollowMemberResponse(
                                     2L,
-                                    "nickname1",
+                                    2L,
+                                    "nickname2",
                                     "codive123",
                                     "https://img.example.com/bg.jpg",
+                                    false,
                                     false),
                             new FollowMemberResponse(
                                     1L,
-                                    "nickname2",
+                                    1L,
+                                    "nickname1",
                                     "codive456",
                                     "https://img.example2.com/bg.jpg",
+                                    true,
                                     true));
 
-            given(memberService.getFollows("targetCodive", null, false, 5))
+            given(memberService.getFollows(1L, null, false, 5))
                     .willReturn(new SliceResponse<FollowMemberResponse>(followMembers, true));
 
             // when
             ResultActions perform =
                     mockMvc.perform(
                             get("/users/follows")
-                                    .param("codiveId", "targetCodive")
+                                    .param("memberId", "1")
                                     .param("isFollowing", "false")
                                     .param("size", "5"));
             // then
@@ -499,19 +507,21 @@ class MemberControllerTest {
                     List.of(
                             new FollowMemberResponse(
                                     2L,
+                                    2L,
                                     "nickname1",
                                     "codive123",
                                     "https://img.example.com/bg.jpg",
-                                    true));
+                                    true,
+                                    false));
 
-            given(memberService.getFollows("targetCodive", null, true, 1))
+            given(memberService.getFollows(1L, null, true, 1))
                     .willReturn(new SliceResponse<FollowMemberResponse>(followMembers, false));
 
             // when
             ResultActions perform =
                     mockMvc.perform(
                             get("/users/follows")
-                                    .param("codiveId", "targetCodive")
+                                    .param("memberId", "1")
                                     .param("isFollowing", "true")
                                     .param("size", "1"));
 
@@ -530,7 +540,7 @@ class MemberControllerTest {
             ResultActions perform =
                     mockMvc.perform(
                             get("/users/follows")
-                                    .param("codiveId", "targetCodive")
+                                    .param("memberId", "1")
                                     .param("isFollowing", "true")
                                     .param("size", pageSize));
 
