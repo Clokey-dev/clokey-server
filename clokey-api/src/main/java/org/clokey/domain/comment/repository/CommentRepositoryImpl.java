@@ -1,6 +1,6 @@
 package org.clokey.domain.comment.repository;
 
-import static org.clokey.comment.entitiy.QComment.comment;
+import static org.clokey.comment.entitiy.QComment.comment1;
 import static org.clokey.member.entity.QMember.member;
 
 import com.querydsl.core.group.GroupBy;
@@ -11,6 +11,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.clokey.comment.entitiy.QComment;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
 import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.global.paging.SortDirection;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Repository;
 public class CommentRepositoryImpl implements CommentRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    private static final QComment comment = comment1;
 
     @Override
     public Slice<CommentListResponse> findAllParentCommentByHistoryId(
@@ -95,7 +98,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                                 c.isMine()))
                         .toList();
 
-        return checkLastPage(size, finalResults);
+        return new SliceImpl<>(finalResults, PageRequest.of(0, size), hasNext);
     }
 
     @Override
@@ -129,7 +132,12 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                         .limit(size + 1)
                         .fetch();
 
-        return checkLastPage(size, results);
+        boolean hasNext = results.size() > size;
+        if (hasNext) {
+            results = results.subList(0, size);
+        }
+
+        return new SliceImpl<>(results, PageRequest.of(0, size), hasNext);
     }
 
     private BooleanExpression lastCommentIdCondition(Long commentId, SortDirection direction) {
@@ -140,16 +148,5 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         return direction == SortDirection.DESC
                 ? comment.id.lt(commentId)
                 : comment.id.gt(commentId);
-    }
-
-    private <T> Slice<T> checkLastPage(int pageSize, List<T> results) {
-        boolean hasNext = false;
-
-        if (results.size() > pageSize) {
-            hasNext = true;
-            results.remove(pageSize);
-        }
-
-        return new SliceImpl<>(results, PageRequest.of(0, pageSize), hasNext);
     }
 }

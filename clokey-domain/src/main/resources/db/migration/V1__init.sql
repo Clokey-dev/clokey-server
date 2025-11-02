@@ -115,6 +115,7 @@ CREATE TABLE comment (
                          member_id BIGINT NOT NULL,
                          history_id BIGINT NOT NULL,
                          banned BOOLEAN NOT NULL,
+                         parent_id BIGINT,
                          created_at DATETIME(6) NOT NULL,
                          updated_at DATETIME(6) NOT NULL,
                          CONSTRAINT fk_comment_member FOREIGN KEY (member_id) REFERENCES member(id),

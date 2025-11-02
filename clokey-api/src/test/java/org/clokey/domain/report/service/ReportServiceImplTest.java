@@ -154,19 +154,6 @@ public class ReportServiceImplTest extends IntegrationTest {
         }
 
         @Test
-        void 대댓글이_존재하지_않는_경우_예외가_발생한다() {
-            // given
-            ReportCreateRequest request =
-                    new ReportCreateRequest(
-                            1001L, TargetType.REPLY, ReportReason.SWEARING_AND_CURSING, "나한테 욕했어요");
-
-            // when & then
-            assertThatThrownBy(() -> reportService.createReport(request))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(CommentErrorCode.REPLY_NOT_FOUND.getMessage());
-        }
-
-        @Test
         void 기록이_존재하지_않는_경우_예외가_발생한다() {
             // given
             ReportCreateRequest request =

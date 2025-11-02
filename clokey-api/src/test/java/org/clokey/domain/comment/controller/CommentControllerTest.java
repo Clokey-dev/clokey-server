@@ -190,7 +190,7 @@ class CommentControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON201"))
                     .andExpect(jsonPath("$.message").value("요청 성공 및 리소스 생성됨"))
-                    .andExpect(jsonPath("$.result.replyId").value(1));
+                    .andExpect(jsonPath("$.result.commentId").value(1));
         }
 
         @ParameterizedTest
@@ -212,7 +212,7 @@ class CommentControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.content").value("대댓글 내용을 비워둘 수 없습니다."));
+                    .andExpect(jsonPath("$.result.content").value("댓글 내용을 비워둘 수 없습니다."));
         }
 
         @Test
@@ -231,7 +231,7 @@ class CommentControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.content").value("대댓글의 내용은 최대 100자까지 가능합니다."));
+                    .andExpect(jsonPath("$.result.content").value("댓글의 내용은 최대 100자까지 가능합니다."));
         }
 
         @Test
