@@ -64,7 +64,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                 direction == SortDirection.DESC
                                         ? comment.id.desc()
                                         : comment.id.asc())
-                        .limit(size + 1)
+                        .limit((long) size + 1)
                         .fetch();
 
         boolean hasNext = results.size() > size;
@@ -134,7 +134,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                 direction == SortDirection.DESC
                                         ? comment.id.desc()
                                         : comment.id.asc())
-                        .limit(size + 1)
+                        .limit((long) size + 1)
                         .fetch();
 
         boolean hasNext = results.size() > size;
@@ -161,7 +161,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                 direction == SortDirection.DESC
                                         ? comment.history.id.desc()
                                         : comment.history.id.asc())
-                        .limit(size + 1)
+                        .limit((long) size + 1)
                         .fetch();
 
         boolean hasNext = historyIds.size() > size;
