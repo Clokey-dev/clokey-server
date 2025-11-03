@@ -283,14 +283,14 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                 : comment.history.id.gt(lastHistoryId);
     }
 
-    private record HistoryInfo(
+    public record HistoryInfo(
             Long historyId,
             java.time.LocalDate historyDate,
             String content,
             String nickname,
             String clokeyId) {}
 
-    private record HistoryImageInfo(Long historyId, String imageUrl) {}
+    public record HistoryImageInfo(Long historyId, String imageUrl) {}
 
-    private record CommentInfo(Long historyId, Long commentId, String content) {}
+    public record CommentInfo(Long historyId, Long commentId, String content) {}
 }
