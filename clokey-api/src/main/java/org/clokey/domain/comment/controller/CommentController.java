@@ -9,6 +9,7 @@ import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.comment.dto.request.CommentCreateRequest;
 import org.clokey.domain.comment.dto.response.CommentCreateResponse;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
+import org.clokey.domain.comment.dto.response.MyCommentListResponse;
 import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.domain.comment.service.CommentService;
 import org.clokey.global.annotation.PageSize;
@@ -80,5 +81,20 @@ public class CommentController {
     public BaseResponse<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+    }
+
+    @GetMapping("/my-comments")
+    @Operation(summary = "내가 작성한 댓글 조회 API", description = "내가 작성한 댓글을 조회합니다.")
+    public BaseResponse<SliceResponse<MyCommentListResponse>> getMyComments(
+            @Parameter(description = "이전 페이지의 마지막 기록 ID (첫 요청 시 생략)")
+                    @RequestParam(required = false)
+                    Long lastHistoryId,
+            @Parameter(description = "페이지당 조회할 댓글 수") @RequestParam @PageSize Integer size,
+            @Parameter(description = "정렬 방향 (ASC: 오래된순, DESC: 최신순)")
+                    @RequestParam(defaultValue = "DESC")
+                    SortDirection direction) {
+        SliceResponse<MyCommentListResponse> response =
+                commentService.getMyComments(lastHistoryId, size, direction);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

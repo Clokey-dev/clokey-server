@@ -6,6 +6,7 @@ import org.clokey.comment.entitiy.Comment;
 import org.clokey.domain.comment.dto.request.CommentCreateRequest;
 import org.clokey.domain.comment.dto.response.CommentCreateResponse;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
+import org.clokey.domain.comment.dto.response.MyCommentListResponse;
 import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.repository.CommentRepository;
@@ -134,6 +135,17 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.deleteReplies(comment.getId());
         commentRepository.delete(comment);
+    }
+
+    @Override
+    public SliceResponse<MyCommentListResponse> getMyComments(
+            Long lastHistoryId, int size, SortDirection direction) {
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        Slice<MyCommentListResponse> result =
+                commentRepository.findAllMyComments(
+                        currentMember.getId(), lastHistoryId, size, direction);
+        return SliceResponse.from(result);
     }
 
     private void validateHistoryAuthority(Member member, History history) {
