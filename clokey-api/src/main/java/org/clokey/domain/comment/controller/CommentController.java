@@ -89,7 +89,7 @@ public class CommentController {
             @Parameter(description = "이전 페이지의 마지막 기록 ID (첫 요청 시 생략)")
                     @RequestParam(required = false)
                     Long lastHistoryId,
-            @Parameter(description = "페이지당 조회할 댓글 수") @RequestParam @PageSize Integer size,
+            @Parameter(description = "페이지당 조회할 기록 수") @RequestParam @PageSize Integer size,
             @Parameter(description = "정렬 방향 (ASC: 오래된순, DESC: 최신순)")
                     @RequestParam(defaultValue = "DESC")
                     SortDirection direction) {

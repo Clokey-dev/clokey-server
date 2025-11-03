@@ -8,10 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
 import java.util.List;
 import org.clokey.domain.comment.dto.request.CommentCreateRequest;
 import org.clokey.domain.comment.dto.response.CommentCreateResponse;
 import org.clokey.domain.comment.dto.response.CommentListResponse;
+import org.clokey.domain.comment.dto.response.MyCommentListResponse;
 import org.clokey.domain.comment.dto.response.ReplyListResponse;
 import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.service.CommentService;
@@ -671,6 +673,246 @@ class CommentControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON204"))
                     .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+    }
+
+    @Nested
+    class 나의_댓글_목록_조회_요청_시 {
+
+        @Test
+        void 정렬_조건이_ASC이면_historyId를_오름차순으로_응답한다() throws Exception {
+            // given
+            List<MyCommentListResponse> myCommentListResponses =
+                    List.of(
+                            new MyCommentListResponse(
+                                    1L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 1),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(1L, "testContent"),
+                                            new MyCommentListResponse.Payload(2L, "testContent"))),
+                            new MyCommentListResponse(
+                                    2L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 2),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(3L, "testContent1"),
+                                            new MyCommentListResponse.Payload(
+                                                    4L, "testContent2"))));
+
+            given(commentService.getMyComments(null, 2, SortDirection.ASC))
+                    .willReturn(new SliceResponse<>(myCommentListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("size", "2")
+                                    .param("direction", "ASC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].historyId").value(1))
+                    .andExpect(jsonPath("$.result.content[1].historyId").value(2))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 정렬_조건이_DESC이면_historyId를_내림차순으로_응답한다() throws Exception {
+            // given
+            List<MyCommentListResponse> myCommentListResponses =
+                    List.of(
+                            new MyCommentListResponse(
+                                    2L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 1),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(3L, "testContent"),
+                                            new MyCommentListResponse.Payload(4L, "testContent"))),
+                            new MyCommentListResponse(
+                                    1L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 2),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(1L, "testContent1"),
+                                            new MyCommentListResponse.Payload(
+                                                    2L, "testContent2"))));
+
+            given(commentService.getMyComments(null, 2, SortDirection.DESC))
+                    .willReturn(new SliceResponse<>(myCommentListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("size", "2")
+                                    .param("direction", "DESC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].historyId").value(2))
+                    .andExpect(jsonPath("$.result.content[1].historyId").value(1))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지인_경우_isLast를_true로_응답한다() throws Exception {
+            // given
+            List<MyCommentListResponse> myCommentListResponses =
+                    List.of(
+                            new MyCommentListResponse(
+                                    1L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 1),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(1L, "testContent"),
+                                            new MyCommentListResponse.Payload(2L, "testContent"))),
+                            new MyCommentListResponse(
+                                    2L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 2),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(3L, "testContent1"),
+                                            new MyCommentListResponse.Payload(
+                                                    4L, "testContent2"))));
+
+            given(commentService.getMyComments(null, 3, SortDirection.ASC))
+                    .willReturn(new SliceResponse<>(myCommentListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("size", "3")
+                                    .param("direction", "ASC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].historyId").value(1))
+                    .andExpect(jsonPath("$.result.content[1].historyId").value(2))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_응답한다() throws Exception {
+            // given
+            List<MyCommentListResponse> myCommentListResponses =
+                    List.of(
+                            new MyCommentListResponse(
+                                    1L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 1),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(1L, "testContent"),
+                                            new MyCommentListResponse.Payload(2L, "testContent"))),
+                            new MyCommentListResponse(
+                                    2L,
+                                    "testImageUrl",
+                                    "testNickname",
+                                    "testCodiveId",
+                                    LocalDate.of(2025, 1, 2),
+                                    "testContent",
+                                    List.of(
+                                            new MyCommentListResponse.Payload(3L, "testContent1"),
+                                            new MyCommentListResponse.Payload(
+                                                    4L, "testContent2"))));
+
+            given(commentService.getMyComments(null, 2, SortDirection.ASC))
+                    .willReturn(new SliceResponse<>(myCommentListResponses, false));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("size", "2")
+                                    .param("direction", "ASC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].historyId").value(1))
+                    .andExpect(jsonPath("$.result.content[1].historyId").value(2))
+                    .andExpect(jsonPath("$.result.isLast").value(false));
+        }
+
+        @Test
+        void 기록을_남긴_댓글이_없는_경우_빈_리스트를_응답한다() throws Exception {
+            // given
+            List<MyCommentListResponse> myCommentListResponses = List.of();
+
+            given(commentService.getMyComments(null, 2, SortDirection.ASC))
+                    .willReturn(new SliceResponse<>(myCommentListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("size", "2")
+                                    .param("direction", "ASC"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content").isEmpty())
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-1", "-999", "0"})
+        void 페이지_크기를_0_이하로_설정하면_예외가_발생한다(String pageSize) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("lastHistoryId", "1")
+                                    .param("size", pageSize)
+                                    .param("direction", "ASC"));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"ASCC", "DESCC", "OLDEST", "NEWEST"})
+        void 존재하지_않는_정렬_기준을_입력한_경우_예외가_발생한다(String sort) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/comments/my-comments")
+                                    .param("lastHistoryId", "1")
+                                    .param("size", "1")
+                                    .param("direction", sort));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
         }
     }
 }
