@@ -53,6 +53,8 @@ public class ClothServiceImpl implements ClothService {
                                 .map(ClothCreateRequest::categoryId)
                                 .collect(Collectors.toSet()));
 
+        categoryMap.values().forEach(this::validateChildCategory);
+
         List<Cloth> clothes =
                 request.content().stream()
                         .map(
@@ -60,9 +62,9 @@ public class ClothServiceImpl implements ClothService {
                                     Category category = categoryMap.get(cr.categoryId());
                                     return Cloth.createCloth(
                                             cr.clothImageUrl(),
-                                            null,
-                                            null,
-                                            null,
+                                            cr.clothUrl(),
+                                            cr.name(),
+                                            cr.brand(),
                                             cr.season(),
                                             category,
                                             currentMember);
@@ -124,10 +126,8 @@ public class ClothServiceImpl implements ClothService {
         validateClothOwnership(cloth, currentMember.getId());
         validateChildCategory(category);
 
-        // cloth는 기본적으로 무조건 사진이 있어야 하긴 합니다.
         // 사진이 바뀌는 경우 기존 imageUrl을 기반으로 S3에서 삭제합니다.
-        if (cloth.getClothImageUrl() != null
-                && !cloth.getClothImageUrl().equals(request.clothImageUrl())) {
+        if (!cloth.getClothImageUrl().equals(request.clothImageUrl())) {
             eventPublisher.publishEvent(ImageDeleteEvent.of(cloth.getClothImageUrl()));
         }
 

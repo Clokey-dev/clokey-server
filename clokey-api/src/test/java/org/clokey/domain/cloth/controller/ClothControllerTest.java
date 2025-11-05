@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.cloth.enums.Season;
-import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
@@ -18,7 +17,6 @@ import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.service.ClothService;
-import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.Nested;
@@ -53,9 +51,20 @@ class ClothControllerTest {
             ClothCreateRequests request =
                     new ClothCreateRequests(
                             List.of(
-                                    new ClothCreateRequest("testClothImageUrl1", 1L, Season.SPRING),
                                     new ClothCreateRequest(
-                                            "testClothImageUrl2", 1L, Season.SPRING)));
+                                            "testClothImageUrl1",
+                                            null,
+                                            null,
+                                            null,
+                                            Season.SPRING,
+                                            1L),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2",
+                                            null,
+                                            null,
+                                            null,
+                                            Season.SPRING,
+                                            1L)));
 
             ClothCreateResponse response = new ClothCreateResponse(List.of(1L, 2L));
 
@@ -103,7 +112,9 @@ class ClothControllerTest {
             // given
             ClothCreateRequests request =
                     new ClothCreateRequests(
-                            List.of(new ClothCreateRequest(clothImageUrl, 1L, Season.SPRING)));
+                            List.of(
+                                    new ClothCreateRequest(
+                                            clothImageUrl, null, null, null, Season.SPRING, 1L)));
 
             // when & then
             ResultActions perform =
@@ -126,7 +137,12 @@ class ClothControllerTest {
                     new ClothCreateRequests(
                             List.of(
                                     new ClothCreateRequest(
-                                            "testClothImageUrl", null, Season.SPRING)));
+                                            "testClothImageUrl",
+                                            null,
+                                            null,
+                                            null,
+                                            Season.SPRING,
+                                            null)));
 
             // when & then
             ResultActions perform =
@@ -147,7 +163,9 @@ class ClothControllerTest {
             // given
             ClothCreateRequests request =
                     new ClothCreateRequests(
-                            List.of(new ClothCreateRequest("testClothImageUrl", 1L, null)));
+                            List.of(
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl", null, null, null, null, 1L)));
 
             // when & then
             ResultActions perform =
@@ -161,31 +179,6 @@ class ClothControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.season").value("옷의 계절은 비워둘 수 없습니다."));
-        }
-
-        @Test
-        void 카테고리가_존재하지_않을_경우_예외가_발생한다() throws Exception {
-            // given
-            ClothCreateRequests request =
-                    new ClothCreateRequests(
-                            List.of(
-                                    new ClothCreateRequest(
-                                            "testClothImageUrl1", 999L, Season.SPRING)));
-            given(clothService.createClothes(request))
-                    .willThrow(
-                            new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND));
-
-            // when & then
-            ResultActions perform =
-                    mockMvc.perform(
-                            post("/clothes")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(request)));
-
-            perform.andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.isSuccess").value(false))
-                    .andExpect(jsonPath("$.code").value("CATEGORY_4042"))
-                    .andExpect(jsonPath("$.message").value("존재하지 않는 카테고리가 포함되어 있습니다."));
         }
     }
 

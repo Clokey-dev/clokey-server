@@ -68,8 +68,9 @@ class ClothServiceTest extends IntegrationTest {
             memberRepository.save(member);
             given(memberUtil.getCurrentMember()).willReturn(member);
 
-            Category category = Category.createCategory("testCategory", null);
-            categoryRepository.save(category);
+            Category parentCategory = Category.createCategory("testParentCategory", null);
+            Category category = Category.createCategory("testCategory", parentCategory);
+            categoryRepository.saveAll(List.of(parentCategory, category));
         }
 
         @Test
@@ -78,9 +79,20 @@ class ClothServiceTest extends IntegrationTest {
             ClothCreateRequests request =
                     new ClothCreateRequests(
                             List.of(
-                                    new ClothCreateRequest("testClothImageUrl1", 1L, Season.SPRING),
                                     new ClothCreateRequest(
-                                            "testClothImageUrl2", 1L, Season.SPRING)));
+                                            "testClothImageUrl1",
+                                            "testClothUrl1",
+                                            "testName1",
+                                            "testBrand1",
+                                            Season.SPRING,
+                                            2L),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2",
+                                            "testClothUrl2",
+                                            "testName2",
+                                            "testBrand2",
+                                            Season.SUMMER,
+                                            2L)));
 
             // when
             clothService.createClothes(request);
@@ -89,12 +101,40 @@ class ClothServiceTest extends IntegrationTest {
             Assertions.assertAll(
                     () ->
                             assertThat(clothRepository.findById(1L).orElseThrow())
-                                    .extracting("clothImageUrl", "category.id", "member.id")
-                                    .containsExactly("testClothImageUrl1", 1L, 1L),
+                                    .extracting(
+                                            "clothImageUrl",
+                                            "clothUrl",
+                                            "name",
+                                            "brand",
+                                            "season",
+                                            "category.id",
+                                            "member.id")
+                                    .containsExactly(
+                                            "testClothImageUrl1",
+                                            "testClothUrl1",
+                                            "testName1",
+                                            "testBrand1",
+                                            Season.SPRING,
+                                            2L,
+                                            1L),
                     () ->
                             assertThat(clothRepository.findById(2L).orElseThrow())
-                                    .extracting("clothImageUrl", "category.id", "member.id")
-                                    .containsExactly("testClothImageUrl2", 1L, 1L));
+                                    .extracting(
+                                            "clothImageUrl",
+                                            "clothUrl",
+                                            "name",
+                                            "brand",
+                                            "season",
+                                            "category.id",
+                                            "member.id")
+                                    .containsExactly(
+                                            "testClothImageUrl2",
+                                            "testClothUrl2",
+                                            "testName2",
+                                            "testBrand2",
+                                            Season.SUMMER,
+                                            2L,
+                                            1L));
         }
 
         @Test
@@ -103,14 +143,52 @@ class ClothServiceTest extends IntegrationTest {
             ClothCreateRequests request =
                     new ClothCreateRequests(
                             List.of(
-                                    new ClothCreateRequest("testClothImageUrl1", 1L, Season.SPRING),
                                     new ClothCreateRequest(
-                                            "testClothImageUrl2", 999L, Season.SPRING)));
+                                            "testClothImageUrl1",
+                                            "testClothUrl1",
+                                            "testName1",
+                                            "testBrand1",
+                                            Season.SPRING,
+                                            2L),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2",
+                                            "testClothUrl2",
+                                            "testName2",
+                                            "testBrand2",
+                                            Season.SPRING,
+                                            999L)));
 
             // when & then
             assertThatThrownBy(() -> clothService.createClothes(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 상위_카테고리로_옷을_분류하는_경우_예외가_발생한다() {
+            // given
+            ClothCreateRequests request =
+                    new ClothCreateRequests(
+                            List.of(
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl1",
+                                            "testClothUrl1",
+                                            "testName1",
+                                            "testBrand1",
+                                            Season.SPRING,
+                                            2L),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2",
+                                            "testClothUrl2",
+                                            "testName2",
+                                            "testBrand2",
+                                            Season.SPRING,
+                                            1L)));
+
+            // when & then
+            assertThatThrownBy(() -> clothService.createClothes(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.PARENT_CATEGORY_CLOTH.getMessage());
         }
     }
 
