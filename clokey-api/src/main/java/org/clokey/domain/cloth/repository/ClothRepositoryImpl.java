@@ -9,6 +9,7 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.clokey.cloth.entity.Cloth;
 import org.clokey.cloth.enums.Season;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.springframework.data.domain.PageRequest;
@@ -52,19 +53,61 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
                         .where(
                                 cloth.category.id.eq(categoryId),
                                 cloth.season.in(season, nextSeason, previousSeason, oppositeSeason),
-                                lastClothIdCondition(lastClothId))
-                        .orderBy(seasonPriority.asc(), cloth.id.desc())
+                                lastClothIdCondition(
+                                        lastClothId,
+                                        season,
+                                        nextSeason,
+                                        previousSeason,
+                                        oppositeSeason,
+                                        seasonPriority))
+                        .orderBy(seasonPriority.asc(), cloth.id.asc())
                         .limit((long) size + 1)
                         .fetch();
 
         return checkLastPage(size, results);
     }
 
-    private BooleanExpression lastClothIdCondition(Long lastClothId) {
+    private BooleanExpression lastClothIdCondition(
+            Long lastClothId,
+            Season season,
+            Season nextSeason,
+            Season previousSeason,
+            Season oppositeSeason,
+            NumberExpression<Integer> seasonPriority) {
         if (lastClothId == null) {
             return null;
         }
-        return cloth.id.lt(lastClothId);
+
+        Cloth lastCloth = queryFactory.selectFrom(cloth).where(cloth.id.eq(lastClothId)).fetchOne();
+
+        if (lastCloth == null) {
+            return null;
+        }
+
+        int lastPriority =
+                calculateSeasonPriority(
+                        lastCloth.getSeason(), season, nextSeason, previousSeason, oppositeSeason);
+
+        // 복합 조건: (우선순위 > 마지막 우선순위) OR (우선순위 = 마지막 우선순위 AND ID > 마지막 ID)
+        return seasonPriority
+                .gt(lastPriority)
+                .or(seasonPriority.eq(lastPriority).and(cloth.id.gt(lastClothId)));
+    }
+
+    private int calculateSeasonPriority(
+            Season clothSeason,
+            Season season,
+            Season nextSeason,
+            Season previousSeason,
+            Season oppositeSeason) {
+        if (clothSeason == season) {
+            return 1;
+        } else if (clothSeason == nextSeason || clothSeason == previousSeason) {
+            return 2;
+        } else if (clothSeason == oppositeSeason) {
+            return 3;
+        }
+        return 4;
     }
 
     private <T> Slice<T> checkLastPage(int pageSize, List<T> results) {
