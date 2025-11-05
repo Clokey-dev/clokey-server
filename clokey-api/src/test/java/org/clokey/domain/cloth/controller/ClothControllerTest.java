@@ -13,9 +13,11 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.service.ClothService;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -315,6 +317,92 @@ class ClothControllerTest {
                                     .param("size", "2")
                                     .param("categoryId", "1")
                                     .param("season", season));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+        }
+    }
+
+    @Nested
+    class 옷_목록_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_옷_목록을_반환한다() throws Exception {
+            // given
+            List<ClothListResponse> clothListResponses =
+                    List.of(
+                            new ClothListResponse(1L, "testImageUrl1", "testBrand1", "testName1"),
+                            new ClothListResponse(2L, "testImageUrl2", "testBrand2", "testName2"));
+
+            given(clothService.getClothes(null, 2, SortDirection.ASC, 1L, List.of(Season.SPRING)))
+                    .willReturn(new SliceResponse<>(clothListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes")
+                                    .param("size", "2")
+                                    .param("direction", "ASC")
+                                    .param("categoryId", "1")
+                                    .param("seasons", "SPRING"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].clothId").value(1))
+                    .andExpect(jsonPath("$.result.content[1].clothId").value(2))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-1", "-999", "0"})
+        void 페이지_크기를_0_이하로_설정하면_예외가_발생한다(String pageSize) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes")
+                                    .param("size", pageSize)
+                                    .param("direction", "ASC")
+                                    .param("categoryId", "1")
+                                    .param("seasons", "SPRING"));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"SPRINGG", "SUUUMMER", "FALL!", "WINTERS"})
+        void 존재하지_않는_계절만_입력한_경우_예외가_발생한다(String season) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes")
+                                    .param("size", "2")
+                                    .param("direction", "ASC")
+                                    .param("categoryId", "1")
+                                    .param("seasons", season));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"SPRINGG", "SUUUMMER", "FALL!", "WINTERS"})
+        void 정상_계절과_잘못된_계절이_섞여_있는_경우_예외가_발생한다(String invalidSeason) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes")
+                                    .param("size", "2")
+                                    .param("direction", "ASC")
+                                    .param("categoryId", "1")
+                                    .param("seasons", "SPRING", invalidSeason));
 
             perform.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.isSuccess").value(false))
