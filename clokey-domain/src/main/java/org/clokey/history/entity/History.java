@@ -3,6 +3,9 @@ package org.clokey.history.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.member.entity.Member;
@@ -39,6 +42,15 @@ public class History extends BaseEntity {
     @JoinColumn(name = "situation_id")
     @NotNull
     private Situation situation;
+
+    @OneToMany(mappedBy = "history")
+    private List<HistoryImage> historyImages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "history")
+    private List<HistoryStyle> historyStyles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "history")
+    private List<HistoryHashtag> historyHashtags = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     private History(
