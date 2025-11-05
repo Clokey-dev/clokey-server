@@ -1,6 +1,7 @@
 package org.clokey.domain.cloth.controller;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,8 +13,10 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.service.ClothService;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -179,6 +182,144 @@ class ClothControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("CATEGORY_4042"))
                     .andExpect(jsonPath("$.message").value("존재하지 않는 카테고리가 포함되어 있습니다."));
+        }
+    }
+
+    @Nested
+    class 카테고리별_계절_옷_추천_요청_시 {
+
+        @Test
+        void 유효한_요청이면_카테고리별로_적합한_계절_옷들을_반환한다() throws Exception {
+            // given
+            List<ClothRecommendListResponse> clothRecommendListResponses =
+                    List.of(
+                            new ClothRecommendListResponse(1L, "testImageUrl1"),
+                            new ClothRecommendListResponse(2L, "testImageUrl1"));
+
+            given(clothService.recommendCategoryClothes(null, 2, 1L, Season.SPRING))
+                    .willReturn(new SliceResponse<>(clothRecommendListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes/recommend")
+                                    .param("size", "2")
+                                    .param("categoryId", "1")
+                                    .param("season", "SPRING"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content[0].clothId").value(1))
+                    .andExpect(jsonPath("$.result.content[1].clothId").value(2))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지인_경우_isLast를_true로_응답한다() throws Exception {
+            // given
+            List<ClothRecommendListResponse> clothRecommendListResponses =
+                    List.of(
+                            new ClothRecommendListResponse(1L, "testImageUrl1"),
+                            new ClothRecommendListResponse(2L, "testImageUrl1"));
+
+            given(clothService.recommendCategoryClothes(null, 2, 1L, Season.SPRING))
+                    .willReturn(new SliceResponse<>(clothRecommendListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes/recommend")
+                                    .param("size", "2")
+                                    .param("categoryId", "1")
+                                    .param("season", "SPRING"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_응답한다() throws Exception {
+            // given
+            List<ClothRecommendListResponse> clothRecommendListResponses =
+                    List.of(
+                            new ClothRecommendListResponse(1L, "testImageUrl1"),
+                            new ClothRecommendListResponse(2L, "testImageUrl1"));
+
+            given(clothService.recommendCategoryClothes(null, 2, 1L, Season.SPRING))
+                    .willReturn(new SliceResponse<>(clothRecommendListResponses, false));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes/recommend")
+                                    .param("size", "2")
+                                    .param("categoryId", "1")
+                                    .param("season", "SPRING"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.isLast").value(false));
+        }
+
+        @Test
+        void 기록에_댓글이_없는_경우_빈_리스트를_응답한다() throws Exception {
+            // given
+            List<ClothRecommendListResponse> clothRecommendListResponses = List.of();
+
+            given(clothService.recommendCategoryClothes(null, 2, 1L, Season.SPRING))
+                    .willReturn(new SliceResponse<>(clothRecommendListResponses, true));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes/recommend")
+                                    .param("size", "2")
+                                    .param("categoryId", "1")
+                                    .param("season", "SPRING"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.content").isEmpty())
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-1", "-999", "0"})
+        void 페이지_크기를_0_이하로_설정하면_예외가_발생한다(String pageSize) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes/recommend")
+                                    .param("size", pageSize)
+                                    .param("categoryId", "1")
+                                    .param("season", "SPRING"));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"SPRINGG", "SUUUMMER", "FALL!", "WINTERS"})
+        void 존재하지_않는_계절을_입력한_경우_예외가_발생한다(String season) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/clothes/recommend")
+                                    .param("size", "2")
+                                    .param("categoryId", "1")
+                                    .param("season", season));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
         }
     }
 }
