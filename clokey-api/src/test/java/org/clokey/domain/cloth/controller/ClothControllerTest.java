@@ -13,6 +13,7 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.service.ClothService;
@@ -408,6 +409,36 @@ class ClothControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+        }
+    }
+
+    @Nested
+    class 옷_상세_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_옷_상세_정보를_반환한다() throws Exception {
+            // given
+            ClothDetailsResponse response =
+                    new ClothDetailsResponse(
+                            "testParentCategory",
+                            "testCategory",
+                            "testName",
+                            "testBrand",
+                            "testClothUrl");
+
+            given(clothService.getClothDetails(1L)).willReturn(response);
+
+            // when & then
+            ResultActions perform = mockMvc.perform(get("/clothes/1"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.parentCategory").value("testParentCategory"))
+                    .andExpect(jsonPath("$.result.category").value("testCategory"))
+                    .andExpect(jsonPath("$.result.name").value("testName"))
+                    .andExpect(jsonPath("$.result.brand").value("testBrand"))
+                    .andExpect(jsonPath("$.result.clothUrl").value("testClothUrl"));
         }
     }
 }
