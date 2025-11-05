@@ -7,15 +7,19 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.entity.Cloth;
+import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
+import org.clokey.response.SliceResponse;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +60,17 @@ public class ClothServiceImpl implements ClothService {
         clothRepository.saveAll(clothes);
 
         return ClothCreateResponse.from(clothes);
+    }
+
+    @Override
+    public SliceResponse<ClothRecommendListResponse> recommendCategoryClothes(
+            Long lastClothId, int size, Long categoryId, Season season) {
+
+        Slice<ClothRecommendListResponse> result =
+                clothRepository.findAllClothesByCategoryAndSeason(
+                        lastClothId, size, categoryId, season);
+
+        return SliceResponse.from(result);
     }
 
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {
