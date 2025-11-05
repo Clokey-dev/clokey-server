@@ -4,14 +4,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.enums.Season;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.service.ClothService;
 import org.clokey.global.annotation.PageSize;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.response.BaseResponse;
 import org.clokey.response.SliceResponse;
 import org.springframework.validation.annotation.Validated;
@@ -44,6 +47,24 @@ public class ClothController {
             @Parameter(description = "요청 계절") @RequestParam Season season) {
         SliceResponse<ClothRecommendListResponse> response =
                 clothService.recommendCategoryClothes(lastClothId, size, categoryId, season);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping
+    @Operation(summary = "옷 목록 조회", description = "옷장에서 옷 목록을 조회하는 API입니다.")
+    public BaseResponse<SliceResponse<ClothListResponse>> getClothes(
+            @Parameter(description = "이전 페이지의 옷 ID(첫 요청 시 생략)") @RequestParam(required = false)
+                    Long lastClothId,
+            @Parameter(description = "페이지당 조회할 옷의 수") @RequestParam @PageSize Integer size,
+            @Parameter(description = "정렬 방향 (ASC: 오래된순, DESC: 최신순)")
+                    @RequestParam(defaultValue = "DESC")
+                    SortDirection direction,
+            @Parameter(description = "옷의 카테고리 조건 (전체 조회시 생략)") @RequestParam(required = false)
+                    Long categoryId,
+            @Parameter(description = "옷의 계절 조건 (전체 조회시 생략)") @RequestParam(required = false)
+                    List<Season> seasons) {
+        SliceResponse<ClothListResponse> response =
+                clothService.getClothes(lastClothId, size, direction, categoryId, seasons);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }
