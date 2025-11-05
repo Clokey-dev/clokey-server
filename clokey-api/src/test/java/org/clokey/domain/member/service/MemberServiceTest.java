@@ -728,6 +728,8 @@ class MemberServiceTest extends IntegrationTest {
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
+            Follow follow21 = Follow.createFollow(member2, member1);
+            followRepository.save(follow21);
         }
 
         @Test
@@ -750,7 +752,7 @@ class MemberServiceTest extends IntegrationTest {
             Assertions.assertAll(
                     () -> assertThat(response.codiveId()).isEqualTo("testCodiveId1"),
                     () -> assertThat(response.nickname()).isEqualTo("testNickName1"),
-                    () -> assertThat(response.followerCount()).isZero(),
+                    () -> assertThat(response.followerCount()).isOne(),
                     () -> assertThat(response.isMe()).isTrue());
         }
 
