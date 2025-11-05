@@ -14,8 +14,10 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
+import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
@@ -373,8 +375,9 @@ class ClothServiceTest extends IntegrationTest {
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
-            Category category = Category.createCategory("testCategory", null);
-            categoryRepository.save(category);
+            Category parentCategory = Category.createCategory("testParentCategory", null);
+            Category category = Category.createCategory("testCategory", parentCategory);
+            categoryRepository.saveAll(List.of(parentCategory, category));
 
             Cloth cloth1 =
                     Cloth.createCloth(
@@ -383,6 +386,33 @@ class ClothServiceTest extends IntegrationTest {
                     Cloth.createCloth(
                             "testImageUrl2", null, null, null, Season.SPRING, category, member2);
             clothRepository.saveAll(List.of(cloth1, cloth2));
+        }
+
+        @Test
+        void 유효한_요청이면_옷_상세_정보를_반환한다() {
+            // when
+            ClothDetailsResponse response = clothService.getClothDetails(1L);
+
+            // then
+            assertThat(response)
+                    .extracting("parentCategory", "category", "name", "brand", "clothUrl")
+                    .containsExactly("testParentCategory", "testCategory", null, null, null);
+        }
+
+        @Test
+        void 존재하지_않는_categoryId를_입력하면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> clothService.getClothDetails(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.ClOTH_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 옷의_소유자가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> clothService.getClothDetails(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.NOT_CLOTH_OWNER.getMessage());
         }
     }
 }
