@@ -172,7 +172,9 @@ class LookBookServiceTest extends IntegrationTest {
             Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            Cloth cloth = Cloth.createCloth("testImageUrl", category, Season.SPRING, member1);
+            Cloth cloth =
+                    Cloth.createCloth(
+                            "testImageUrl", null, null, null, Season.SPRING, category, member1);
 
             clothRepository.saveAll(List.of(cloth));
 

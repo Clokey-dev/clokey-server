@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import org.clokey.IntegrationTest;
@@ -125,12 +124,24 @@ class ClothServiceTest extends IntegrationTest {
             Category category2 = Category.createCategory("testCategory2", null);
             categoryRepository.saveAll(List.of(category1, category2));
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl1", category1, Season.SUMMER, member);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl2", category1, Season.SPRING, member);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl3", category1, Season.SPRING, member);
-            Cloth cloth4 = Cloth.createCloth("testImageUrl4", category1, Season.SUMMER, member);
-            Cloth cloth5 = Cloth.createCloth("testImageUrl5", category1, Season.WINTER, member);
-            Cloth cloth6 = Cloth.createCloth("testImageUrl6", category1, Season.FALL, member);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SUMMER, category1, member);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category1, member);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SPRING, category1, member);
+            Cloth cloth4 =
+                    Cloth.createCloth(
+                            "testImageUrl4", null, null, null, Season.SUMMER, category1, member);
+            Cloth cloth5 =
+                    Cloth.createCloth(
+                            "testImageUrl5", null, null, null, Season.WINTER, category1, member);
+            Cloth cloth6 =
+                    Cloth.createCloth(
+                            "testImageUrl6", null, null, null, Season.FALL, category1, member);
 
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3, cloth4, cloth5, cloth6));
         }
@@ -217,32 +228,44 @@ class ClothServiceTest extends IntegrationTest {
             Category category3 = Category.createCategory("testCategory3", category1);
             categoryRepository.saveAll(List.of(category1, category2, category3));
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl1", category2, Season.SPRING, member);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl2", category2, Season.SPRING, member);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl3", category2, Season.SUMMER, member);
-            Cloth cloth4 = Cloth.createCloth("testImageUrl4", category3, Season.SPRING, member);
-            Cloth cloth5 = Cloth.createCloth("testImageUrl5", category3, Season.SUMMER, member);
-            Cloth cloth6 = Cloth.createCloth("testImageUrl6", category3, Season.FALL, member);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category2, member);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category2, member);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SUMMER, category2, member);
+            Cloth cloth4 =
+                    Cloth.createCloth(
+                            "testImageUrl4", null, null, null, Season.SPRING, category3, member);
+            Cloth cloth5 =
+                    Cloth.createCloth(
+                            "testImageUrl5", null, null, null, Season.SUMMER, category3, member);
+            Cloth cloth6 =
+                    Cloth.createCloth(
+                            "testImageUrl6", null, null, null, Season.FALL, category3, member);
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3, cloth4, cloth5, cloth6));
         }
 
         @ParameterizedTest(name = "기본_조건_정렬_테스트 – direction={0}")
-        @CsvSource({"ASC, 1,2,3,4,5,6", "DESC, 6,5,4,3,2,1"})
-        void 기본_조건_정렬_테스트(String direction, String expectedCsv) {
+        @MethodSource("sortDirectionCases")
+        void 기본_조건_정렬_테스트(SortDirection direction, List<Long> expected) {
             // when
             SliceResponse<ClothListResponse> response =
-                    clothService.getClothes(null, 6, SortDirection.valueOf(direction), null, null);
+                    clothService.getClothes(null, 6, direction, null, null);
 
             // then
-            List<Long> expected =
-                    Arrays.stream(expectedCsv.split(","))
-                            .map(String::trim)
-                            .map(Long::valueOf)
-                            .toList();
-
             assertThat(response.content())
                     .extracting("clothId")
                     .containsExactlyElementsOf(expected);
+        }
+
+        private static Stream<Arguments> sortDirectionCases() {
+            return Stream.of(
+                    Arguments.of(SortDirection.ASC, List.of(1L, 2L, 3L, 4L, 5L, 6L)),
+                    Arguments.of(SortDirection.DESC, List.of(6L, 5L, 4L, 3L, 2L, 1L)));
         }
 
         @ParameterizedTest(name = "기본_조건_isLast_테스트 – size={0}")
@@ -327,6 +350,39 @@ class ClothServiceTest extends IntegrationTest {
                             () -> clothService.getClothes(null, 6, SortDirection.ASC, 999L, null))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CategoryErrorCode.CATEGORY_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    class 옷_상세_조회를_요청할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            Category category = Category.createCategory("testCategory", null);
+            categoryRepository.save(category);
+
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member2);
+            clothRepository.saveAll(List.of(cloth1, cloth2));
         }
     }
 }

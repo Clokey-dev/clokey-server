@@ -55,8 +55,11 @@ public class ClothServiceImpl implements ClothService {
                                     Category category = categoryMap.get(cr.categoryId());
                                     return Cloth.createCloth(
                                             cr.clothImageUrl(),
-                                            category,
+                                            null,
+                                            null,
+                                            null,
                                             cr.season(),
+                                            category,
                                             currentMember);
                                 })
                         .toList();

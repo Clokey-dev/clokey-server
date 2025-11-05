@@ -47,27 +47,36 @@ public class Cloth extends BaseEntity {
     @Builder(access = AccessLevel.PRIVATE)
     public Cloth(
             String clothImageUrl,
-            String name,
             String clothUrl,
-            Season season,
+            String name,
             String brand,
+            Season season,
             Category category,
             Member member) {
         this.clothImageUrl = clothImageUrl;
-        this.name = name;
         this.clothUrl = clothUrl;
-        this.season = season;
+        this.name = name;
         this.brand = brand;
+        this.season = season;
         this.category = category;
         this.member = member;
     }
 
     public static Cloth createCloth(
-            String clothImageUrl, Category category, Season season, Member member) {
+            String clothImageUrl,
+            String clothUrl,
+            String name,
+            String brand,
+            Season season,
+            Category category,
+            Member member) {
         return Cloth.builder()
                 .clothImageUrl(clothImageUrl)
-                .category(category)
+                .clothUrl(clothUrl)
+                .name(name)
+                .brand(brand)
                 .season(season)
+                .category(category)
                 .member(member)
                 .build();
     }
