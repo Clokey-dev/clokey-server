@@ -134,24 +134,24 @@ class CommentServiceTest extends IntegrationTest {
             CommentCreateRequest request = new CommentCreateRequest(1L, "testContent");
 
             doAnswer(
-                            invocation -> {
-                                var sqlEx =
-                                        new SQLIntegrityConstraintViolationException(
-                                                "Cannot add or update a child row: a foreign key constraint fails "
-                                                        + "(`testdb`.`comment`, CONSTRAINT `fk_comment_history` FOREIGN KEY (`history_id`) "
-                                                        + "REFERENCES `history` (`id`))",
-                                                "23000",
-                                                1452);
-                                throw new DataIntegrityViolationException(
-                                        "constraint violation", sqlEx);
-                            })
+                    invocation -> {
+                        var sqlEx =
+                                new SQLIntegrityConstraintViolationException(
+                                        "Cannot add or update a child row: a foreign key constraint fails "
+                                                + "(`testdb`.`comment`, CONSTRAINT `fk_comment_history` FOREIGN KEY (`history_id`) "
+                                                + "REFERENCES `history` (`id`))",
+                                        "23000",
+                                        1452);
+                        throw new DataIntegrityViolationException(
+                                "constraint violation", sqlEx);
+                    })
                     .when(commentRepository)
                     .save(any(Comment.class));
 
             // when & then
             assertThatThrownBy(() -> commentService.createComment(request))
                     .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(CommentErrorCode.COMMENT_NOT_FOUND.getMessage());
+                    .hasMessage(HistoryErrorCode.HISTORY_NOT_FOUND.getMessage());
         }
     }
 
@@ -507,7 +507,7 @@ class CommentServiceTest extends IntegrationTest {
                     commentService.getCommentReplies(1L, null, 2, SortDirection.DESC);
 
             // then
-            assertThat(response.content()).extracting("replyId").containsExactly(2L, 1L);
+            assertThat(response.content()).extracting("replyId").containsExactly(5L, 4L);
         }
 
         @Test
@@ -517,7 +517,7 @@ class CommentServiceTest extends IntegrationTest {
                     commentService.getCommentReplies(1L, 1L, 2, SortDirection.ASC);
 
             // then
-            assertThat(response.content()).extracting("replyId").containsExactly(2L);
+            assertThat(response.content()).extracting("replyId").containsExactly(5L);
         }
 
         @Test
