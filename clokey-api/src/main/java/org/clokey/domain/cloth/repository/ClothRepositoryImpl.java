@@ -33,7 +33,9 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
         Season previousSeason = season.previous();
         Season oppositeSeason = season.next().next();
 
-        /** 우선 순위에 맞게 페이징 합니다. - Category는 고정입니다. - 계절은 요청한 계절에 가까운 순서대로 페이징을 진행합니다. */
+        // 우선 순위에 맞게 페이징 합니다.
+        // - Category는 고정입니다.
+        // - 계절은 요청한 계절에 가까운 순서대로 페이징을 진행합니다.
         NumberExpression<Integer> seasonPriority =
                 new CaseBuilder()
                         .when(cloth.season.eq(season))

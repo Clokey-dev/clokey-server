@@ -109,10 +109,10 @@ public class ClothServiceImpl implements ClothService {
                 .orElseThrow(() -> new BaseCustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
     }
 
-    /**
-     * 주어진 categoryId를 기반으로 조회용 카테고리 ID 목록을 생성합니다. - categoryId가 null이면 null을 반환하여 레포지토리에서 전체 조회되도록
-     * 합니다. - 1차 카테고리(부모)가 주어지면 자식 카테고리들의 ID를 반환합니다. - 2차 카테고리(자식)가 주어지면 해당 ID만 반환합니다.
-     */
+    // 주어진 categoryId를 기반으로 조회용 카테고리 ID 목록을 생성합니다.
+    // - categoryId가 null이면 null을 반환하여 레포지토리에서 전체 조회되도록 합니다.
+    // - 1차 카테고리(부모)가 주어지면 자식 카테고리들의 ID를 반환합니다.
+    // - 2차 카테고리(자식)가 주어지면 해당 ID만 반환합니다.
     private List<Long> resolveCategoryIds(Long categoryId) {
         if (categoryId == null) {
             return null;
