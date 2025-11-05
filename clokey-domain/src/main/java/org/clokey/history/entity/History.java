@@ -36,9 +36,9 @@ public class History extends BaseEntity {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "history_type_id")
+    @JoinColumn(name = "situation_id")
     @NotNull
-    private HistoryType historyType;
+    private Situation situation;
 
     @Builder(access = AccessLevel.PRIVATE)
     private History(
@@ -46,22 +46,22 @@ public class History extends BaseEntity {
             String content,
             boolean banned,
             Member member,
-            HistoryType historyType) {
+            Situation situation) {
         this.historyDate = historyDate;
         this.content = content;
         this.banned = banned;
         this.member = member;
-        this.historyType = historyType;
+        this.situation = situation;
     }
 
     public static History createHistory(
-            LocalDate historyDate, String content, Member member, HistoryType historyType) {
+            LocalDate historyDate, String content, Member member, Situation situation) {
         return History.builder()
                 .historyDate(historyDate)
                 .content(content)
                 .banned(false)
                 .member(member)
-                .historyType(historyType)
+                .situation(situation)
                 .build();
     }
 }
