@@ -14,11 +14,13 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
 import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.image.event.ImageDeleteEvent;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
@@ -37,7 +39,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 
+@RecordApplicationEvents
 class ClothServiceTest extends IntegrationTest {
 
     @Autowired private ClothService clothService;
@@ -46,6 +51,7 @@ class ClothServiceTest extends IntegrationTest {
     @Autowired private CategoryRepository categoryRepository;
 
     @MockitoBean private MemberUtil memberUtil;
+    @Autowired private ApplicationEvents applicationEvents;
 
     @Nested
     class 옷을_생성할_때 {
@@ -356,7 +362,7 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
-    class 옷_상세_조회를_요청할_때 {
+    class 옷을_상세_조회할_때 {
 
         @BeforeEach
         void setUp() {
@@ -413,6 +419,172 @@ class ClothServiceTest extends IntegrationTest {
             assertThatThrownBy(() -> clothService.getClothDetails(2L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(ClothErrorCode.NOT_CLOTH_OWNER.getMessage());
+        }
+    }
+
+    @Nested
+    class 옷을_수정할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            Category parentCategory = Category.createCategory("testParentCategory", null);
+            Category category = Category.createCategory("testCategory", parentCategory);
+            categoryRepository.saveAll(List.of(parentCategory, category));
+
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1",
+                            "testClothUrl",
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            category,
+                            member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member2);
+            clothRepository.saveAll(List.of(cloth1, cloth2));
+        }
+
+        @Test
+        void 유효한_요청이면_옷을_수정한다() {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            2L);
+
+            // when
+            clothService.updateCloth(1L, request);
+
+            assertThat(clothRepository.findById(1L).orElseThrow())
+                    .extracting(
+                            "clothImageUrl",
+                            "clothUrl",
+                            "name",
+                            "brand",
+                            "season",
+                            "category.id",
+                            "member.id")
+                    .containsExactly(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            2L,
+                            1L);
+        }
+
+        @Test
+        void 옷의_이미지_url이_수정되는_경우_기존_url을_삭제하는_이벤트를_발행한다() {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            2L);
+
+            // when
+            clothService.updateCloth(1L, request);
+
+            var events = applicationEvents.stream(ImageDeleteEvent.class).toList();
+            assertThat(events).hasSize(1);
+            assertThat(events.getFirst().imageUrl()).isEqualTo("testImageUrl1");
+        }
+
+        @Test
+        void 옷이_존재하지_않으면_예외가_발생한다() {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            2L);
+
+            // when & then
+            assertThatThrownBy(() -> clothService.updateCloth(999L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.ClOTH_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 카테고리가_존재하지_않으면_예외가_발생한다() {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            999L);
+
+            // when & then
+            assertThatThrownBy(() -> clothService.updateCloth(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CategoryErrorCode.CATEGORY_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_옷이_아닌_경우_예외가_발생한다() {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            2L);
+
+            // when & then
+            assertThatThrownBy(() -> clothService.updateCloth(2L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.NOT_CLOTH_OWNER.getMessage());
+        }
+
+        @Test
+        void 부모_카테고리를_옷에_등록하려는_경우_예외가_발생한다() {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            1L);
+
+            // when & then
+            assertThatThrownBy(() -> clothService.updateCloth(1L, request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.PARENT_CATEGORY_CLOTH.getMessage());
         }
     }
 }
