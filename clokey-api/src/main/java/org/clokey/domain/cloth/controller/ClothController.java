@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.enums.Season;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
 import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
@@ -74,5 +75,13 @@ public class ClothController {
     public BaseResponse<ClothDetailsResponse> getClothDetails(@PathVariable Long clothId) {
         ClothDetailsResponse response = clothService.getClothDetails(clothId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @PatchMapping("/{clothId}")
+    @Operation(summary = "옷 수정", description = "옷을 수정하는 API입니다.")
+    public BaseResponse<Void> updateCloth(
+            @PathVariable Long clothId, @RequestBody @Valid ClothUpdateRequest request) {
+        clothService.updateCloth(clothId, request);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

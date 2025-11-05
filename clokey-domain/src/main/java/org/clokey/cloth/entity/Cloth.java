@@ -81,6 +81,21 @@ public class Cloth extends BaseEntity {
                 .build();
     }
 
+    public void updateCloth(
+            String clothImageUrl,
+            String clothUrl,
+            String name,
+            String brand,
+            Season season,
+            Category category) {
+        this.clothImageUrl = clothImageUrl;
+        this.clothUrl = clothUrl;
+        this.name = name;
+        this.brand = brand;
+        this.season = season;
+        this.category = category;
+    }
+
     @OneToMany(mappedBy = "cloth")
     private List<HistoryCloth> historyClothes = new ArrayList<>();
 

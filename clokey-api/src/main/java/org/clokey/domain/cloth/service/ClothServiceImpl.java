@@ -12,17 +12,20 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
 import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.image.event.ImageDeleteEvent;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
 import org.clokey.response.SliceResponse;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +39,8 @@ public class ClothServiceImpl implements ClothService {
 
     private final ClothRepository clothRepository;
     private final CategoryRepository categoryRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -109,6 +114,32 @@ public class ClothServiceImpl implements ClothService {
         return ClothDetailsResponse.from(cloth);
     }
 
+    @Override
+    @Transactional
+    public void updateCloth(Long clothId, ClothUpdateRequest request) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Cloth cloth = getClothById(clothId);
+        final Category category = getCategoryById(request.categoryId());
+
+        validateClothOwnership(cloth, currentMember.getId());
+        validateChildCategory(category);
+
+        // cloth는 기본적으로 무조건 사진이 있어야 하긴 합니다.
+        // 사진이 바뀌는 경우 기존 imageUrl을 기반으로 S3에서 삭제합니다.
+        if (cloth.getClothImageUrl() != null
+                && !cloth.getClothImageUrl().equals(request.clothImageUrl())) {
+            eventPublisher.publishEvent(ImageDeleteEvent.of(cloth.getClothImageUrl()));
+        }
+
+        cloth.updateCloth(
+                request.clothImageUrl(),
+                request.clothUrl(),
+                request.name(),
+                request.brand(),
+                request.season(),
+                category);
+    }
+
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {
         if (categoryRepository.countByIdIn(ids) != ids.size()) {
             throw new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND);
@@ -153,6 +184,13 @@ public class ClothServiceImpl implements ClothService {
     private void validateClothOwnership(Cloth cloth, Long memberId) {
         if (!cloth.getMember().getId().equals(memberId)) {
             throw new BaseCustomException(ClothErrorCode.NOT_CLOTH_OWNER);
+        }
+    }
+
+    /** 1차 카테고리(상위)로 옷을 분류할 수 없습니다. */
+    private void validateChildCategory(Category category) {
+        if (category.getParent() == null) {
+            throw new BaseCustomException(ClothErrorCode.PARENT_CATEGORY_CLOTH);
         }
     }
 }
