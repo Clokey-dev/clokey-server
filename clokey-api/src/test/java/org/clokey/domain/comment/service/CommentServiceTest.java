@@ -511,10 +511,10 @@ class CommentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void lastReplyId를_입력하면_다음_reply_부터_조회한다() {
+        void lastReplyId를_입력하면_다음_comment_부터_조회한다() {
             // when
             SliceResponse<ReplyListResponse> response =
-                    commentService.getCommentReplies(1L, 1L, 2, SortDirection.ASC);
+                    commentService.getCommentReplies(1L, 4L, 2, SortDirection.ASC);
 
             // then
             assertThat(response.content()).extracting("replyId").containsExactly(5L);
