@@ -1,8 +1,8 @@
 package org.clokey.domain.cloth.controller;
 
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +12,7 @@ import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
 import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
@@ -439,6 +440,115 @@ class ClothControllerTest {
                     .andExpect(jsonPath("$.result.name").value("testName"))
                     .andExpect(jsonPath("$.result.brand").value("testBrand"))
                     .andExpect(jsonPath("$.result.clothUrl").value("testClothUrl"));
+        }
+    }
+
+    @Nested
+    class 옷_수정_요청_시 {
+
+        @Test
+        void 유효한_요청이면_옷을_수정하고_NO_CONTENT를_반환한다() throws Exception {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "testClothImageUrl",
+                            "testClothUrl",
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            1L);
+            willDoNothing().given(clothService).updateCloth(1L, request);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/clothes/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        @ValueSource(strings = {" "})
+        void 옷의_이미지_url이_null_또는_공백이면_예외가_발생한다(String clothImageUrl) throws Exception {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            clothImageUrl,
+                            "testClothUrl",
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            1L);
+            ;
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/clothes/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.clothImageUrl").value("옷의 이미지 주소는 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 옷의_계절을_비워둔_경우_예외가_발생한다() throws Exception {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "testClothImageURl", "testClothUrl", "testName", "testBrand", null, 1L);
+            ;
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/clothes/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.season").value("옷의 계절은 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 옷의_카테고리_ID를_비워둔_경우_예외가_발생한다() throws Exception {
+            // given
+            ClothUpdateRequest request =
+                    new ClothUpdateRequest(
+                            "testClothImageURl",
+                            "testClothUrl",
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            null);
+            ;
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/clothes/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.categoryId").value("옷의 카테고리 ID는 비워둘 수 없습니다."));
         }
     }
 }
