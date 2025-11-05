@@ -19,6 +19,8 @@ import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.folder.repository.ClothFolderRepository;
+import org.clokey.domain.history.repository.HistoryClothRepository;
 import org.clokey.domain.image.event.ImageDeleteEvent;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
@@ -39,6 +41,8 @@ public class ClothServiceImpl implements ClothService {
 
     private final ClothRepository clothRepository;
     private final CategoryRepository categoryRepository;
+    private final HistoryClothRepository historyClothRepository;
+    private final ClothFolderRepository clothFolderRepository;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -138,6 +142,16 @@ public class ClothServiceImpl implements ClothService {
                 request.brand(),
                 request.season(),
                 category);
+    }
+
+    @Override
+    public void deleteCloth(Long clothId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Cloth cloth = getClothById(clothId);
+
+        validateClothOwnership(cloth, currentMember.getId());
+
+        historyClothRepository.deleteAllInBatch(cloth.getHistoryClothes());
     }
 
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {

@@ -44,6 +44,12 @@ public class Cloth extends BaseEntity {
     @NotNull
     private Member member;
 
+    @OneToMany(mappedBy = "cloth")
+    private List<HistoryCloth> historyClothes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cloth")
+    private List<ClothFolder> clothFolders = new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
     public Cloth(
             String clothImageUrl,
@@ -95,10 +101,4 @@ public class Cloth extends BaseEntity {
         this.season = season;
         this.category = category;
     }
-
-    @OneToMany(mappedBy = "cloth")
-    private List<HistoryCloth> historyClothes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "cloth")
-    private List<ClothFolder> clothFolders = new ArrayList<>();
 }
