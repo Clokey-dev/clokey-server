@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
-
 import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
 import org.clokey.category.entity.Category;
@@ -20,6 +19,7 @@ import org.clokey.domain.history.exception.HashtagErrorCode;
 import org.clokey.domain.history.exception.SituationErrorCode;
 import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.*;
+import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.Hashtag;
@@ -32,8 +32,6 @@ import org.clokey.history.entity.Style;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
-import org.clokey.domain.member.repository.MemberRepository;
-
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -78,7 +76,6 @@ class HistoryServiceImplTest extends IntegrationTest {
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
-
             Situation situation1 = Situation.createSituation("testSituation1");
             situationRepository.save(situation1);
 
@@ -95,34 +92,30 @@ class HistoryServiceImplTest extends IntegrationTest {
             Cloth cloth3 = Cloth.createCloth("testImageUrl3", category, member2);
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3));
 
-            hashtagRepository.saveAll(List.of(
-                    Hashtag.createHashtag("testhashtag1"),
-                    Hashtag.createHashtag("testhashtag2")
-            ));
+            hashtagRepository.saveAll(
+                    List.of(
+                            Hashtag.createHashtag("testhashtag1"),
+                            Hashtag.createHashtag("testhashtag2")));
         }
 
         @Test
         void 유효한_요청이면_기록을_생성한다() {
             // given
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(1L, 0.25, 0.5),
-                                            new ClothTag(2L, 0.75, 0.33)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null // 태그 없는 이미지
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new Payload(
+                                            "testUrl1",
+                                            List.of(
+                                                    new ClothTag(1L, 0.25, 0.5),
+                                                    new ClothTag(2L, 0.75, 0.33))),
+                                    new Payload(
+                                            "testUrl2", null // 태그 없는 이미지
+                                            )));
 
             // when
             HistoryCreateResponse res = historyService.createHistory(request);
@@ -136,25 +129,24 @@ class HistoryServiceImplTest extends IntegrationTest {
                     .extracting(
                             h -> h.getMember().getId(),
                             h -> h.getSituation().getId(),
-                            History::getContent
-                    )
+                            History::getContent)
                     .containsExactly(
-                            1L,
-                            1L,
-                            "testContent 1" // ← 뒤 공백 제거됨
-                    );
+                            1L, 1L, "testContent 1" // ← 뒤 공백 제거됨
+                            );
 
-// 이미지 2장 생성 확인 (단방향: HistoryImage가 History를 참조하므로 repo 메서드 사용)
+            // 이미지 2장 생성 확인 (단방향: HistoryImage가 History를 참조하므로 repo 메서드 사용)
             List<HistoryImage> images = historyImageRepository.findByHistoryId(history.getId());
             assertThat(images).hasSize(2);
             assertThat(images)
                     .extracting(HistoryImage::getImageUrl)
                     .containsExactlyInAnyOrder("testUrl1", "testUrl2");
 
-// 첫 번째 이미지의 태그 2개 확인 (단방향: HistoryClothTag -> HistoryImage)
-            HistoryImage firstImage = images.stream()
-                    .filter(i -> "testUrl1".equals(i.getImageUrl()))
-                    .findFirst().orElseThrow();
+            // 첫 번째 이미지의 태그 2개 확인 (단방향: HistoryClothTag -> HistoryImage)
+            HistoryImage firstImage =
+                    images.stream()
+                            .filter(i -> "testUrl1".equals(i.getImageUrl()))
+                            .findFirst()
+                            .orElseThrow();
 
             List<org.clokey.history.entity.HistoryClothTag> tags =
                     historyClothTagRepository.findByHistoryImageId(firstImage.getId());
@@ -163,47 +155,37 @@ class HistoryServiceImplTest extends IntegrationTest {
                     .extracting(
                             t -> t.getCloth().getId(),
                             t -> t.getLocation().getLocationX(),
-                            t -> t.getLocation().getLocationY()
-                    )
-                    .containsExactlyInAnyOrder(
-                            tuple(1L, 0.25, 0.5),
-                            tuple(2L, 0.75, 0.33)
-                    );
+                            t -> t.getLocation().getLocationY())
+                    .containsExactlyInAnyOrder(tuple(1L, 0.25, 0.5), tuple(2L, 0.75, 0.33));
 
-// 스타일 연결 2개 확인 (단방향: HistoryStyle -> History)
+            // 스타일 연결 2개 확인 (단방향: HistoryStyle -> History)
             List<HistoryStyle> styles = historyStyleRepository.findByHistoryId(history.getId());
             assertThat(styles).hasSize(2);
             assertThat(styles)
                     .extracting(hs -> hs.getStyle().getId())
                     .containsExactlyInAnyOrder(1L, 2L);
 
-
-            List<HistoryHashtag> historyHashtags = historyHashtagRepository.findAllByHistoryIdWithHashtag(history.getId());
+            List<HistoryHashtag> historyHashtags =
+                    historyHashtagRepository.findAllByHistoryIdWithHashtag(history.getId());
             assertThat(historyHashtags).hasSize(2);
         }
 
         @Test
         void 존재하지_않는_상황_ID를_포함하는_경우_예외가_발생한다() {
             // given
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "hi",
-                    999L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(1L, 0.25, 0.5),
-                                            new ClothTag(2L, 0.75, 0.33)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "hi",
+                            999L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new Payload(
+                                            "testUrl1",
+                                            List.of(
+                                                    new ClothTag(1L, 0.25, 0.5),
+                                                    new ClothTag(2L, 0.75, 0.33))),
+                                    new Payload("testUrl2", null)));
             // when & then
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
@@ -213,25 +195,19 @@ class HistoryServiceImplTest extends IntegrationTest {
         @Test
         void 존재하지_않는_스타일_ID를_포함하는_경우_예외가_발생한다() {
             // given
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 10L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(1L, 0.25, 0.5),
-                                            new ClothTag(2L, 0.75, 0.33)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 10L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new Payload(
+                                            "testUrl1",
+                                            List.of(
+                                                    new ClothTag(1L, 0.25, 0.5),
+                                                    new ClothTag(2L, 0.75, 0.33))),
+                                    new Payload("testUrl2", null)));
             // when & then
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
@@ -240,24 +216,15 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @Test
         void 이미지_태그가_존재하지_않는_옷을_참조하면_예외가_발생한다() {
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(4L, 0.25, 0.5)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new Payload("testUrl1", List.of(new ClothTag(4L, 0.25, 0.5))),
+                                    new Payload("testUrl2", null)));
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(ClothErrorCode.ClOTH_NOT_FOUND.getMessage());
@@ -265,24 +232,15 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @Test
         void 이미지_태그에_나의_옷이_아닌_옷이_포함된_경우_예외가_발생한다() {
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(3L, 0.25, 0.5)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new Payload("testUrl1", List.of(new ClothTag(3L, 0.25, 0.5))),
+                                    new Payload("testUrl2", null)));
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(ClothErrorCode.NOT_CLOTH_OWNER.getMessage());
@@ -290,25 +248,19 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @Test
         void 이미지_태그에_중복된_옷이_포함된_경우_예외가_발생한다() {
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(1L, 0.25, 0.5),
-                                            new ClothTag(1L, 0.75, 0.33)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new Payload(
+                                            "testUrl1",
+                                            List.of(
+                                                    new ClothTag(1L, 0.25, 0.5),
+                                                    new ClothTag(1L, 0.75, 0.33))),
+                                    new Payload("testUrl2", null)));
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(ClothErrorCode.DUPLICATED_CLOTH.getMessage());
@@ -316,25 +268,19 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @Test
         void 중복된_해시태그가_있는_경우_예외가_발생한다() {
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag1"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(1L, 0.25, 0.5),
-                                            new ClothTag(2L, 0.75, 0.33)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag1"),
+                            List.of(
+                                    new Payload(
+                                            "testUrl1",
+                                            List.of(
+                                                    new ClothTag(1L, 0.25, 0.5),
+                                                    new ClothTag(2L, 0.75, 0.33))),
+                                    new Payload("testUrl2", null)));
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(HashtagErrorCode.DUPLICATED_HASHTAG.getMessage());
@@ -342,33 +288,27 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @Test
         void 존재하지_않는_해시태그를_포함하면_생성한다() {
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent 1 ",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2", "testHashtag3"),
-                    List.of(
-                            new Payload(
-                                    "testUrl1",
-                                    List.of(
-                                            new ClothTag(1L, 0.25, 0.5),
-                                            new ClothTag(2L, 0.75, 0.33)
-                                    )
-                            ),
-                            new Payload(
-                                    "testUrl2",
-                                    null
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent 1 ",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2", "testHashtag3"),
+                            List.of(
+                                    new Payload(
+                                            "testUrl1",
+                                            List.of(
+                                                    new ClothTag(1L, 0.25, 0.5),
+                                                    new ClothTag(2L, 0.75, 0.33))),
+                                    new Payload("testUrl2", null)));
 
             HistoryCreateResponse res = historyService.createHistory(request);
-            List<HistoryHashtag> historyHashtags = historyHashtagRepository.findAllByHistoryIdWithHashtag(res.historyId());
+            List<HistoryHashtag> historyHashtags =
+                    historyHashtagRepository.findAllByHistoryIdWithHashtag(res.historyId());
             assertThat(historyHashtags).hasSize(3);
             assertThat(historyHashtags)
                     .extracting(hh -> hh.getHashtag().getName())
                     .containsExactlyInAnyOrder("testhashtag1", "testhashtag2", "testhashtag3");
-
         }
     }
 }

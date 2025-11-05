@@ -1,26 +1,27 @@
 package org.clokey.domain.history.controller;
 
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
 import org.clokey.domain.history.service.HistoryService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import java.util.List;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 @WebMvcTest(HistoryController.class)
@@ -38,22 +39,25 @@ public class HistoryControllerTest {
         @Test
         void 유효한_요청이면_기록을_생성하고_ID를_반환한다() throws Exception {
             // given
-            HistoryCreateRequest request = new HistoryCreateRequest(
-                    "testContent",
-                    1L,
-                    List.of(1L, 2L),
-                    List.of("testHashtag1", "testHashtag2"),
-                    List.of(
-                            new HistoryCreateRequest.Payload(
-                                    "testImageUrl1",
-                                    List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73),
-                                            new HistoryCreateRequest.ClothTag(2L, 0.15, 0.85))),
-                            new HistoryCreateRequest.Payload(
-                                    "testImageUrl2",
-                                    List.of( new HistoryCreateRequest.ClothTag(3L, 0.33, 0.66))
-                            )
-                    )
-            );
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new HistoryCreateRequest.Payload(
+                                            "testImageUrl1",
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73),
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            2L, 0.15, 0.85))),
+                                    new HistoryCreateRequest.Payload(
+                                            "testImageUrl2",
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            3L, 0.33, 0.66)))));
 
             HistoryCreateResponse response = new HistoryCreateResponse(1L);
             given(historyService.createHistory(request)).willReturn(response);
@@ -63,8 +67,7 @@ public class HistoryControllerTest {
                     mockMvc.perform(
                             post("/histories")
                                     .contentType("application/json")
-                                    .content(objectMapper.writeValueAsString(request))
-                    );
+                                    .content(objectMapper.writeValueAsString(request)));
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON201"))
@@ -86,7 +89,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -113,7 +118,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -125,8 +132,7 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(
-                            jsonPath("$.result.content").value("기록의 내용은 최대 120자까지 가능합니다."));
+                    .andExpect(jsonPath("$.result.content").value("기록의 내용은 최대 120자까지 가능합니다."));
         }
 
         @Test
@@ -140,7 +146,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -166,7 +174,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -192,7 +202,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -204,8 +216,7 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(
-                            jsonPath("$.result.styleIds").value("스타일은 1~3개만 선택 가능합니다."));
+                    .andExpect(jsonPath("$.result.styleIds").value("스타일은 1~3개만 선택 가능합니다."));
         }
 
         @Test
@@ -219,7 +230,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of( new HistoryCreateRequest.ClothTag(1L, 0.42, 0.73)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.42, 0.73)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -231,14 +244,14 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(
-                            jsonPath("$.result.styleIds").value("스타일은 1~3개만 선택 가능합니다."));
+                    .andExpect(jsonPath("$.result.styleIds").value("스타일은 1~3개만 선택 가능합니다."));
         }
 
         @Test
         void 기록의_Payload를_비워두면_예외가_발생한다() throws Exception {
             HistoryCreateRequest request =
-                    new HistoryCreateRequest("testContent",
+                    new HistoryCreateRequest(
+                            "testContent",
                             1L,
                             List.of(1L, 2L),
                             List.of("testHashtag1", "testHashtag2"),
@@ -254,8 +267,7 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(
-                            jsonPath("$.result.payloads").value("기록 이미지 목록은 비워둘 수 없습니다."));
+                    .andExpect(jsonPath("$.result.payloads").value("기록 이미지 목록은 비워둘 수 없습니다."));
         }
 
         @ParameterizedTest
@@ -281,8 +293,7 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(
-                            jsonPath("$.result.imageUrl").value("기록의 사진은 비워둘 수 없습니다."));
+                    .andExpect(jsonPath("$.result.imageUrl").value("기록의 사진은 비워둘 수 없습니다."));
         }
 
         @Test
@@ -296,7 +307,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of(new HistoryCreateRequest.ClothTag(null, 0.1, 0.2)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            null, 0.1, 0.2)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -322,7 +335,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of(new HistoryCreateRequest.ClothTag(1L, null, 0.2)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, null, 0.2)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -349,7 +364,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of(new HistoryCreateRequest.ClothTag(1L, locationX, 0.2)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, locationX, 0.2)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -375,7 +392,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of(new HistoryCreateRequest.ClothTag(1L, 0.1, null)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.1, null)))));
 
             ResultActions perform =
                     mockMvc.perform(
@@ -402,7 +421,9 @@ public class HistoryControllerTest {
                             List.of(
                                     new HistoryCreateRequest.Payload(
                                             "testUrl",
-                                            List.of(new HistoryCreateRequest.ClothTag(1L, 0.1, locationY)))));
+                                            List.of(
+                                                    new HistoryCreateRequest.ClothTag(
+                                                            1L, 0.1, locationY)))));
 
             ResultActions perform =
                     mockMvc.perform(

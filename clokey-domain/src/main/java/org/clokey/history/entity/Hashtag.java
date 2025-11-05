@@ -2,10 +2,9 @@ package org.clokey.history.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.util.Locale;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
-
-import java.util.Locale;
 
 @Entity
 @Getter

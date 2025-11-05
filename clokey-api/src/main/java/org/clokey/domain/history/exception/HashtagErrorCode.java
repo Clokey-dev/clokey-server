@@ -18,4 +18,3 @@ public enum HashtagErrorCode implements BaseErrorCode {
         return ErrorReasonDto.of(status, code, message);
     }
 }
-

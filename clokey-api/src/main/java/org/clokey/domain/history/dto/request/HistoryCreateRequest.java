@@ -9,7 +9,7 @@ import java.util.List;
 @Schema(description = "기록 생성 요청")
 public record HistoryCreateRequest(
         @Size(max = 120, message = "기록의 내용은 최대 120자까지 가능합니다.")
-        @NotBlank(message = "기록의 내용은 비워둘 수 없습니다.")
+                @NotBlank(message = "기록의 내용은 비워둘 수 없습니다.")
                 @Schema(
                         description = "기록의 내용",
                         example = "안녕 오늘 오지게 덥다 ㄷㄷ;; 근데 한달 뒤면 가을임 벌써 가을 기대 만발ㅋ")
@@ -21,9 +21,9 @@ public record HistoryCreateRequest(
                 @Schema(description = "스타일 ID 목록", example = "[1, 3]")
                 List<@NotNull Long> styleIds,
         @ArraySchema(
-                schema = @Schema(description = "해시태그 문자열", example = "#ootd"),
-                arraySchema = @Schema(description = "해시태그 문자열 목록 (예: [\"#ootd\",\"#봄코디\"])")
-        )
+                        schema = @Schema(description = "해시태그 문자열", example = "#ootd"),
+                        arraySchema =
+                                @Schema(description = "해시태그 문자열 목록 (예: [\"#ootd\",\"#봄코디\"])"))
                 List<@NotBlank(message = "해시태그는 비워둘 수 없습니다.") String> hashtags,
         @NotEmpty(message = "기록 이미지 목록은 비워둘 수 없습니다.") @Schema(description = "기록 이미지 목록")
                 List<@Valid Payload> payloads) {
@@ -39,6 +39,7 @@ public record HistoryCreateRequest(
                     @Positive(message = "옷의 y좌표는 음수일 수 없습니다.")
                     @Schema(description = "옷의 Y 좌표", example = "0.73")
                     Double locationY) {}
+
     @Schema(name = "HistoryCreatePayload", description = "기록 이미지 1건")
     public record Payload(
             @NotBlank(message = "기록의 사진은 비워둘 수 없습니다.")

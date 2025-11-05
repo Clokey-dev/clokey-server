@@ -49,11 +49,12 @@ public class HistoryServiceImpl implements HistoryService {
         final Map<Long, Style> styleMap = getStylesByIds(styleIds);
         validateStyleIds(styleIds, styleMap);
 
-        final List<Long> allRequestedClothIds = request.payloads().stream()
-                .filter(p -> p.clothTags() != null)
-                .flatMap(p -> p.clothTags().stream())
-                .map(HistoryCreateRequest.ClothTag::clothId)
-                .toList();
+        final List<Long> allRequestedClothIds =
+                request.payloads().stream()
+                        .filter(p -> p.clothTags() != null)
+                        .flatMap(p -> p.clothTags().stream())
+                        .map(HistoryCreateRequest.ClothTag::clothId)
+                        .toList();
 
         validateDuplicatedClothIds(allRequestedClothIds);
 
@@ -102,35 +103,37 @@ public class HistoryServiceImpl implements HistoryService {
                         .map(style -> HistoryStyle.createHistoryStyle(history, style))
                         .toList();
         historyStyleRepository.saveAll(historyStyles);
-        
+
         final List<String> normalized = normalizeHashtags(request.hashtags());
 
         if (!normalized.isEmpty()) {
             validateDuplicatedHashtags(normalized);
 
-            Map<String, Hashtag> existing = hashtagRepository.findAllByNameIn(normalized).stream()
-                    .collect(Collectors.toMap(Hashtag::getName, Function.identity()));
+            Map<String, Hashtag> existing =
+                    hashtagRepository.findAllByNameIn(normalized).stream()
+                            .collect(Collectors.toMap(Hashtag::getName, Function.identity()));
 
-            List<Hashtag> toCreate = normalized.stream()
-                    .distinct()
-                    .filter(name -> !existing.containsKey(name))
-                    .map(Hashtag::createHashtag)
-                    .toList();
+            List<Hashtag> toCreate =
+                    normalized.stream()
+                            .distinct()
+                            .filter(name -> !existing.containsKey(name))
+                            .map(Hashtag::createHashtag)
+                            .toList();
 
             if (!toCreate.isEmpty()) {
                 List<Hashtag> saved = hashtagRepository.saveAll(toCreate);
                 for (Hashtag h : saved) existing.put(h.getName(), h);
             }
 
-            List<HistoryHashtag> links = normalized.stream()
-                    .distinct()
-                    .map(existing::get)
-                    .map(h -> HistoryHashtag.createHistoryHashtag(history, h))
-                    .toList();
+            List<HistoryHashtag> links =
+                    normalized.stream()
+                            .distinct()
+                            .map(existing::get)
+                            .map(h -> HistoryHashtag.createHistoryHashtag(history, h))
+                            .toList();
 
             if (!links.isEmpty()) historyHashtagRepository.saveAll(links);
         }
-
 
         return new HistoryCreateResponse(history.getId());
     }
@@ -184,7 +187,6 @@ public class HistoryServiceImpl implements HistoryService {
             throw new BaseCustomException(ClothErrorCode.NOT_CLOTH_OWNER);
         }
     }
-
 
     private List<String> normalizeHashtags(List<String> raw) {
         if (raw == null || raw.isEmpty()) return List.of();

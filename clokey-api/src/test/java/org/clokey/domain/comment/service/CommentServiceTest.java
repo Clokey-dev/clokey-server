@@ -134,17 +134,17 @@ class CommentServiceTest extends IntegrationTest {
             CommentCreateRequest request = new CommentCreateRequest(1L, "testContent");
 
             doAnswer(
-                    invocation -> {
-                        var sqlEx =
-                                new SQLIntegrityConstraintViolationException(
-                                        "Cannot add or update a child row: a foreign key constraint fails "
-                                                + "(`testdb`.`comment`, CONSTRAINT `fk_comment_history` FOREIGN KEY (`history_id`) "
-                                                + "REFERENCES `history` (`id`))",
-                                        "23000",
-                                        1452);
-                        throw new DataIntegrityViolationException(
-                                "constraint violation", sqlEx);
-                    })
+                            invocation -> {
+                                var sqlEx =
+                                        new SQLIntegrityConstraintViolationException(
+                                                "Cannot add or update a child row: a foreign key constraint fails "
+                                                        + "(`testdb`.`comment`, CONSTRAINT `fk_comment_history` FOREIGN KEY (`history_id`) "
+                                                        + "REFERENCES `history` (`id`))",
+                                                "23000",
+                                                1452);
+                                throw new DataIntegrityViolationException(
+                                        "constraint violation", sqlEx);
+                            })
                     .when(commentRepository)
                     .save(any(Comment.class));
 
