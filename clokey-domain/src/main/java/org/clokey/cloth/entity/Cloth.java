@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import org.clokey.category.entity.Category;
+import org.clokey.cloth.enums.Season;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.folder.entity.ClothFolder;
 import org.clokey.history.entity.HistoryCloth;
@@ -31,6 +32,10 @@ public class Cloth extends BaseEntity {
 
     private String brand;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private Season season;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @NotNull
@@ -42,16 +47,31 @@ public class Cloth extends BaseEntity {
     private Member member;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Cloth(String clothImageUrl, Category category, Member member) {
+    public Cloth(
+            String clothImageUrl,
+            String name,
+            String clothUrl,
+            int price,
+            Season season,
+            String brand,
+            Category category,
+            Member member) {
         this.clothImageUrl = clothImageUrl;
+        this.name = name;
+        this.clothUrl = clothUrl;
+        this.price = price;
+        this.season = season;
+        this.brand = brand;
         this.category = category;
         this.member = member;
     }
 
-    public static Cloth createCloth(String clothImageUrl, Category category, Member member) {
+    public static Cloth createCloth(
+            String clothImageUrl, Category category, Season season, Member member) {
         return Cloth.builder()
                 .clothImageUrl(clothImageUrl)
                 .category(category)
+                .season(season)
                 .member(member)
                 .build();
     }

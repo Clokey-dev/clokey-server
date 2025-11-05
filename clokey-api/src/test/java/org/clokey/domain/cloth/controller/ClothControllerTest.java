@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
@@ -45,8 +46,9 @@ class ClothControllerTest {
             ClothCreateRequests request =
                     new ClothCreateRequests(
                             List.of(
-                                    new ClothCreateRequest("testClothImageUrl1", 1L),
-                                    new ClothCreateRequest("testClothImageUrl2", 1L)));
+                                    new ClothCreateRequest("testClothImageUrl1", 1L, Season.SPRING),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2", 1L, Season.SPRING)));
 
             ClothCreateResponse response = new ClothCreateResponse(List.of(1L, 2L));
 
@@ -93,7 +95,8 @@ class ClothControllerTest {
         void 옷의_이미지_url이_null_또는_공백이면_예외가_발생한다(String clothImageUrl) throws Exception {
             // given
             ClothCreateRequests request =
-                    new ClothCreateRequests(List.of(new ClothCreateRequest(clothImageUrl, 1L)));
+                    new ClothCreateRequests(
+                            List.of(new ClothCreateRequest(clothImageUrl, 1L, Season.SPRING)));
 
             // when & then
             ResultActions perform =
@@ -114,7 +117,9 @@ class ClothControllerTest {
             // given
             ClothCreateRequests request =
                     new ClothCreateRequests(
-                            List.of(new ClothCreateRequest("testClothImageUrl", null)));
+                            List.of(
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl", null, Season.SPRING)));
 
             // when & then
             ResultActions perform =
@@ -131,11 +136,34 @@ class ClothControllerTest {
         }
 
         @Test
+        void 옷의_계절을_비워두면_예외가_발생한다() throws Exception {
+            // given
+            ClothCreateRequests request =
+                    new ClothCreateRequests(
+                            List.of(new ClothCreateRequest("testClothImageUrl", 1L, null)));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/clothes")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.season").value("옷의 계절은 비워둘 수 없습니다."));
+        }
+
+        @Test
         void 카테고리가_존재하지_않을_경우_예외가_발생한다() throws Exception {
             // given
             ClothCreateRequests request =
                     new ClothCreateRequests(
-                            List.of(new ClothCreateRequest("testClothImageUrl1", 999L)));
+                            List.of(
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl1", 999L, Season.SPRING)));
             given(clothService.createClothes(request))
                     .willThrow(
                             new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND));

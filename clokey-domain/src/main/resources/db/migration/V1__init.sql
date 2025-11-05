@@ -71,6 +71,9 @@ CREATE TABLE cloth (
                        name VARCHAR(255),
                        price INT,
                        brand VARCHAR(255),
+                       season VARCHAR(255) NOT NULL CHECK (
+                           season IN ('SPRING', 'SUMMER', 'FALL', 'WINTER')
+                           ),
                        category_id BIGINT NOT NULL,
                        member_id BIGINT NOT NULL,
                        created_at DATETIME(6) NOT NULL,

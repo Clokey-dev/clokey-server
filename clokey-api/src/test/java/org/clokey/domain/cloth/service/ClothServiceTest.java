@@ -7,6 +7,7 @@ import static org.mockito.BDDMockito.given;
 import java.util.List;
 import org.clokey.IntegrationTest;
 import org.clokey.category.entity.Category;
+import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
@@ -59,8 +60,9 @@ class ClothServiceTest extends IntegrationTest {
             ClothCreateRequests request =
                     new ClothCreateRequests(
                             List.of(
-                                    new ClothCreateRequest("testClothImageUrl1", 1L),
-                                    new ClothCreateRequest("testClothImageUrl2", 1L)));
+                                    new ClothCreateRequest("testClothImageUrl1", 1L, Season.SPRING),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2", 1L, Season.SPRING)));
 
             // when
             clothService.createClothes(request);
@@ -83,8 +85,9 @@ class ClothServiceTest extends IntegrationTest {
             ClothCreateRequests request =
                     new ClothCreateRequests(
                             List.of(
-                                    new ClothCreateRequest("testClothImageUrl1", 1L),
-                                    new ClothCreateRequest("testClothImageUrl2", 999L)));
+                                    new ClothCreateRequest("testClothImageUrl1", 1L, Season.SPRING),
+                                    new ClothCreateRequest(
+                                            "testClothImageUrl2", 999L, Season.SPRING)));
 
             // when & then
             assertThatThrownBy(() -> clothService.createClothes(request))
