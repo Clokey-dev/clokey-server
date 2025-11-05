@@ -10,6 +10,7 @@ import org.clokey.cloth.enums.Season;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.service.ClothService;
@@ -65,6 +66,13 @@ public class ClothController {
                     List<Season> seasons) {
         SliceResponse<ClothListResponse> response =
                 clothService.getClothes(lastClothId, size, direction, categoryId, seasons);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/{clothId}")
+    @Operation(summary = "옷 상세 조회", description = "옷을 상세 조회하는 API입니다.")
+    public BaseResponse<ClothDetailsResponse> getClothDetails(@PathVariable Long clothId) {
+        ClothDetailsResponse response = clothService.getClothDetails(clothId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

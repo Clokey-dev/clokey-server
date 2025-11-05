@@ -28,8 +28,6 @@ public class Cloth extends BaseEntity {
 
     private String name;
 
-    private int price;
-
     private String brand;
 
     @Enumerated(EnumType.STRING)
@@ -51,7 +49,6 @@ public class Cloth extends BaseEntity {
             String clothImageUrl,
             String name,
             String clothUrl,
-            int price,
             Season season,
             String brand,
             Category category,
@@ -59,7 +56,6 @@ public class Cloth extends BaseEntity {
         this.clothImageUrl = clothImageUrl;
         this.name = name;
         this.clothUrl = clothUrl;
-        this.price = price;
         this.season = season;
         this.brand = brand;
         this.category = category;

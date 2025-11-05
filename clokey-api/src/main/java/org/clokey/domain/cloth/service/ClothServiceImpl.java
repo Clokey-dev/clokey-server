@@ -13,8 +13,10 @@ import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
+import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
@@ -94,6 +96,16 @@ public class ClothServiceImpl implements ClothService {
         return SliceResponse.from(result);
     }
 
+    @Override
+    public ClothDetailsResponse getClothDetails(Long clothId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Cloth cloth = getClothById(clothId);
+
+        validateClothOwnership(cloth, currentMember.getId());
+
+        return ClothDetailsResponse.from(cloth);
+    }
+
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {
         if (categoryRepository.countByIdIn(ids) != ids.size()) {
             throw new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND);
@@ -107,6 +119,12 @@ public class ClothServiceImpl implements ClothService {
         return categoryRepository
                 .findById(categoryId)
                 .orElseThrow(() -> new BaseCustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
+    }
+
+    private Cloth getClothById(Long clothId) {
+        return clothRepository
+                .findById(clothId)
+                .orElseThrow(() -> new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND));
     }
 
     // 주어진 categoryId를 기반으로 조회용 카테고리 ID 목록을 생성합니다.
@@ -127,5 +145,11 @@ public class ClothServiceImpl implements ClothService {
         }
 
         return List.of(categoryId);
+    }
+
+    private void validateClothOwnership(Cloth cloth, Long memberId) {
+        if (!cloth.getMember().getId().equals(memberId)) {
+            throw new BaseCustomException(ClothErrorCode.NOT_CLOTH_OWNER);
+        }
     }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import org.clokey.cloth.enums.Season;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
 import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
+import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.global.paging.SortDirection;
@@ -22,4 +23,6 @@ public interface ClothService {
             SortDirection direction,
             Long categoryId,
             List<Season> seasons);
+
+    ClothDetailsResponse getClothDetails(Long clothId);
 }
