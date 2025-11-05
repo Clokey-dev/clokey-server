@@ -9,7 +9,7 @@ import org.clokey.exception.BaseErrorCode;
 @AllArgsConstructor
 public enum StyleErrorCode implements BaseErrorCode {
     INVALID_STYLE_COUNT(400, "STYLE_4001", "스타일은 1개 이상 3개 이하만 선택 가능합니다."),
-    STYLE_NOT_FOUND(404, "STYLE_4041", "해당 스타일을 찾을 수 없습니다.");
+    STYLE_NOT_FOUND(404, "STYLE_4041", "존재하지 않는 스타일입니다.");
     private final int status;
     private final String code;
     private final String message;
