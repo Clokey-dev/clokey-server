@@ -144,16 +144,6 @@ public class ClothServiceImpl implements ClothService {
                 category);
     }
 
-    @Override
-    public void deleteCloth(Long clothId) {
-        final Member currentMember = memberUtil.getCurrentMember();
-        final Cloth cloth = getClothById(clothId);
-
-        validateClothOwnership(cloth, currentMember.getId());
-
-        historyClothRepository.deleteAllInBatch(cloth.getHistoryClothes());
-    }
-
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {
         if (categoryRepository.countByIdIn(ids) != ids.size()) {
             throw new BaseCustomException(CategoryErrorCode.CATEGORY_IN_BULK_NOT_FOUND);

@@ -84,11 +84,4 @@ public class ClothController {
         clothService.updateCloth(clothId, request);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
-
-    @DeleteMapping("/{clothId}")
-    @Operation(summary = "옷 삭제", description = "옷을 삭제하는 API입니다.")
-    public BaseResponse<Void> deleteCloth(@PathVariable Long clothId) {
-        clothService.deleteCloth(clothId);
-        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
-    }
 }

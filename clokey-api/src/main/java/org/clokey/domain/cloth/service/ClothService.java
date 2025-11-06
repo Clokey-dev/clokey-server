@@ -28,6 +28,4 @@ public interface ClothService {
     ClothDetailsResponse getClothDetails(Long clothId);
 
     void updateCloth(Long clothId, ClothUpdateRequest request);
-
-    void deleteCloth(Long clothId);
 }
