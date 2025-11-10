@@ -92,12 +92,12 @@ public class HistoryServiceImpl implements HistoryService {
                     clothTags.add(historyClothTag);
                 }
             }
-
-            if (!clothTags.isEmpty()) {
-                historyClothTagRepository.bulkInsertHistoryClothTags(clothTags);
-            }
         }
-        historyImageRepository.bulkInsertHistoryImages(images);
+        historyImageRepository.saveAll(images);
+
+        if (!clothTags.isEmpty()) {
+            historyClothTagRepository.bulkInsertHistoryClothTags(clothTags);
+        }
 
         final List<HistoryStyle> historyStyles =
                 styleIds.stream()
@@ -121,7 +121,7 @@ public class HistoryServiceImpl implements HistoryService {
                             .toList();
 
             if (!toCreate.isEmpty()) {
-                List<Hashtag> saved = hashtagRepository.bulkInsertHashtags(toCreate);
+                List<Hashtag> saved = hashtagRepository.saveAll(toCreate);
                 for (Hashtag h : saved) existing.put(h.getName(), h);
             }
 
