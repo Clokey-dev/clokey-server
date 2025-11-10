@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface HistoryHashtagRepository extends JpaRepository<HistoryHashtag, Long> {
+public interface HistoryHashtagRepository
+        extends JpaRepository<HistoryHashtag, Long>, HistoryHashtagRepositoryCustom {
 
     @EntityGraph(attributePaths = "hashtag")
     List<HistoryHashtag> findByHistoryId(Long historyId);

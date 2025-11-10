@@ -4,6 +4,7 @@ import java.util.List;
 import org.clokey.history.entity.HistoryImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface HistoryImageRepository extends JpaRepository<HistoryImage, Long> {
+public interface HistoryImageRepository
+        extends JpaRepository<HistoryImage, Long>, HistoryImageRepositoryCustom {
     List<HistoryImage> findByHistoryId(Long historyId);
 }

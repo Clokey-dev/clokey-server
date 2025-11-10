@@ -15,7 +15,6 @@ import org.clokey.domain.history.dto.request.HistoryCreateRequest;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest.ClothTag;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest.Payload;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
-import org.clokey.domain.history.exception.HashtagErrorCode;
 import org.clokey.domain.history.exception.SituationErrorCode;
 import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.*;
@@ -130,18 +129,14 @@ class HistoryServiceImplTest extends IntegrationTest {
                             h -> h.getMember().getId(),
                             h -> h.getSituation().getId(),
                             History::getContent)
-                    .containsExactly(
-                            1L, 1L, "testContent 1" // ← 뒤 공백 제거됨
-                            );
+                    .containsExactly(1L, 1L, "testContent 1");
 
-            // 이미지 2장 생성 확인 (단방향: HistoryImage가 History를 참조하므로 repo 메서드 사용)
             List<HistoryImage> images = historyImageRepository.findByHistoryId(history.getId());
             assertThat(images).hasSize(2);
             assertThat(images)
                     .extracting(HistoryImage::getImageUrl)
                     .containsExactlyInAnyOrder("testUrl1", "testUrl2");
 
-            // 첫 번째 이미지의 태그 2개 확인 (단방향: HistoryClothTag -> HistoryImage)
             HistoryImage firstImage =
                     images.stream()
                             .filter(i -> "testUrl1".equals(i.getImageUrl()))
@@ -158,7 +153,6 @@ class HistoryServiceImplTest extends IntegrationTest {
                             t -> t.getLocation().getLocationY())
                     .containsExactlyInAnyOrder(tuple(1L, 0.25, 0.5), tuple(2L, 0.75, 0.33));
 
-            // 스타일 연결 2개 확인 (단방향: HistoryStyle -> History)
             List<HistoryStyle> styles = historyStyleRepository.findByHistoryId(history.getId());
             assertThat(styles).hasSize(2);
             assertThat(styles)
@@ -264,26 +258,6 @@ class HistoryServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> historyService.createHistory(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(ClothErrorCode.DUPLICATED_CLOTH.getMessage());
-        }
-
-        @Test
-        void 중복된_해시태그가_있는_경우_예외가_발생한다() {
-            HistoryCreateRequest request =
-                    new HistoryCreateRequest(
-                            "testContent 1 ",
-                            1L,
-                            List.of(1L, 2L),
-                            List.of("testHashtag1", "testHashtag1"),
-                            List.of(
-                                    new Payload(
-                                            "testUrl1",
-                                            List.of(
-                                                    new ClothTag(1L, 0.25, 0.5),
-                                                    new ClothTag(2L, 0.75, 0.33))),
-                                    new Payload("testUrl2", null)));
-            assertThatThrownBy(() -> historyService.createHistory(request))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(HashtagErrorCode.DUPLICATED_HASHTAG.getMessage());
         }
 
         @Test

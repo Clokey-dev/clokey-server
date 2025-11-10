@@ -10,7 +10,6 @@ import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
-import org.clokey.domain.history.exception.HashtagErrorCode;
 import org.clokey.domain.history.exception.SituationErrorCode;
 import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.*;
@@ -46,7 +45,9 @@ public class HistoryServiceImpl implements HistoryService {
         final Situation situation = getSituationById(request.situationId());
 
         final List<Long> styleIds = request.styleIds();
-        final Map<Long, Style> styleMap = getStylesByIds(styleIds);
+        validateDuplicatedStyleIds(styleIds);
+        final List<Long> distinctStyleIds = styleIds.stream().distinct().toList();
+        final Map<Long, Style> styleMap = getStylesByIds(distinctStyleIds);
         validateStyleIds(styleIds, styleMap);
 
         final List<Long> allRequestedClothIds =
@@ -91,24 +92,22 @@ public class HistoryServiceImpl implements HistoryService {
                 }
             }
 
-            historyImageRepository.saveAll(images);
             if (!clothTags.isEmpty()) {
-                historyClothTagRepository.saveAll(clothTags);
+                historyClothTagRepository.bulkInsertHistoryClothTags(clothTags);
             }
         }
+        historyImageRepository.bulkInsertHistoryImages(images);
 
         final List<HistoryStyle> historyStyles =
                 styleIds.stream()
                         .map(styleMap::get)
                         .map(style -> HistoryStyle.createHistoryStyle(history, style))
                         .toList();
-        historyStyleRepository.saveAll(historyStyles);
+        historyStyleRepository.bulkInsertHistoryStyles(historyStyles);
 
         final List<String> normalized = normalizeHashtags(request.hashtags());
 
         if (!normalized.isEmpty()) {
-            validateDuplicatedHashtags(normalized);
-
             Map<String, Hashtag> existing =
                     hashtagRepository.findAllByNameIn(normalized).stream()
                             .collect(Collectors.toMap(Hashtag::getName, Function.identity()));
@@ -121,7 +120,7 @@ public class HistoryServiceImpl implements HistoryService {
                             .toList();
 
             if (!toCreate.isEmpty()) {
-                List<Hashtag> saved = hashtagRepository.saveAll(toCreate);
+                List<Hashtag> saved = hashtagRepository.bulkInsertHashtags(toCreate);
                 for (Hashtag h : saved) existing.put(h.getName(), h);
             }
 
@@ -132,15 +131,15 @@ public class HistoryServiceImpl implements HistoryService {
                             .map(h -> HistoryHashtag.createHistoryHashtag(history, h))
                             .toList();
 
-            if (!links.isEmpty()) historyHashtagRepository.saveAll(links);
+            if (!links.isEmpty()) historyHashtagRepository.bulkInsertHistoryHashtags(links);
         }
 
         return new HistoryCreateResponse(history.getId());
     }
 
-    private void validateDuplicatedHashtags(List<String> normalized) {
-        if (normalized.size() != new HashSet<>(normalized).size()) {
-            throw new BaseCustomException(HashtagErrorCode.DUPLICATED_HASHTAG);
+    private void validateDuplicatedStyleIds(List<Long> styleIds) {
+        if (styleIds.size() != new HashSet<>(styleIds).size()) {
+            throw new BaseCustomException(StyleErrorCode.DUPLICATED_STYLE);
         }
     }
 
