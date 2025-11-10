@@ -66,7 +66,7 @@ public class HistoryServiceImpl implements HistoryService {
         validateAllClothesExist(allRequestedClothIds.stream().toList(), clothMap);
         validateAllClothesOwnership(currentMember, clothMap.values().stream().toList());
 
-        final String content = Optional.ofNullable(request.content()).map(String::trim).orElse("");
+        final String content = Optional.ofNullable(request.content()).map(String::trim).orElse(null);
         final History history =
                 History.createHistory(LocalDate.now(), content, currentMember, situation);
         historyRepository.save(history);
