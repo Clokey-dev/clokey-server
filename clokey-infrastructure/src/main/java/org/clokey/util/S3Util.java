@@ -25,9 +25,9 @@ public class S3Util {
     private final S3Properties s3Properties;
 
     public String createPresignedUrl(
-            ImageType imageType, Long targetId, FileExtension fileExtension, String md5Hash) {
+            ImageType imageType, Long memberId, FileExtension fileExtension, String md5Hash) {
         String imageKey = UUID.randomUUID().toString();
-        String fileName = createFileName(imageType, targetId, imageKey, fileExtension);
+        String fileName = createFileName(imageType, memberId, imageKey, fileExtension);
         String bucket = s3Properties.bucket();
 
         GeneratePresignedUrlRequest generatePresignedUrlRequest =
