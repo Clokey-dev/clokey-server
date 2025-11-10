@@ -25,7 +25,9 @@ public record HistoryCreateRequest(
                         arraySchema =
                                 @Schema(description = "해시태그 문자열 목록 (예: [\"#ootd\",\"#봄코디\"])"))
                 List<@NotBlank(message = "해시태그는 비워둘 수 없습니다.") String> hashtags,
-        @NotEmpty(message = "기록 이미지 목록은 비워둘 수 없습니다.") @Schema(description = "기록 이미지 목록")
+        @NotNull(message = "기록 이미지 목록은 비워둘 수 없습니다.")
+                @Schema(description = "기록 이미지 목록")
+                @Size(min = 1, max = 10, message = "이미지는 1~10개만 첨부할 수 있습니다.")
                 List<@Valid Payload> payloads) {
     @Schema(description = "이미지 위 특정 옷의 위치 태그(정규화 좌표 권장)")
     public record ClothTag(

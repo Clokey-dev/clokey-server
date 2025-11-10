@@ -8,6 +8,7 @@ import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.entity.Cloth;
+import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
@@ -86,9 +87,16 @@ class HistoryServiceImplTest extends IntegrationTest {
             Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl1", category, member1);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl2", category, member1);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl3", category, member2);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SPRING, category, member2);
+
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3));
 
             hashtagRepository.saveAll(

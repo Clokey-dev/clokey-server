@@ -248,7 +248,30 @@ public class HistoryControllerTest {
         }
 
         @Test
-        void 기록의_Payload를_비워두면_예외가_발생한다() throws Exception {
+        void 이미지목록이_null이면_예외가_발생한다() throws Exception {
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            null);
+
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/histories")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.payloads").value("기록 이미지 목록은 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 이미지가_0개면_예외가_발생한다() throws Exception {
             HistoryCreateRequest request =
                     new HistoryCreateRequest(
                             "testContent",
@@ -267,7 +290,41 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.payloads").value("기록 이미지 목록은 비워둘 수 없습니다."));
+                    .andExpect(jsonPath("$.result.payloads").value("이미지는 1~10개만 첨부할 수 있습니다."));
+        }
+
+        @Test
+        void 이미지가_10개_초과면_예외가_발생한다() throws Exception {
+            HistoryCreateRequest request =
+                    new HistoryCreateRequest(
+                            "testContent",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("testHashtag1", "testHashtag2"),
+                            List.of(
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null),
+                                    new HistoryCreateRequest.Payload("testUrl", null)));
+
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/histories")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.payloads").value("이미지는 1~10개만 첨부할 수 있습니다."));
         }
 
         @ParameterizedTest
