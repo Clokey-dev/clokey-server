@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.*;
+import org.clokey.domain.member.event.NewFollowerEvent;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.FollowRepository;
@@ -20,6 +21,7 @@ import org.clokey.member.entity.PendingFollow;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
 import org.clokey.response.SliceResponse;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,8 @@ public class MemberServiceImpl implements MemberService {
     private final FollowRepository followRepository;
     private final PendingFollowRepository pendingFollowRepository;
     private final BlockRepository blockRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -162,6 +166,7 @@ public class MemberServiceImpl implements MemberService {
             followRepository.delete(existing.get());
         } else {
             followRepository.save(Follow.createFollow(followFrom, followTo));
+            eventPublisher.publishEvent(new NewFollowerEvent(followFrom.getId(), followTo.getId()));
         }
     }
 
