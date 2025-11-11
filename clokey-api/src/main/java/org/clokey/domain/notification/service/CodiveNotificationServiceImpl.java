@@ -40,7 +40,7 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
         if (isAbleToSendNotification(followToMember)) {
             String content =
                     String.format(NEW_FOLLOWER_NOTIFICATION, followFromMember.getNickname());
-            String profileImageUrl = followToMember.getProfileImageUrl();
+            String profileImageUrl = followFromMember.getProfileImageUrl();
 
             Notification notification =
                     Notification.builder().setBody(content).setImage(profileImageUrl).build();
@@ -59,16 +59,16 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
 
             CodiveNotification codiveNotification =
                     CodiveNotification.createCodiveNotification(
-                            followToMember,
+                            followFromMember,
                             content,
                             profileImageUrl,
-                            followToMember.getClokeyId(),
+                            followFromMember.getClokeyId(),
                             RedirectType.MEMBER_REDIRECT);
 
             codiveNotificationRepository.save(codiveNotification);
 
             return new NewFollowerNotificationResponse(
-                    content, profileImageUrl, followToId, followToMember.getClokeyId());
+                    content, profileImageUrl, followFromId, followFromMember.getClokeyId());
         }
 
         return null;
