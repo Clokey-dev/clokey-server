@@ -1,8 +1,8 @@
 package org.clokey.domain.notification.service;
 
-import org.clokey.domain.notification.dto.response.NewFollowerNotificationResponse;
-
 public interface CodiveNotificationService {
 
-    NewFollowerNotificationResponse sendNewFollowerNotification(Long followFromId, Long followToId);
+    void sendNewFollowerNotification(Long followFromId, Long followToId);
+
+    void sendNewPendingFollowerNotification(Long followFromId, Long followToId);
 }

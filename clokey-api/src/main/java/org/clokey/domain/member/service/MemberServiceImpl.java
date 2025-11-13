@@ -6,6 +6,7 @@ import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.*;
 import org.clokey.domain.member.event.NewFollowerEvent;
+import org.clokey.domain.member.event.NewPendingFollowerEvent;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.FollowRepository;
@@ -200,6 +201,8 @@ public class MemberServiceImpl implements MemberService {
 
         PendingFollow newPending = PendingFollow.createPendingFollow(followFrom, followTo);
         pendingFollowRepository.save(newPending);
+        eventPublisher.publishEvent(
+                new NewPendingFollowerEvent(followFrom.getId(), followTo.getId()));
     }
 
     private void validateSelfBlock(Long blockerId, Long blockedId) {
