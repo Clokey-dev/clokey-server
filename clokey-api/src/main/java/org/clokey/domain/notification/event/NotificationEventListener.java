@@ -3,6 +3,7 @@ package org.clokey.domain.notification.event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.clokey.domain.comment.event.NewCommentEvent;
+import org.clokey.domain.comment.event.NewReplyEvent;
 import org.clokey.domain.member.event.NewFollowerEvent;
 import org.clokey.domain.member.event.NewPendingFollowerEvent;
 import org.clokey.domain.notification.service.CodiveNotificationService;
@@ -64,6 +65,22 @@ public class NotificationEventListener {
                     "새 댓글 알림 전송 실패 - historyId: {}, commentId: {}",
                     event.historyId(),
                     event.commentId(),
+                    e);
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(
+            classes = NewReplyEvent.class,
+            phase = TransactionPhase.AFTER_COMMIT)
+    public void handleNewReply(NewReplyEvent event) {
+        try {
+            codiveNotificationService.sendNewReplyNotification(event);
+        } catch (Exception e) {
+            log.error(
+                    "새 대댓글 알림 전송 실패 - historyId: {}, replyId: {}",
+                    event.historyId(),
+                    event.replyId(),
                     e);
         }
     }
