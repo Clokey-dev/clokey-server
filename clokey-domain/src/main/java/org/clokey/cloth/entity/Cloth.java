@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.*;
 import org.clokey.category.entity.Category;
+import org.clokey.cloth.enums.Season;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.folder.entity.ClothFolder;
-import org.clokey.history.entity.HistoryCloth;
 import org.clokey.member.entity.Member;
 
 @Entity
@@ -27,9 +27,11 @@ public class Cloth extends BaseEntity {
 
     private String name;
 
-    private int price;
-
     private String brand;
+
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    private Season season;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -41,24 +43,58 @@ public class Cloth extends BaseEntity {
     @NotNull
     private Member member;
 
+    @OneToMany(mappedBy = "cloth")
+    private List<ClothFolder> clothFolders = new ArrayList<>();
+
     @Builder(access = AccessLevel.PRIVATE)
-    private Cloth(String clothImageUrl, Category category, Member member) {
+    public Cloth(
+            String clothImageUrl,
+            String clothUrl,
+            String name,
+            String brand,
+            Season season,
+            Category category,
+            Member member) {
         this.clothImageUrl = clothImageUrl;
+        this.clothUrl = clothUrl;
+        this.name = name;
+        this.brand = brand;
+        this.season = season;
         this.category = category;
         this.member = member;
     }
 
-    public static Cloth createCloth(String clothImageUrl, Category category, Member member) {
+    public static Cloth createCloth(
+            String clothImageUrl,
+            String clothUrl,
+            String name,
+            String brand,
+            Season season,
+            Category category,
+            Member member) {
         return Cloth.builder()
                 .clothImageUrl(clothImageUrl)
+                .clothUrl(clothUrl)
+                .name(name)
+                .brand(brand)
+                .season(season)
                 .category(category)
                 .member(member)
                 .build();
     }
 
-    @OneToMany(mappedBy = "cloth")
-    private List<HistoryCloth> historyClothes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "cloth")
-    private List<ClothFolder> clothFolders = new ArrayList<>();
+    public void updateCloth(
+            String clothImageUrl,
+            String clothUrl,
+            String name,
+            String brand,
+            Season season,
+            Category category) {
+        this.clothImageUrl = clothImageUrl;
+        this.clothUrl = clothUrl;
+        this.name = name;
+        this.brand = brand;
+        this.season = season;
+        this.category = category;
+    }
 }

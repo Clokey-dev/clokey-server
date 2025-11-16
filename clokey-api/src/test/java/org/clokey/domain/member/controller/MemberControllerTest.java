@@ -11,9 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
-import org.clokey.domain.member.dto.response.BlockedMemberResponse;
-import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
-import org.clokey.domain.member.dto.response.MyselfCheckResponse;
+import org.clokey.domain.member.dto.response.*;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.member.enums.Visibility;
@@ -411,6 +409,171 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
+        }
+    }
+
+    @Nested
+    class 팔로잉_팔로워_목록_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_팔로잉_목록을_반환한다() throws Exception {
+            // given
+            List<FollowMemberResponse> followMembers =
+                    List.of(
+                            new FollowMemberResponse(
+                                    2L,
+                                    2L,
+                                    "nickname1",
+                                    "codive123",
+                                    "https://img.example.com/bg.jpg",
+                                    false,
+                                    false),
+                            new FollowMemberResponse(
+                                    1L,
+                                    1L,
+                                    "nickname2",
+                                    "codive456",
+                                    "https://img.example2.com/bg.jpg",
+                                    true,
+                                    false));
+
+            given(memberService.getFollows(3L, null, true, 5))
+                    .willReturn(new SliceResponse<FollowMemberResponse>(followMembers, true));
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/follows")
+                                    .param("memberId", "3")
+                                    .param("isFollowing", "true")
+                                    .param("size", "5"));
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.content[0].followId").value(2L))
+                    .andExpect(jsonPath("$.result.content[1].followId").value(1L))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 유효한_요청이면_팔로워_목록을_반환한다() throws Exception {
+            // given
+            List<FollowMemberResponse> followMembers =
+                    List.of(
+                            new FollowMemberResponse(
+                                    2L,
+                                    2L,
+                                    "nickname2",
+                                    "codive123",
+                                    "https://img.example.com/bg.jpg",
+                                    false,
+                                    false),
+                            new FollowMemberResponse(
+                                    1L,
+                                    1L,
+                                    "nickname1",
+                                    "codive456",
+                                    "https://img.example2.com/bg.jpg",
+                                    true,
+                                    true));
+
+            given(memberService.getFollows(1L, null, false, 5))
+                    .willReturn(new SliceResponse<FollowMemberResponse>(followMembers, true));
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/follows")
+                                    .param("memberId", "1")
+                                    .param("isFollowing", "false")
+                                    .param("size", "5"));
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.content[0].followId").value(2L))
+                    .andExpect(jsonPath("$.result.content[1].followId").value(1L))
+                    .andExpect(jsonPath("$.result.isLast").value(true));
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_응답한다() throws Exception {
+            // given
+            List<FollowMemberResponse> followMembers =
+                    List.of(
+                            new FollowMemberResponse(
+                                    2L,
+                                    2L,
+                                    "nickname1",
+                                    "codive123",
+                                    "https://img.example.com/bg.jpg",
+                                    true,
+                                    false));
+
+            given(memberService.getFollows(1L, null, true, 1))
+                    .willReturn(new SliceResponse<FollowMemberResponse>(followMembers, false));
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/follows")
+                                    .param("memberId", "1")
+                                    .param("isFollowing", "true")
+                                    .param("size", "1"));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.content[0].followId").value(2L))
+                    .andExpect(jsonPath("$.result.isLast").value(false));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"-1", "-999", "0"})
+        void 페이지_크기를_0_이하로_설정하면_예외가_발생한다(String pageSize) throws Exception {
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/users/follows")
+                                    .param("memberId", "1")
+                                    .param("isFollowing", "true")
+                                    .param("size", pageSize));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("페이지 크기는 0보다 큰 값만 가능합니다."));
+        }
+    }
+
+    @Nested
+    class 회원_정보_조회_시 {
+
+        @Test
+        void 유효한_요청이면_회원_정보를_반환한다() throws Exception {
+            // given
+            MemberInfoResponse result =
+                    new MemberInfoResponse(
+                            "codive123",
+                            "nickname123",
+                            "한줄소개입니다~",
+                            123L,
+                            321L,
+                            "https://img.example.com/bg.jpg",
+                            true,
+                            false);
+            given(memberService.getMemberInfo(1L)).willReturn(result);
+
+            // when
+            ResultActions perform = mockMvc.perform(get("/users/1"));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.result.codiveId").value("codive123"));
         }
     }
 }

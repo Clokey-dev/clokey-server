@@ -1,12 +1,14 @@
 package org.clokey.domain.coordinate.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import org.clokey.coordinate.entity.Coordinate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface CoordinateRepository extends JpaRepository<Coordinate, Long> {
+public interface CoordinateRepository
+        extends JpaRepository<Coordinate, Long>, CoordinateRepositoryCustom {
 
     @Query(
             """
@@ -21,4 +23,11 @@ public interface CoordinateRepository extends JpaRepository<Coordinate, Long> {
     default boolean existsDailyCoordinateByDateAndMemberId(LocalDate date, Long memberId) {
         return findDailyCoordinateByDateAndMemberId(date, memberId).isPresent();
     }
+
+    long countByMemberIdAndLikedTrue(Long memberId);
+
+    List<Coordinate> findAllByLookBookId(Long lookBookId);
+
+    @Query("select c from Coordinate c where c.member.id = :memberId and c.liked = true")
+    List<Coordinate> findLikedCoordinatesByMemberId(Long memberId);
 }

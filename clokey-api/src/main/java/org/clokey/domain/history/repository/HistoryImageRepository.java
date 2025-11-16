@@ -19,4 +19,6 @@ public interface HistoryImageRepository extends JpaRepository<HistoryImage, Long
         )
     """)
     List<Object[]> getFirstImageUrlsWithHistoryId(@Param("historyIds") List<Long> historyIds);
+
+    List<HistoryImage> findByHistoryId(Long historyId);
 }

@@ -11,6 +11,7 @@ import org.clokey.RedisCleaner;
 import org.clokey.TransactionUtil;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.entity.Cloth;
+import org.clokey.cloth.enums.Season;
 import org.clokey.coordinate.entity.Coordinate;
 import org.clokey.coordinate.entity.CoordinateCloth;
 import org.clokey.coordinate.enums.CoordinateType;
@@ -21,6 +22,10 @@ import org.clokey.domain.coordinate.dto.request.CoordinateAutoCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateManualCreateRequest;
 import org.clokey.domain.coordinate.dto.request.CoordinateUpdateRequest;
 import org.clokey.domain.coordinate.dto.request.DailyCoordinateCreateRequest;
+import org.clokey.domain.coordinate.dto.response.CoordinateDetailsListResponse;
+import org.clokey.domain.coordinate.dto.response.CoordinatePreviewResponse;
+import org.clokey.domain.coordinate.dto.response.DailyCoordinateListResponse;
+import org.clokey.domain.coordinate.dto.response.FavoriteCoordinateResponse;
 import org.clokey.domain.coordinate.exception.CoordinateErrorCode;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
@@ -29,11 +34,13 @@ import org.clokey.domain.lookbook.exception.LookBookErrorCode;
 import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
+import org.clokey.response.SliceResponse;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -83,19 +90,43 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl1", category, member1);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl2", category, member1);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl3", category, member2);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SPRING, category, member2);
 
-            Cloth cloth4 = Cloth.createCloth("testImageUrl4", category, member1);
-            Cloth cloth5 = Cloth.createCloth("testImageUrl5", category, member1);
-            Cloth cloth6 = Cloth.createCloth("testImageUrl6", category, member1);
-            Cloth cloth7 = Cloth.createCloth("testImageUrl7", category, member1);
-            Cloth cloth8 = Cloth.createCloth("testImageUrl8", category, member1);
-            Cloth cloth9 = Cloth.createCloth("testImageUrl9", category, member1);
-            Cloth cloth10 = Cloth.createCloth("testImageUrl10", category, member1);
-            Cloth cloth11 = Cloth.createCloth("testImageUrl11", category, member1);
-            Cloth cloth12 = Cloth.createCloth("testImageUrl12", category, member1);
+            Cloth cloth4 =
+                    Cloth.createCloth(
+                            "testImageUrl4", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth5 =
+                    Cloth.createCloth(
+                            "testImageUrl5", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth6 =
+                    Cloth.createCloth(
+                            "testImageUrl6", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth7 =
+                    Cloth.createCloth(
+                            "testImageUrl7", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth8 =
+                    Cloth.createCloth(
+                            "testImageUrl8", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth9 =
+                    Cloth.createCloth(
+                            "testImageUrl9", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth10 =
+                    Cloth.createCloth(
+                            "testImageUrl10", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth11 =
+                    Cloth.createCloth(
+                            "testImageUrl11", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth12 =
+                    Cloth.createCloth(
+                            "testImageUrl12", null, null, null, Season.SPRING, category, member1);
             clothRepository.saveAll(
                     List.of(
                             cloth1, cloth2, cloth3, cloth4, cloth5, cloth6, cloth7, cloth8, cloth9,
@@ -297,19 +328,43 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl1", category, member1);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl2", category, member1);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl3", category, member2);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SPRING, category, member2);
 
-            Cloth cloth4 = Cloth.createCloth("testImageUrl4", category, member1);
-            Cloth cloth5 = Cloth.createCloth("testImageUrl5", category, member1);
-            Cloth cloth6 = Cloth.createCloth("testImageUrl6", category, member1);
-            Cloth cloth7 = Cloth.createCloth("testImageUrl7", category, member1);
-            Cloth cloth8 = Cloth.createCloth("testImageUrl8", category, member1);
-            Cloth cloth9 = Cloth.createCloth("testImageUrl9", category, member1);
-            Cloth cloth10 = Cloth.createCloth("testImageUrl10", category, member1);
-            Cloth cloth11 = Cloth.createCloth("testImageUrl11", category, member1);
-            Cloth cloth12 = Cloth.createCloth("testImageUrl12", category, member1);
+            Cloth cloth4 =
+                    Cloth.createCloth(
+                            "testImageUrl4", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth5 =
+                    Cloth.createCloth(
+                            "testImageUrl5", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth6 =
+                    Cloth.createCloth(
+                            "testImageUrl6", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth7 =
+                    Cloth.createCloth(
+                            "testImageUrl7", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth8 =
+                    Cloth.createCloth(
+                            "testImageUrl8", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth9 =
+                    Cloth.createCloth(
+                            "testImageUrl9", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth10 =
+                    Cloth.createCloth(
+                            "testImageUrl10", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth11 =
+                    Cloth.createCloth(
+                            "testImageUrl11", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth12 =
+                    Cloth.createCloth(
+                            "testImageUrl12", null, null, null, Season.SPRING, category, member1);
             clothRepository.saveAll(
                     List.of(
                             cloth1, cloth2, cloth3, cloth4, cloth5, cloth6, cloth7, cloth8, cloth9,
@@ -624,19 +679,43 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl", category, member1);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl", category, member1);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl", category, member1);
-            Cloth cloth4 = Cloth.createCloth("testImageUrl", category, member2);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth4 =
+                    Cloth.createCloth(
+                            "testImageUrl4", null, null, null, Season.SPRING, category, member2);
 
-            Cloth cloth5 = Cloth.createCloth("testImageUrl4", category, member1);
-            Cloth cloth6 = Cloth.createCloth("testImageUrl5", category, member1);
-            Cloth cloth7 = Cloth.createCloth("testImageUrl6", category, member1);
-            Cloth cloth8 = Cloth.createCloth("testImageUrl7", category, member1);
-            Cloth cloth9 = Cloth.createCloth("testImageUrl8", category, member1);
-            Cloth cloth10 = Cloth.createCloth("testImageUrl9", category, member1);
-            Cloth cloth11 = Cloth.createCloth("testImageUrl10", category, member1);
-            Cloth cloth12 = Cloth.createCloth("testImageUrl11", category, member1);
+            Cloth cloth5 =
+                    Cloth.createCloth(
+                            "testImageUrl5", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth6 =
+                    Cloth.createCloth(
+                            "testImageUrl6", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth7 =
+                    Cloth.createCloth(
+                            "testImageUrl7", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth8 =
+                    Cloth.createCloth(
+                            "testImageUrl8", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth9 =
+                    Cloth.createCloth(
+                            "testImageUrl9", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth10 =
+                    Cloth.createCloth(
+                            "testImageUrl10", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth11 =
+                    Cloth.createCloth(
+                            "testImageUrl11", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth12 =
+                    Cloth.createCloth(
+                            "testImageUrl12", null, null, null, Season.SPRING, category, member1);
             clothRepository.saveAll(
                     List.of(
                             cloth1, cloth2, cloth3, cloth4, cloth5, cloth6, cloth7, cloth8, cloth9,
@@ -981,10 +1060,18 @@ class CoordinateServiceImplTest extends IntegrationTest {
             Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            Cloth cloth1 = Cloth.createCloth("testImageUrl", category, member1);
-            Cloth cloth2 = Cloth.createCloth("testImageUrl", category, member1);
-            Cloth cloth3 = Cloth.createCloth("testImageUrl", category, member1);
-            Cloth cloth4 = Cloth.createCloth("testImageUrl", category, member2);
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth3 =
+                    Cloth.createCloth(
+                            "testImageUrl3", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth4 =
+                    Cloth.createCloth(
+                            "testImageUrl4", null, null, null, Season.SPRING, category, member2);
 
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3, cloth4));
 
@@ -1066,6 +1153,534 @@ class CoordinateServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> coordinateService.deleteCoordinate(3L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
+        }
+    }
+
+    @Nested
+    class 오늘의_코디_목록을_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook = LookBook.createLookBook("testName", member1);
+            lookBookRepository.save(lookBook);
+
+            Coordinate coordinate1 = Coordinate.createDailyCoordinate("testImageUrl1", member1);
+            Coordinate coordinate2 = Coordinate.createDailyCoordinate("testImageUrl2", member1);
+            Coordinate coordinate3 = Coordinate.createDailyCoordinate("testImageUrl3", member1);
+
+            /** 이와 같은 조건이 보이지 않습니다. */
+            Coordinate customCoordinate =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testImageUrl4", member1, lookBook);
+            Coordinate dailyCoordinateAlreadyAdded =
+                    Coordinate.createDailyCoordinate("testImageUrl5", member1);
+            dailyCoordinateAlreadyAdded.addToDailyCoordinateToLookBook(
+                    "testName", "testMemo", lookBook);
+            coordinateRepository.saveAll(
+                    List.of(
+                            coordinate1,
+                            coordinate2,
+                            coordinate3,
+                            customCoordinate,
+                            dailyCoordinateAlreadyAdded));
+        }
+
+        @Test
+        void 정렬_조건이_ASC이면_coordinateId를_오름차순으로_조회한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("coordinateId").containsExactly(1L, 2L, 3L);
+        }
+
+        @Test
+        void 정렬_조건이_DESC면_coordinateId를_내림차순으로_조회한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.DESC);
+
+            // then
+            assertThat(response.content()).extracting("coordinateId").containsExactly(3L, 2L, 1L);
+        }
+
+        @Test
+        void lastCoordinateId를_입력하면_다음_coordinate_부터_조회한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(1L, 2, SortDirection.ASC);
+
+            // then
+            assertThat(response.content()).extracting("coordinateId").containsExactly(2L, 3L);
+        }
+
+        @Test
+        void 조건에_맞는_오늘의_코디가_없는_경우_빈_리스트를_조회한다() {
+            // given
+            Member member = memberRepository.findById(2L).orElseThrow();
+            given(memberUtil.getCurrentMember()).willReturn(member);
+
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.ASC);
+
+            // when & then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isZero(),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지인_경우_isLast를_true로_반환한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 3, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(3),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+
+        @Test
+        void 마지막_페이지가_아닌_경우_isLast를_false로_반환한다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(null, 2, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isEqualTo(2),
+                    () -> assertThat(response.isLast()).isFalse());
+        }
+
+        @Test
+        void 오늘의_코디가_아니거나_이미_룩북에_추가된_오늘의_코디는_조회되지_않는다() {
+            // when
+            SliceResponse<DailyCoordinateListResponse> response =
+                    coordinateService.getDailyCoordinates(3L, 2, SortDirection.ASC);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.content().size()).isZero(),
+                    () -> assertThat(response.isLast()).isTrue());
+        }
+    }
+
+    @Nested
+    class 코디_Preview를_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member2);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName1", "testMemo1", "testImageUrl1", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName2", "testMemo2", "testImageUrl2", member2, lookBook2);
+            Coordinate coordinate3 =
+                    Coordinate.createCoordinateManual(
+                            "testName3", "testMemo3", "testImageUrl3", member1, null);
+
+            coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
+        }
+
+        @Test
+        void 유효한_요청이면_Preview를_반환한다() {
+            // when
+            CoordinatePreviewResponse response = coordinateService.getCoordinatePreview(1L);
+
+            // then
+            assertThat(response)
+                    .extracting("coordinateId", "imageUrl", "coordinateName", "coordinateMemo")
+                    .containsExactly(1L, "testImageUrl1", "testName1", "testMemo1");
+        }
+
+        @Test
+        void 코디가_존재하지_않으면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinatePreview(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinatePreview(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.NOT_COORDINATE_OWNER.getMessage());
+        }
+
+        @Test
+        void 룩북에_속한_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinatePreview(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
+        }
+    }
+
+    @Nested
+    class 코디_Details를_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member2);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName1", "testMemo1", "testImageUrl1", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName2", "testMemo2", "testImageUrl2", member2, lookBook2);
+            Coordinate coordinate3 =
+                    Coordinate.createCoordinateManual(
+                            "testName3", "testMemo3", "testImageUrl3", member1, null);
+            coordinateRepository.saveAll(List.of(coordinate1, coordinate2, coordinate3));
+
+            Category parentCategory = Category.createCategory("testParentCategory", null);
+            Category category = Category.createCategory("testCategory", parentCategory);
+            categoryRepository.saveAll(List.of(parentCategory, category));
+
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member1);
+            clothRepository.saveAll(List.of(cloth1, cloth2));
+
+            CoordinateCloth coordinateCloth1 =
+                    CoordinateCloth.createCoordinateCloth(
+                            50.1, 120.1, 1.5, 240.1, 1, coordinate1, cloth1);
+
+            CoordinateCloth coordinateCloth2 =
+                    CoordinateCloth.createCoordinateCloth(
+                            50.1, 120.1, 1.5, 240.1, 2, coordinate1, cloth2);
+
+            coordinateClothRepository.saveAll(List.of(coordinateCloth1, coordinateCloth2));
+        }
+
+        @Test
+        void 유효한_요청이면_코디_Details를_반환한다() {
+            // when
+            List<CoordinateDetailsListResponse> response =
+                    coordinateService.getCoordinateDetails(1L);
+
+            // then
+            assertThat(response)
+                    .extracting(
+                            CoordinateDetailsListResponse::coordinateClothId,
+                            CoordinateDetailsListResponse::locationX,
+                            CoordinateDetailsListResponse::locationY,
+                            CoordinateDetailsListResponse::ratio,
+                            CoordinateDetailsListResponse::degree,
+                            CoordinateDetailsListResponse::order,
+                            CoordinateDetailsListResponse::imageUrl,
+                            CoordinateDetailsListResponse::brand,
+                            CoordinateDetailsListResponse::name,
+                            CoordinateDetailsListResponse::category,
+                            CoordinateDetailsListResponse::parentCategory)
+                    .containsExactly(
+                            tuple(
+                                    1L,
+                                    50.1,
+                                    120.1,
+                                    1.5,
+                                    240.1,
+                                    1,
+                                    "testImageUrl1",
+                                    null,
+                                    null,
+                                    "testCategory",
+                                    "testParentCategory"),
+                            tuple(
+                                    2L,
+                                    50.1,
+                                    120.1,
+                                    1.5,
+                                    240.1,
+                                    2,
+                                    "testImageUrl2",
+                                    null,
+                                    null,
+                                    "testCategory",
+                                    "testParentCategory"));
+        }
+
+        @Test
+        void 코디가_존재하지_않으면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinateDetails(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinateDetails(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.NOT_COORDINATE_OWNER.getMessage());
+        }
+
+        @Test
+        void 룩북에_속한_코디가_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.getCoordinateDetails(3L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
+        }
+    }
+
+    @Nested
+    class 코디_좋아요를_토글할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook = LookBook.createLookBook("testName1", member1);
+            lookBookRepository.save(lookBook);
+
+            Category category = Category.createCategory("testCategory", null);
+            categoryRepository.save(category);
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook);
+            Coordinate coordinate3 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook);
+            Coordinate coordinate4 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook);
+            Coordinate coordinate5 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook);
+            Coordinate coordinate6 =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testUrl", member1, lookBook);
+            coordinate1.toggleLike();
+            coordinate2.toggleLike();
+            coordinate3.toggleLike();
+            coordinate4.toggleLike();
+
+            Coordinate coordinate7 = Coordinate.createDailyCoordinate("testImageUrl", member1);
+            Coordinate coordinate8 = Coordinate.createDailyCoordinate("testImageUrl", member2);
+
+            coordinateRepository.saveAll(
+                    List.of(
+                            coordinate1,
+                            coordinate2,
+                            coordinate3,
+                            coordinate4,
+                            coordinate5,
+                            coordinate6,
+                            coordinate7,
+                            coordinate8));
+        }
+
+        @Test
+        void 이미_좋아요_상태면_좋아요를_취소한다() {
+            // when
+            coordinateService.toggleCoordinateLike(1L);
+
+            // then
+            assertThat(coordinateRepository.findById(1L).get().getLiked()).isFalse();
+        }
+
+        @Test
+        void 좋아요_상태가_아니면_좋아요로_전환한다() {
+            // when
+            coordinateService.toggleCoordinateLike(5L);
+
+            // then
+            assertThat(coordinateRepository.findById(5L).get().getLiked()).isTrue();
+        }
+
+        @Test
+        void 나의_코디가_아니면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.toggleCoordinateLike(8L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.NOT_COORDINATE_OWNER.getMessage());
+        }
+
+        @Test
+        void 룩북에_속하지_않는_코디에_대해서_요청하면_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> coordinateService.toggleCoordinateLike(7L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_NOT_IN_LOOK_BOOK.getMessage());
+        }
+
+        @Test
+        void 다섯개_이상의_코디에_좋아요를_누를_경우_예외가_발생한다() {
+            // given
+            coordinateService.toggleCoordinateLike(5L);
+
+            // when & then
+            assertThatThrownBy(() -> coordinateService.toggleCoordinateLike(6L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(CoordinateErrorCode.COORDINATE_LIKE_LIMIT.getMessage());
+        }
+    }
+
+    @Nested
+    class 최애_코디를_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            LookBook lookBook1 = LookBook.createLookBook("testName1", member1);
+            LookBook lookBook2 = LookBook.createLookBook("testName2", member2);
+            lookBookRepository.saveAll(List.of(lookBook1, lookBook2));
+
+            Category category = Category.createCategory("testCategory", null);
+            categoryRepository.save(category);
+
+            Coordinate coordinate1 =
+                    Coordinate.createCoordinateManual(
+                            "testName1", "testMemo1", "testUrl1", member1, lookBook1);
+            Coordinate coordinate2 =
+                    Coordinate.createCoordinateManual(
+                            "testName2", "testMemo2", "testUrl2", member1, lookBook1);
+            Coordinate coordinate3 =
+                    Coordinate.createCoordinateManual(
+                            "testName3", "testMemo3", "testUrl3", member1, lookBook1);
+            Coordinate coordinate4 =
+                    Coordinate.createCoordinateManual(
+                            "testName4", "testMemo4", "testUrl4", member1, lookBook1);
+            coordinate1.toggleLike();
+            coordinate2.toggleLike();
+
+            Coordinate coordinate5 =
+                    Coordinate.createCoordinateManual(
+                            "testName4", "testMemo4", "testUrl4", member1, lookBook1);
+            Coordinate coordinate6 =
+                    Coordinate.createCoordinateManual(
+                            "testName4", "testMemo4", "testUrl4", member1, lookBook1);
+            coordinateRepository.saveAll(
+                    List.of(
+                            coordinate1,
+                            coordinate2,
+                            coordinate3,
+                            coordinate4,
+                            coordinate5,
+                            coordinate6));
+        }
+
+        @Test
+        void 유효한_요청이면_좋아요한_코디를_반환한다() {
+            // when
+            List<FavoriteCoordinateResponse> responses = coordinateService.getFavoriteCoordinates();
+
+            // then
+            assertThat(responses)
+                    .extracting("coordinateId", "imageUrl")
+                    .containsExactly(tuple(1L, "testUrl1"), tuple(2L, "testUrl2"));
+        }
+
+        @Test
+        void 좋아요한_코디가_없는_경우_빈_리스틀_반환한다() {
+            // given
+            Member member = memberRepository.findById(2L).orElseThrow();
+            given(memberUtil.getCurrentMember()).willReturn(member);
+
+            // when
+            List<FavoriteCoordinateResponse> responses = coordinateService.getFavoriteCoordinates();
+
+            // then
+            assertThat(responses).isEmpty();
         }
     }
 }

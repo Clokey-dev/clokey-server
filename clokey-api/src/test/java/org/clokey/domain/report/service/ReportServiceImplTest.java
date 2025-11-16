@@ -11,7 +11,7 @@ import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.repository.CommentRepository;
 import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.repository.HistoryRepository;
-import org.clokey.domain.history.repository.HistoryTypeRepository;
+import org.clokey.domain.history.repository.SituationRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.domain.report.dto.request.ReportCreateRequest;
 import org.clokey.domain.report.exception.ReportErrorCode;
@@ -19,7 +19,7 @@ import org.clokey.domain.report.repository.ReportRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.History;
-import org.clokey.history.entity.HistoryType;
+import org.clokey.history.entity.Situation;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
@@ -41,7 +41,7 @@ public class ReportServiceImplTest extends IntegrationTest {
     @Autowired CommentRepository commentRepository;
     @Autowired HistoryRepository historyRepository;
     @Autowired MemberRepository memberRepository;
-    @Autowired HistoryTypeRepository historyTypeRepository;
+    @Autowired SituationRepository situationRepository;
 
     @MockitoBean private MemberUtil memberUtil;
 
@@ -59,15 +59,15 @@ public class ReportServiceImplTest extends IntegrationTest {
             memberRepository.save(member1);
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
-            HistoryType historyType = HistoryType.createHistoryType("testType");
-            historyTypeRepository.save(historyType);
+            Situation situation = Situation.createSituation("testSituation");
+            situationRepository.save(situation);
 
             History history1 =
                     History.createHistory(
-                            LocalDate.of(2025, 1, 1), "testContent1", member1, historyType);
+                            LocalDate.of(2025, 1, 1), "testContent1", member1, situation);
             historyRepository.save(history1);
 
-            Comment comment1 = Comment.createComment("옷이 예쁘네요", member1, history1);
+            Comment comment1 = Comment.createParentComment("옷이 예쁘네요", member1, history1);
             commentRepository.save(comment1);
         }
 
@@ -151,19 +151,6 @@ public class ReportServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> reportService.createReport(request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CommentErrorCode.COMMENT_NOT_FOUND.getMessage());
-        }
-
-        @Test
-        void 대댓글이_존재하지_않는_경우_예외가_발생한다() {
-            // given
-            ReportCreateRequest request =
-                    new ReportCreateRequest(
-                            1001L, TargetType.REPLY, ReportReason.SWEARING_AND_CURSING, "나한테 욕했어요");
-
-            // when & then
-            assertThatThrownBy(() -> reportService.createReport(request))
-                    .isInstanceOf(BaseCustomException.class)
-                    .hasMessage(CommentErrorCode.REPLY_NOT_FOUND.getMessage());
         }
 
         @Test

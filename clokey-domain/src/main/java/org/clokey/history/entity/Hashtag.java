@@ -2,6 +2,7 @@ package org.clokey.history.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import java.util.Locale;
 import lombok.*;
 import org.clokey.common.model.BaseEntity;
 
@@ -24,6 +25,7 @@ public class Hashtag extends BaseEntity {
     }
 
     public static Hashtag createHashtag(String name) {
-        return Hashtag.builder().name(name).build();
+        String normalized = name.trim().toLowerCase(Locale.ROOT);
+        return Hashtag.builder().name(normalized).build();
     }
 }

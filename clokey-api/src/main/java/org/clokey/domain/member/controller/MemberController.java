@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
-import org.clokey.domain.member.dto.response.BlockedMemberResponse;
-import org.clokey.domain.member.dto.response.DuplicatedIdCheckResponse;
-import org.clokey.domain.member.dto.response.MyselfCheckResponse;
+import org.clokey.domain.member.dto.response.*;
 import org.clokey.domain.member.service.MemberService;
 import org.clokey.global.annotation.PageSize;
 import org.clokey.global.paging.SortDirection;
@@ -92,5 +90,26 @@ public class MemberController {
         SliceResponse<BlockedMemberResponse> blockedMembersSlice =
                 memberService.getBlockedMembers(lastBlockId, size, direction);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, blockedMembersSlice);
+    }
+
+    @GetMapping("follows")
+    @Operation(summary = "팔로잉/팔로워 멤버 조회", description = "해당 사용자의  모든 팔로잉 OR 팔로워들을 조회합니다.")
+    public BaseResponse<SliceResponse<FollowMemberResponse>> getFollows(
+            @Parameter(description = "목록을 조회할 멤버의 Member ID") @RequestParam Long memberId,
+            @Parameter(description = "이전 페이지의 마지막 Follow ID (첫 요청 시 생략)")
+                    @RequestParam(required = false)
+                    Long lastFollowId,
+            @Parameter(description = "팔로잉 요청인지/팔로워 요청인지") @RequestParam boolean isFollowing,
+            @Parameter(description = "페이지당 조회할 멤버 수") @RequestParam @PageSize Integer size) {
+        SliceResponse<FollowMemberResponse> followMembersSlice =
+                memberService.getFollows(memberId, lastFollowId, isFollowing, size);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, followMembersSlice);
+    }
+
+    @GetMapping("{memberId}")
+    @Operation(summary = "회원 조회 API", description = "입력받은 codive ID에 해당하는 회원의 정보를 조회합니다.")
+    public BaseResponse<MemberInfoResponse> getMemberInfo(@PathVariable Long memberId) {
+        return BaseResponse.onSuccess(
+                GlobalBaseSuccessCode.OK, memberService.getMemberInfo(memberId));
     }
 }

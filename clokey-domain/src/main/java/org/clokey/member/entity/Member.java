@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.comment.entitiy.Comment;
-import org.clokey.comment.entitiy.Reply;
 import org.clokey.common.model.BaseEntity;
 import org.clokey.folder.entity.Folder;
 import org.clokey.history.entity.History;
@@ -19,7 +18,7 @@ import org.clokey.like.entity.MemberLike;
 import org.clokey.member.enums.MemberRole;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.Visibility;
-import org.clokey.notification.entity.ClokeyNotification;
+import org.clokey.notification.entity.CodiveNotification;
 import org.clokey.term.entity.MemberTerm;
 
 @Getter
@@ -69,7 +68,7 @@ public class Member extends BaseEntity {
     private List<MemberTerm> memberTermList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    private List<ClokeyNotification> clokeyNotifications = new ArrayList<>();
+    private List<CodiveNotification> codiveNotifications = new ArrayList<>();
 
     @OneToMany(mappedBy = "followFrom")
     private List<Follow> followFroms = new ArrayList<>();
@@ -85,9 +84,6 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member")
     private List<MemberLike> memberLikes = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member")
-    private List<Reply> replies = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
     private List<MemberLike> memberLikeList = new ArrayList<>();
