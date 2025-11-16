@@ -3,13 +3,11 @@ package org.clokey.domain.like.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
-@Schema(description = "좋아요 히스토리 조회 결과")
+@Schema(description = "좋아요 히스토리 조회 결과 (Slice 기반)")
 public record LikedHistoriesResponse(
         @Schema(description = "히스토리 미리보기 목록") List<LikedHistoryPreview> historyPreviews,
-        @Schema(description = "전체 페이지 수", example = "1") int totalPage,
-        @Schema(description = "전체 요소 수", example = "10") long totalElements,
-        @Schema(description = "첫 페이지 여부", example = "true") boolean isFirst,
         @Schema(description = "마지막 페이지 여부", example = "false") boolean isLast) {
+
     @Schema(description = "히스토리 미리보기 DTO")
     public record LikedHistoryPreview(
             @Schema(description = "히스토리 ID", example = "30") Long id,
