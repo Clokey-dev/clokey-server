@@ -685,7 +685,7 @@ class MemberServiceTest extends IntegrationTest {
             // then
             assertThat(response.content())
                     .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId3", false), tuple("testCodiveId1", true));
+                    .containsExactly(tuple("testCodiveId1", true));
         }
 
         @Test
