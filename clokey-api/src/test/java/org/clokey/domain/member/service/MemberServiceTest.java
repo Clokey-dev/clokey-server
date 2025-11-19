@@ -663,9 +663,17 @@ class MemberServiceTest extends IntegrationTest {
             SliceResponse<FollowMemberResponse> response =
                     memberService.getFollows(2L, null, false, 10);
             // then
-            assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId3", "testCodiveId1");
+            assertThat(response.content()).extracting("codiveId").containsExactly("testCodiveId1");
+        }
+
+        @Test
+        void 차단_관계의_멤버는_목록에_표시하지_않는다() {
+            // when
+            SliceResponse<FollowMemberResponse> response =
+                    memberService.getFollows(2L, null, true, 10);
+
+            // then
+            assertThat(response.content()).isEmpty();
         }
 
         @Test
