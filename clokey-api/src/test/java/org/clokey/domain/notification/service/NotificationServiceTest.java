@@ -418,7 +418,7 @@ public class NotificationServiceTest extends IntegrationTest {
             UnreadNotificationResponse response = notificationService.existsUnreadNotification();
 
             // then
-            assertThat(response.isUnreadNotification()).isTrue();
+            assertThat(response.existsUnreadNotification()).isTrue();
         }
 
         @Test
@@ -431,7 +431,7 @@ public class NotificationServiceTest extends IntegrationTest {
             UnreadNotificationResponse response = notificationService.existsUnreadNotification();
 
             // then
-            assertThat(response.isUnreadNotification()).isFalse();
+            assertThat(response.existsUnreadNotification()).isFalse();
         }
     }
 }
