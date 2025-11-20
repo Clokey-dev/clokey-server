@@ -39,7 +39,7 @@ public class NotificationControllerTest {
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
-                    .andExpect(jsonPath("$.result.isUnreadNotification").value(false));
+                    .andExpect(jsonPath("$.result.existsUnreadNotification").value(false));
         }
     }
 }
