@@ -159,11 +159,9 @@ public class ClothServiceImpl implements ClothService {
 
         validateClothOwnership(cloth, currentMember.getId());
 
-        coordinateClothRepository.deleteAllInBatch(
-                coordinateClothRepository.findAllByClothId(clothId));
-        clothFolderRepository.deleteAllInBatch(clothFolderRepository.findAllByClothId(clothId));
-        historyClothTagRepository.deleteAllInBatch(
-                historyClothTagRepository.findAllByClothId(clothId));
+        coordinateClothRepository.deleteAllByClothId(clothId);
+        clothFolderRepository.deleteAllByClothId(clothId);
+        historyClothTagRepository.deleteAllByClothId(clothId);
 
         eventPublisher.publishEvent(ImageDeleteEvent.of(cloth.getClothImageUrl()));
         clothRepository.delete(cloth);

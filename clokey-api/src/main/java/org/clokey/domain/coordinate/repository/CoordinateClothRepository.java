@@ -18,4 +18,8 @@ public interface CoordinateClothRepository extends JpaRepository<CoordinateCloth
 
     @Query("SELECT cc FROM CoordinateCloth cc WHERE cc.cloth.id = :clothId")
     List<CoordinateCloth> findAllByClothId(Long clothId);
+
+    @Modifying
+    @Query("DELETE FROM CoordinateCloth cc WHERE cc.cloth.id = :clothId")
+    void deleteAllByClothId(Long clothId);
 }
