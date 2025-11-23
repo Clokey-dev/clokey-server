@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface HistoryClothTagRepository
         extends JpaRepository<HistoryClothTag, Long>, HistoryClothTagRepositoryCustom {
     List<HistoryClothTag> findByHistoryImageId(Long historyImageId);
+
+    List<HistoryClothTag> findAllByClothId(Long clothId);
 }
