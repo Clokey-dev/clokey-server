@@ -8,8 +8,6 @@ import java.util.List;
 
 @Schema(description = "기록 수정 요청")
 public record HistoryUpdateRequest(
-        @NotNull(message = "기록 ID는 비워둘 수 없습니다.") @Schema(description = "기록 ID", example = "1")
-                Long historyId,
         @Size(max = 120, message = "기록 내용은 최대 120자까지 가능합니다.")
                 @NotBlank(message = "기록 내용은 비워둘 수 없습니다.")
                 @Schema(description = "기록 내용", example = "기록을 수정했습니다.")

@@ -528,7 +528,6 @@ public class HistoryControllerTest {
             // given
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             "updated content",
                             1L,
                             List.of(1L, 2L),
@@ -554,35 +553,6 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
         }
 
-        @Test
-        void historyId가_null이면_예외가_발생한다() throws Exception {
-            HistoryUpdateRequest request =
-                    new HistoryUpdateRequest(
-                            null,
-                            "updated content",
-                            1L,
-                            List.of(1L, 2L),
-                            List.of("tag1", "tag2"),
-                            List.of(
-                                    new HistoryUpdateRequest.Payload(
-                                            "image1",
-                                            List.of(
-                                                    new HistoryUpdateRequest.ClothTag(
-                                                            1L, 0.1, 0.2)))));
-
-            ResultActions perform =
-                    mockMvc.perform(
-                            patch("/histories/1")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(request)));
-
-            perform.andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.isSuccess").value(false))
-                    .andExpect(jsonPath("$.code").value("COMMON400"))
-                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.historyId").value("기록 ID는 비워둘 수 없습니다."));
-        }
-
         @ParameterizedTest
         @NullSource
         @EmptySource
@@ -590,7 +560,6 @@ public class HistoryControllerTest {
         void 수정_내용이_null_또는_공백이면_예외가_발생한다(String content) throws Exception {
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             content,
                             1L,
                             List.of(1L, 2L),
@@ -619,12 +588,7 @@ public class HistoryControllerTest {
         void 수정_이미지목록이_null이면_예외가_발생한다() throws Exception {
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
-                            "updated content",
-                            1L,
-                            List.of(1L, 2L),
-                            List.of("tag1", "tag2"),
-                            null);
+                            "updated content", 1L, List.of(1L, 2L), List.of("tag1", "tag2"), null);
 
             ResultActions perform =
                     mockMvc.perform(
@@ -643,7 +607,6 @@ public class HistoryControllerTest {
         void 수정_이미지가_0개면_예외가_발생한다() throws Exception {
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             "updated content",
                             1L,
                             List.of(1L, 2L),

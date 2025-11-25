@@ -361,11 +361,10 @@ class HistoryServiceImplTest extends IntegrationTest {
         }
 
         @Test
-        void imageUrl_기준으로_diff_갱신한다() {
+        void 유효한_요청이면_기록을_수정한다() {
             // given
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             "new content ",
                             2L,
                             List.of(2L, 3L),
@@ -446,7 +445,6 @@ class HistoryServiceImplTest extends IntegrationTest {
 
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             "new content ",
                             2L,
                             List.of(2L, 3L),
@@ -474,7 +472,6 @@ class HistoryServiceImplTest extends IntegrationTest {
             // given
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            999L,
                             "new content ",
                             2L,
                             List.of(2L, 3L),
@@ -502,7 +499,6 @@ class HistoryServiceImplTest extends IntegrationTest {
             // given
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             "new content ",
                             999L,
                             List.of(2L, 3L),
@@ -530,7 +526,6 @@ class HistoryServiceImplTest extends IntegrationTest {
             // given
             HistoryUpdateRequest request =
                     new HistoryUpdateRequest(
-                            1L,
                             "new content ",
                             2L,
                             List.of(2L, 3L),
