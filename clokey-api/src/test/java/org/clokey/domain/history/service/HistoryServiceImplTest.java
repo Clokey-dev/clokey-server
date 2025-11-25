@@ -437,7 +437,6 @@ class HistoryServiceImplTest extends IntegrationTest {
                     .containsExactlyInAnyOrder("testhashtag2", "newhash");
         }
 
-
         @Test
         void 다른_사용자가_수정하면_권한_예외가_발생한다() {
             // given
@@ -455,10 +454,14 @@ class HistoryServiceImplTest extends IntegrationTest {
                             List.of(
                                     new HistoryUpdateRequest.Payload(
                                             "image1",
-                                            List.of(new HistoryUpdateRequest.ClothTag(2L, 0.5, 0.6))),
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            2L, 0.5, 0.6))),
                                     new HistoryUpdateRequest.Payload(
                                             "image3",
-                                            List.of(new HistoryUpdateRequest.ClothTag(1L, 0.1, 0.2)))));
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            1L, 0.1, 0.2)))));
 
             // when & then
             assertThatThrownBy(() -> historyService.updateHistory(1L, request))
@@ -479,10 +482,14 @@ class HistoryServiceImplTest extends IntegrationTest {
                             List.of(
                                     new HistoryUpdateRequest.Payload(
                                             "image1",
-                                            List.of(new HistoryUpdateRequest.ClothTag(2L, 0.5, 0.6))),
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            2L, 0.5, 0.6))),
                                     new HistoryUpdateRequest.Payload(
                                             "image3",
-                                            List.of(new HistoryUpdateRequest.ClothTag(1L, 0.1, 0.2)))));
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            1L, 0.1, 0.2)))));
 
             // when & then
             assertThatThrownBy(() -> historyService.updateHistory(999L, request))
@@ -503,10 +510,14 @@ class HistoryServiceImplTest extends IntegrationTest {
                             List.of(
                                     new HistoryUpdateRequest.Payload(
                                             "image1",
-                                            List.of(new HistoryUpdateRequest.ClothTag(2L, 0.5, 0.6))),
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            2L, 0.5, 0.6))),
                                     new HistoryUpdateRequest.Payload(
                                             "image3",
-                                            List.of(new HistoryUpdateRequest.ClothTag(1L, 0.1, 0.2)))));
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            1L, 0.1, 0.2)))));
 
             // when & then
             assertThatThrownBy(() -> historyService.updateHistory(1L, request))
@@ -527,10 +538,14 @@ class HistoryServiceImplTest extends IntegrationTest {
                             List.of(
                                     new HistoryUpdateRequest.Payload(
                                             "image1",
-                                            List.of(new HistoryUpdateRequest.ClothTag(3L, 0.5, 0.6))),
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            3L, 0.5, 0.6))),
                                     new HistoryUpdateRequest.Payload(
                                             "image3",
-                                            List.of(new HistoryUpdateRequest.ClothTag(1L, 0.1, 0.2)))));
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            1L, 0.1, 0.2)))));
 
             // when & then
             assertThatThrownBy(() -> historyService.updateHistory(1L, request))
