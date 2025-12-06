@@ -638,9 +638,9 @@ public class HistoryControllerTest {
             StyleListResponse response =
                     new StyleListResponse(
                             List.of(
-                                    new StyleListResponse.Content(1L, "exampleStyle1"),
-                                    new StyleListResponse.Content(2L, "exampleStyle2"),
-                                    new StyleListResponse.Content(3L, "exampleStyle3")));
+                                    new StyleListResponse.Content(1L, "testStyle1"),
+                                    new StyleListResponse.Content(2L, "testStyle2"),
+                                    new StyleListResponse.Content(3L, "testStyle3")));
 
             given(historyService.getAllStyles()).willReturn(response);
 
@@ -656,11 +656,11 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.result.contents").isArray())
                     .andExpect(jsonPath("$.result.contents.length()").value(3))
                     .andExpect(jsonPath("$.result.contents[0].styleId").value(1L))
-                    .andExpect(jsonPath("$.result.contents[0].name").value("exampleStyle1"))
+                    .andExpect(jsonPath("$.result.contents[0].name").value("testStyle1"))
                     .andExpect(jsonPath("$.result.contents[1].styleId").value(2L))
-                    .andExpect(jsonPath("$.result.contents[1].name").value("exampleStyle2"))
+                    .andExpect(jsonPath("$.result.contents[1].name").value("testStyle2"))
                     .andExpect(jsonPath("$.result.contents[2].styleId").value(3L))
-                    .andExpect(jsonPath("$.result.contents[2].name").value("exampleStyle3"));
+                    .andExpect(jsonPath("$.result.contents[2].name").value("testStyle3"));
         }
     }
 
@@ -673,9 +673,9 @@ public class HistoryControllerTest {
             SituationListResponse response =
                     new SituationListResponse(
                             List.of(
-                                    new SituationListResponse.Content(1L, "exampleSituation1"),
-                                    new SituationListResponse.Content(2L, "exampleSituation2"),
-                                    new SituationListResponse.Content(3L, "exampleSituation3")));
+                                    new SituationListResponse.Content(1L, "testSituation1"),
+                                    new SituationListResponse.Content(2L, "testSituation2"),
+                                    new SituationListResponse.Content(3L, "testSituation3")));
 
             given(historyService.getAllSituations()).willReturn(response);
 
@@ -691,11 +691,11 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.result.contents").isArray())
                     .andExpect(jsonPath("$.result.contents.length()").value(3))
                     .andExpect(jsonPath("$.result.contents[0].situationId").value(1L))
-                    .andExpect(jsonPath("$.result.contents[0].name").value("exampleSituation1"))
+                    .andExpect(jsonPath("$.result.contents[0].name").value("testSituation1"))
                     .andExpect(jsonPath("$.result.contents[1].situationId").value(2L))
-                    .andExpect(jsonPath("$.result.contents[1].name").value("exampleSituation2"))
+                    .andExpect(jsonPath("$.result.contents[1].name").value("testSituation2"))
                     .andExpect(jsonPath("$.result.contents[2].situationId").value(3L))
-                    .andExpect(jsonPath("$.result.contents[2].name").value("exampleSituation3"));
+                    .andExpect(jsonPath("$.result.contents[2].name").value("testSituation3"));
         }
     }
 }
