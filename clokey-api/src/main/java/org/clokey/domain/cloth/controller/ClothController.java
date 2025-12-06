@@ -29,7 +29,7 @@ public class ClothController {
 
     private final ClothService clothService;
 
-    @PostMapping
+    @PostMapping("/images")
     @Operation(
             summary = "옷 이미지 업로드용 presignedUrl 발급",
             description = "옷 이미지 업로드용 presignedUrl을 발급합니다.")
