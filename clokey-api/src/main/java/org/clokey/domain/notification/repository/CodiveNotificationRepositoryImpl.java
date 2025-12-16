@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.clokey.domain.notification.dto.response.NotificationListResponse;
+import org.clokey.notification.enums.ReadStatus;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -43,6 +44,17 @@ public class CodiveNotificationRepositoryImpl implements CodiveNotificationRepos
                         .fetch();
 
         return checkLastPage(size, results);
+    }
+
+    @Override
+    public void updateAllReadStatusByMemberId(Long memberId) {
+        queryFactory
+                .update(codiveNotification)
+                .set(codiveNotification.readStatus, ReadStatus.READ)
+                .where(
+                        codiveNotification.member.id.eq(memberId),
+                        codiveNotification.readStatus.eq(ReadStatus.NOT_READ))
+                .execute();
     }
 
     private BooleanExpression lastNotificationIdCondition(Long lastNotificationId) {
