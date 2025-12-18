@@ -602,7 +602,7 @@ public class NotificationServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 유효한_요청이면_알림_상태를_READ로_변경한다() {
+        void 유효한_요청이면_모든_알림_상태를_READ로_변경한다() {
             // when & then
             notificationService.updateAllReadStatus();
             CodiveNotification notification1 = notificationRepository.findById(1L).orElseThrow();
