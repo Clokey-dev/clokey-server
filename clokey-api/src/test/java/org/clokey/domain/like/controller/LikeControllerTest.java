@@ -1,6 +1,7 @@
 package org.clokey.domain.like.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,12 +45,11 @@ public class LikeControllerTest {
             SliceResponse<LikedHistoriesResponse.LikedHistoryPreview> sliceResponse =
                     new SliceResponse<>(previews, true);
 
-            given(likeService.getLikedHistories(any(Pageable.class))).willReturn(sliceResponse);
+            given(likeService.getLikedHistories(any(), anyInt())).willReturn(sliceResponse);
 
             ResultActions perform =
                     mockMvc.perform(
                             get("/likes/histories")
-                                    .param("page", "0")
                                     .param("size", "10")
                                     .contentType(MediaType.APPLICATION_JSON));
 
@@ -82,12 +81,14 @@ public class LikeControllerTest {
             SliceResponse<LikedHistoriesResponse.LikedHistoryPreview> sliceResponse =
                     new SliceResponse<>(previews, false);
 
-            given(likeService.getLikedHistories(any(Pageable.class))).willReturn(sliceResponse);
+            given(likeService.getLikedHistories(any(), anyInt())).willReturn(sliceResponse);
 
             // when
             ResultActions perform =
                     mockMvc.perform(
-                            get("/likes/histories").contentType(MediaType.APPLICATION_JSON));
+                            get("/likes/histories")
+                                    .param("size", "10")
+                                    .contentType(MediaType.APPLICATION_JSON));
 
             // then
             perform.andExpect(status().isOk())

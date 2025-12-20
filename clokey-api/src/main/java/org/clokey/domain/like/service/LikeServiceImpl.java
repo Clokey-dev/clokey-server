@@ -11,8 +11,8 @@ import org.clokey.global.util.MemberUtil;
 import org.clokey.like.entity.MemberLike;
 import org.clokey.member.entity.Member;
 import org.clokey.response.SliceResponse;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,26 +26,34 @@ public class LikeServiceImpl implements LikeService {
     private final HistoryImageRepository historyImageRepository;
 
     @Override
-    @Transactional(readOnly = true)
     public SliceResponse<LikedHistoriesResponse.LikedHistoryPreview> getLikedHistories(
-            Pageable pageable) {
+            Long lastLikeId, Integer size) {
 
-        final Member currentMember = memberUtil.getCurrentMember();
+        Member currentMember = memberUtil.getCurrentMember();
 
-        Slice<MemberLike> likes =
-                memberLikeRepository.findLikedHistoriesByMemberId(currentMember.getId(), pageable);
+        // limit + 1 조회
+        Pageable pageable = PageRequest.of(0, size + 1);
 
-        if (likes == null || likes.getContent().isEmpty()) {
+        List<MemberLike> likes =
+                memberLikeRepository.findLikedHistoriesByMemberId(
+                        currentMember.getId(), lastLikeId, pageable);
+
+        boolean isLast = likes.size() <= size;
+
+        if (!isLast) {
+            likes = likes.subList(0, size);
+        }
+
+        if (likes.isEmpty()) {
             return new SliceResponse<>(List.of(), true);
         }
 
-        List<Long> historyIds =
-                likes.getContent().stream().map(like -> like.getHistory().getId()).toList();
+        List<Long> historyIds = likes.stream().map(like -> like.getHistory().getId()).toList();
 
         Map<Long, String> imageMap = findFirstImagesByHistoryIds(historyIds);
 
         List<LikedHistoriesResponse.LikedHistoryPreview> previews =
-                likes.getContent().stream()
+                likes.stream()
                         .map(
                                 like ->
                                         new LikedHistoriesResponse.LikedHistoryPreview(
@@ -53,7 +61,7 @@ public class LikeServiceImpl implements LikeService {
                                                 imageMap.get(like.getHistory().getId())))
                         .toList();
 
-        return new SliceResponse<>(previews, likes.isLast());
+        return new SliceResponse<>(previews, isLast);
     }
 
     private Map<Long, String> findFirstImagesByHistoryIds(List<Long> historyIds) {

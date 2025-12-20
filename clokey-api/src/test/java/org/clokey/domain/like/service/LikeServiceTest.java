@@ -26,8 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 public class LikeServiceTest extends IntegrationTest {
@@ -101,8 +99,7 @@ public class LikeServiceTest extends IntegrationTest {
 
             // when
             SliceResponse<LikedHistoriesResponse.LikedHistoryPreview> response =
-                    likeService.getLikedHistories(
-                            PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
+                    likeService.getLikedHistories(null, 10);
 
             // then
             assertThat(response.content()).hasSize(2);
@@ -120,8 +117,7 @@ public class LikeServiceTest extends IntegrationTest {
         void 좋아요한_기록이_없으면_빈_리스트를_반환한다() {
             // when
             SliceResponse<LikedHistoriesResponse.LikedHistoryPreview> response =
-                    likeService.getLikedHistories(
-                            PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
+                    likeService.getLikedHistories(null, 10);
 
             // then
             assertThat(response.content()).isEmpty();
