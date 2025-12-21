@@ -52,13 +52,7 @@ public class LikeServiceTest extends IntegrationTest {
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
-            Member member2 =
-                    Member.createMember(
-                            "testEmail2",
-                            "testClokeyId2",
-                            "testNickName2",
-                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-            memberRepository.saveAll(List.of(member1, member2));
+            memberRepository.saveAll(List.of(member1));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
             Situation situation1 = Situation.createSituation("testSituation1");
@@ -72,9 +66,9 @@ public class LikeServiceTest extends IntegrationTest {
                             situationRepository.findById(1L).orElseThrow());
             History history2 =
                     History.createHistory(
-                            LocalDate.of(2024, 12, 25),
+                            LocalDate.of(2024, 12, 26),
                             "content2",
-                            memberRepository.findById(2L).orElseThrow(),
+                            memberRepository.findById(1L).orElseThrow(),
                             situationRepository.findById(1L).orElseThrow());
             historyRepository.saveAll(List.of(history1, history2));
 
@@ -105,12 +99,10 @@ public class LikeServiceTest extends IntegrationTest {
             assertThat(response.content()).hasSize(2);
             assertThat(response.isLast()).isTrue();
 
-            response.content()
-                    .forEach(
-                            preview -> {
-                                assertThat(preview.id()).isNotNull();
-                                assertThat(preview.imageUrl()).isNotNull();
-                            });
+            assertThat(response.content())
+                    .extracting("id", "imageUrl")
+                    .containsExactly(
+                            tuple(2L, "http://image2.url"), tuple(1L, "http://image1.url"));
         }
 
         @Test
