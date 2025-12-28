@@ -15,6 +15,10 @@ import org.clokey.response.BaseResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * TODO: 앞으로, 운영이 활성화 되고 트래픽이 많아지게 되면 해당 API의 성능에 대한 점검이 필요합니다. 통계 테이블을 따로 분리하거나, Redis를 통한 캐싱을 고려해
+ * 보세요.
+ */
 @RestController
 @RequestMapping("/statistics")
 @RequiredArgsConstructor
