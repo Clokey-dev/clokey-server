@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.statistics.dto.response.FavoriteCategoryItemsResponse;
+import org.clokey.domain.statistics.dto.response.FavoriteItemsResponse;
 import org.clokey.domain.statistics.dto.response.StatisticsCheckConditionResponse;
 import org.clokey.domain.statistics.service.StatisticsService;
 import org.clokey.response.BaseResponse;
@@ -34,6 +35,13 @@ public class StatisticsController {
             @Parameter(description = "카테고리 ID") @RequestParam Long categoryId) {
         FavoriteCategoryItemsResponse response =
                 statisticsService.getFavoriteCategoryItems(categoryId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/favorite-items")
+    @Operation(summary = "옷장 아이템 통계 조회", description = "옷장 아이템 통계를 조회합니다.")
+    public BaseResponse<FavoriteItemsResponse> getFavoriteItems() {
+        FavoriteItemsResponse response = statisticsService.getFavoriteItems();
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

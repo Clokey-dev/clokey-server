@@ -8,6 +8,7 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.statistics.dto.CategoryCountDto;
 import org.clokey.domain.statistics.dto.response.FavoriteCategoryItemsResponse;
+import org.clokey.domain.statistics.dto.response.FavoriteItemsResponse;
 import org.clokey.domain.statistics.dto.response.StatisticsCheckConditionResponse;
 import org.clokey.domain.statistics.exception.StatisticsErrorCode;
 import org.clokey.domain.statistics.repository.StatisticsRepositoryCustom;
@@ -48,6 +49,24 @@ public class StatisticsServiceImpl implements StatisticsService {
                 buildFavoriteCategoryItemsPayloads(categoryCounts);
 
         return FavoriteCategoryItemsResponse.of(payloads);
+    }
+
+    @Override
+    public FavoriteItemsResponse getFavoriteItems() {
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        List<CategoryCountDto> categoryCounts =
+                statisticsRepositoryCustom.countClothesByCategoriesTopN(currentMember.getId(), 5);
+
+        List<FavoriteItemsResponse.Payload> payloads =
+                categoryCounts.stream()
+                        .map(
+                                dto ->
+                                        new FavoriteItemsResponse.Payload(
+                                                dto.categoryId(), dto.categoryName(), dto.count()))
+                        .toList();
+
+        return FavoriteItemsResponse.of(payloads);
     }
 
     /** 4개 이하의 2차 카테고리들이 집계되었으면 모두 보여주고 5개 이상 부터는 탑3를 제외한 나머지는 기타로 묶이게 됩니다. */
