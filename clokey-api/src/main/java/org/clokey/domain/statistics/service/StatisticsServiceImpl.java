@@ -2,11 +2,15 @@ package org.clokey.domain.statistics.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.clokey.category.entity.Category;
+import org.clokey.cloth.entity.Cloth;
+import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.statistics.dto.CategoryCountDto;
+import org.clokey.domain.statistics.dto.response.ClosetUtilizationResponse;
 import org.clokey.domain.statistics.dto.response.FavoriteCategoryItemsResponse;
 import org.clokey.domain.statistics.dto.response.FavoriteItemsResponse;
 import org.clokey.domain.statistics.dto.response.StatisticsCheckConditionResponse;
@@ -67,6 +71,45 @@ public class StatisticsServiceImpl implements StatisticsService {
                         .toList();
 
         return FavoriteItemsResponse.of(payloads);
+    }
+
+    @Override
+    public ClosetUtilizationResponse getClosetUtilization(Season season) {
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        List<Cloth> allClothes =
+                statisticsRepositoryCustom.findAllClothesBySeason(currentMember.getId(), season);
+
+        Set<Long> utilizedClothIds =
+                statisticsRepositoryCustom.findUtilizedClothIds(currentMember.getId(), season);
+
+        List<ClosetUtilizationResponse.Payload> utilizedClothes =
+                allClothes.stream()
+                        .filter(cloth -> utilizedClothIds.contains(cloth.getId()))
+                        .map(
+                                cloth ->
+                                        new ClosetUtilizationResponse.Payload(
+                                                cloth.getClothImageUrl(),
+                                                cloth.getName(),
+                                                cloth.getBrand()))
+                        .toList();
+
+        List<ClosetUtilizationResponse.Payload> unutilizedClothes =
+                allClothes.stream()
+                        .filter(cloth -> !utilizedClothIds.contains(cloth.getId()))
+                        .map(
+                                cloth ->
+                                        new ClosetUtilizationResponse.Payload(
+                                                cloth.getClothImageUrl(),
+                                                cloth.getName(),
+                                                cloth.getBrand()))
+                        .toList();
+
+        long utilizedCount = utilizedClothes.size();
+        long unutilizedCount = unutilizedClothes.size();
+
+        return ClosetUtilizationResponse.of(
+                utilizedCount, unutilizedCount, utilizedClothes, unutilizedClothes);
     }
 
     /** 4개 이하의 2차 카테고리들이 집계되었으면 모두 보여주고 5개 이상 부터는 탑3를 제외한 나머지는 기타로 묶이게 됩니다. */

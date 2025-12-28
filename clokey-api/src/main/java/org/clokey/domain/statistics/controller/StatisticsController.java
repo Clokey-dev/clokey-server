@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.clokey.cloth.enums.Season;
 import org.clokey.code.GlobalBaseSuccessCode;
+import org.clokey.domain.statistics.dto.response.ClosetUtilizationResponse;
 import org.clokey.domain.statistics.dto.response.FavoriteCategoryItemsResponse;
 import org.clokey.domain.statistics.dto.response.FavoriteItemsResponse;
 import org.clokey.domain.statistics.dto.response.StatisticsCheckConditionResponse;
@@ -42,6 +44,17 @@ public class StatisticsController {
     @Operation(summary = "옷장 아이템 통계 조회", description = "옷장 아이템 통계를 조회합니다.")
     public BaseResponse<FavoriteItemsResponse> getFavoriteItems() {
         FavoriteItemsResponse response = statisticsService.getFavoriteItems();
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/closet-utilization")
+    @Operation(
+            summary = "옷장 활용도 조회",
+            description =
+                    "시즌별 옷장 활용도를 조회합니다. HistoryClothTag에 태그되었거나 Daily Coordinate에 포함된 옷을 활용된 것으로 간주합니다.")
+    public BaseResponse<ClosetUtilizationResponse> getClosetUtilization(
+            @Parameter(description = "시즌", example = "SPRING") @RequestParam Season season) {
+        ClosetUtilizationResponse response = statisticsService.getClosetUtilization(season);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }
