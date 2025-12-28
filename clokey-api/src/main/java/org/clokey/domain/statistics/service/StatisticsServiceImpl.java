@@ -9,6 +9,9 @@ import org.clokey.cloth.entity.Cloth;
 import org.clokey.cloth.enums.Season;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
+import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.coordinate.repository.CoordinateRepository;
+import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.statistics.dto.CategoryCountDto;
 import org.clokey.domain.statistics.dto.response.ClosetUtilizationResponse;
 import org.clokey.domain.statistics.dto.response.FavoriteCategoryItemsResponse;
@@ -30,11 +33,20 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final MemberUtil memberUtil;
     private final CategoryRepository categoryRepository;
     private final StatisticsRepositoryCustom statisticsRepositoryCustom;
+    private final HistoryRepository historyRepository;
+    private final ClothRepository clothRepository;
+    private final CoordinateRepository coordinateRepository;
 
     @Override
     public StatisticsCheckConditionResponse checkStatisticsCondition() {
-        // TODO: 통계 집계 가능 여부 로직 구현
-        boolean canAggregate = false;
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        boolean hasHistory = historyRepository.existsByMemberId(currentMember.getId());
+        boolean hasCloth = clothRepository.existsByMemberId(currentMember.getId());
+        boolean hasCoordinate = coordinateRepository.existsByMemberId(currentMember.getId());
+
+        boolean canAggregate = hasHistory && hasCloth && hasCoordinate;
+
         return StatisticsCheckConditionResponse.of(canAggregate);
     }
 
