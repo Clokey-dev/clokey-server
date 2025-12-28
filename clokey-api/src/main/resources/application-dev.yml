@@ -72,6 +72,10 @@ aws:
     bucket: ${DEV_S3_BUCKET}
     endpoint: ${DEV_S3_ENDPOINT:https://s3.ap-northeast-2.amazonaws.com}
 
+external:
+  api:
+    ai-server-ip: ${AI_SERVER_IP}
+
 swagger:
   username: ${SWAGGER_USERNAME}
   password: ${SWAGGER_PASSWORD}

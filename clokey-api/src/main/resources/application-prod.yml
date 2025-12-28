@@ -75,3 +75,7 @@ aws:
 firebase:
   credentials-path: ${FIREBASE_CREDENTIALS_PATH}
 
+
+external:
+  api:
+    ai-server-ip: ${AI_SERVER_IP}
