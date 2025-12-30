@@ -76,7 +76,10 @@ swagger:
   username: ${SWAGGER_USERNAME}
   password: ${SWAGGER_PASSWORD}
 
-spring-doc:
+springdoc:
+  api-docs:
+    enabled: true
+    path: /public/openapi
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   swagger-ui:
@@ -84,6 +87,6 @@ spring-doc:
     operations-sorter : method
     path: /swagger-ui
     doc-expansion : none
-
+    config-url: /public/openapi/swagger-config
 firebase:
   credentials-path: ${FIREBASE_CREDENTIALS_PATH}
