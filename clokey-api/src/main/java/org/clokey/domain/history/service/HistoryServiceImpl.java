@@ -8,8 +8,10 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.comment.repository.CommentRepository;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
 import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
+import org.clokey.domain.history.dto.response.DailyHistoryResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
@@ -17,6 +19,9 @@ import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.exception.SituationErrorCode;
 import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.*;
+import org.clokey.domain.like.repository.MemberLikeRepository;
+import org.clokey.domain.member.repository.BlockRepository;
+import org.clokey.domain.report.repository.ReportRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.*;
@@ -40,6 +45,10 @@ public class HistoryServiceImpl implements HistoryService {
     private final SituationRepository situationRepository;
     private final HistoryImageRepository historyImageRepository;
     private final HistoryClothTagRepository historyClothTagRepository;
+    private final MemberLikeRepository memberLikeRepository;
+    private final CommentRepository commentRepository;
+    private final BlockRepository blockRepository;
+    private final ReportRepository reportRepository;
 
     @Override
     @Transactional
@@ -191,6 +200,47 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     public SituationListResponse getAllSituations() {
         return situationRepository.findAllSituations();
+    }
+
+    @Override
+    public DailyHistoryResponse getDailyHistory(Long historyId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final History history = getHistoryById(historyId);
+
+        validateBlockedAccess(currentMember.getId(), history);
+
+        List<DailyHistoryResponse.ImagePayload> images =
+                history.getHistoryImages().stream()
+                        .map(
+                                image ->
+                                        new DailyHistoryResponse.ImagePayload(
+                                                image.getId(), image.getImageUrl()))
+                        .toList();
+
+        long likeCount = memberLikeRepository.countByHistoryId(historyId);
+
+        long commentCount = commentRepository.countByHistoryIdAndBannedFalse(historyId);
+
+        List<DailyHistoryResponse.StylePayload> styles =
+                history.getHistoryStyles().stream()
+                        .map(
+                                historyStyle ->
+                                        new DailyHistoryResponse.StylePayload(
+                                                historyStyle.getStyle().getId(),
+                                                historyStyle.getStyle().getName()))
+                        .toList();
+
+        return DailyHistoryResponse.of(
+                history.getMember().getId(),
+                history.getMember().getProfileImageUrl(),
+                history.getMember().getNickname(),
+                images,
+                likeCount,
+                commentCount,
+                history.getHistoryDate(),
+                history.getSituation().getId(),
+                history.getSituation().getName(),
+                styles);
     }
 
     private void saveHistoryRelations(
@@ -383,6 +433,22 @@ public class HistoryServiceImpl implements HistoryService {
 
         if (!historyClothTags.isEmpty()) {
             historyClothTagRepository.deleteAllInBatch(historyClothTags);
+        }
+    }
+
+    private void validateBlockedAccess(Long currentMemberId, History history) {
+
+        // 기록 작성자를 차단했거나 차단 당한 경우
+        if (blockRepository.existsByBlockerIdAndBlockedId(
+                        history.getMember().getId(), currentMemberId)
+                || blockRepository.existsByBlockerIdAndBlockedId(
+                        currentMemberId, history.getMember().getId())) {
+            throw new BaseCustomException(HistoryErrorCode.BLOCKED_AUTHORITY);
+        }
+
+        // 기록이 신고로 인해 ban 당한 경우
+        if (history.isBanned()) {
+            throw new BaseCustomException(HistoryErrorCode.BANNED_HISTORY);
         }
     }
 }
