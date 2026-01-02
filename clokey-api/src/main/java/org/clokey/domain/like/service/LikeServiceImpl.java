@@ -31,12 +31,9 @@ public class LikeServiceImpl implements LikeService {
         final Member currentMember = memberUtil.getCurrentMember();
         final History history =
                 historyRepository
-                        .findById(historyId)
+                        .findByIdWithMember(historyId)
                         .orElseThrow(
-                                () ->
-                                        new BaseCustomException(
-                                                HistoryErrorCode
-                                                        .HISTORY_NOT_FOUND)); // 💡 예외 통일성 유지
+                                () -> new BaseCustomException(HistoryErrorCode.HISTORY_NOT_FOUND));
 
         final Member historyOwner = history.getMember();
 
@@ -56,7 +53,8 @@ public class LikeServiceImpl implements LikeService {
     }
 
     private boolean isBlockedByOrBlocking(Long fromId, Long toId) {
-        return blockRepository.existsByBlockerIdAndBlockedId(fromId, toId)
-                || blockRepository.existsByBlockerIdAndBlockedId(toId, fromId);
+        return blockRepository.existsByBlockerIdAndBlockedIdOrBlockerIdAndBlockedId(
+                fromId, toId,
+                toId, fromId);
     }
 }

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/likes")
 @RequiredArgsConstructor
-@Tag(name = "9. 좋아요 API", description = "좋아요 관련 API입니다.")
+@Tag(name = "09. 좋아요 API", description = "좋아요 관련 API입니다.")
 @Validated
 public class LikeController {
 
