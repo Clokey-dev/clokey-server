@@ -8,6 +8,7 @@ import org.clokey.code.GlobalBaseSuccessCode;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
 import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
+import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
@@ -70,10 +71,21 @@ public class HistoryController {
     @GetMapping("/{historyId}")
     @Operation(
             operationId = "History_getHistoryDetails",
-            summary = "일별 기록 상세 조회",
-            description = "기록 ID를 통해 일별 기록의 상세 정보를 조회합니다.")
+            summary = "일별 기록 조회",
+            description = "기록 ID를 통해 일별 기록의 정보를 조회합니다.")
     public BaseResponse<DailyHistoryResponse> getDailyHistory(@PathVariable Long historyId) {
         DailyHistoryResponse response = historyService.getDailyHistory(historyId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/cloth-tag/{historyImageId}")
+    @Operation(
+            operationId = "History_getHistoryClothTags",
+            summary = "기록 이미지의 옷 태그 조회",
+            description = "기록 이미지 ID를 통해 해당 이미지에 태그된 옷들의 정보와 위치를 조회합니다.")
+    public BaseResponse<HistoryClothTagListResponse> getHistoryClothTags(
+            @PathVariable Long historyImageId) {
+        HistoryClothTagListResponse response = historyService.getHistoryClothTags(historyImageId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

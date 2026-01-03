@@ -12,6 +12,7 @@ import org.clokey.domain.comment.repository.CommentRepository;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
 import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
+import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
@@ -26,6 +27,7 @@ import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.*;
 import org.clokey.member.entity.Member;
+import org.clokey.member.enums.Visibility;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -243,6 +245,37 @@ public class HistoryServiceImpl implements HistoryService {
                 styles);
     }
 
+    @Override
+    public HistoryClothTagListResponse getHistoryClothTags(Long historyImageId) {
+        getHistoryImageById(historyImageId);
+
+        List<HistoryClothTag> historyClothTags =
+                historyClothTagRepository.findAllByHistoryImageIdWithCloth(historyImageId);
+
+        List<HistoryClothTagListResponse.Payload> payloads =
+                historyClothTags.stream()
+                        .map(
+                                tag ->
+                                        new HistoryClothTagListResponse.Payload(
+                                                tag.getId(),
+                                                tag.getCloth().getId(),
+                                                tag.getCloth().getClothImageUrl(),
+                                                tag.getCloth().getName(),
+                                                tag.getCloth().getBrand(),
+                                                tag.getLocation().getLocationX(),
+                                                tag.getLocation().getLocationY()))
+                        .toList();
+
+        return HistoryClothTagListResponse.of(payloads);
+    }
+
+    private HistoryImage getHistoryImageById(Long historyImageId) {
+        return historyImageRepository
+                .findById(historyImageId)
+                .orElseThrow(
+                        () -> new BaseCustomException(HistoryErrorCode.HISTORY_IMAGE_NOT_FOUND));
+    }
+
     private void saveHistoryRelations(
             History history,
             List<Long> styleIds,
@@ -437,6 +470,11 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     private void validateBlockedAccess(Long currentMemberId, History history) {
+        // 기록 작성자가 비공개이고 본인 기록이 아닌 경우 접근 불가
+        if (history.getMember().getVisibility() == Visibility.PRIVATE
+                && !history.getMember().getId().equals(currentMemberId)) {
+            throw new BaseCustomException(HistoryErrorCode.LIMITED_AUTHORITY);
+        }
 
         // 기록 작성자를 차단했거나 차단 당한 경우
         if (blockRepository.existsByBlockerIdAndBlockedId(
