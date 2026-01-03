@@ -33,5 +33,4 @@ public interface MemberLikeRepository extends JpaRepository<MemberLike, Long> {
     List<MemberLike> findLikeMembersByHistoryId(Long historyId, Long lastLikeId, Pageable pageable);
 
     Optional<MemberLike> findByMemberIdAndHistoryId(Long memberId, Long historyId);
-      
 }
