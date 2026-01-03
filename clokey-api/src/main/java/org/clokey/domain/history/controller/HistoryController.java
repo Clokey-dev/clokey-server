@@ -10,6 +10,7 @@ import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
 import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
+import org.clokey.domain.history.dto.response.MonthlyHistoryResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
 import org.clokey.domain.history.service.HistoryService;
@@ -86,6 +87,17 @@ public class HistoryController {
     public BaseResponse<HistoryClothTagListResponse> getHistoryClothTags(
             @PathVariable Long historyImageId) {
         HistoryClothTagListResponse response = historyService.getHistoryClothTags(historyImageId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/monthly/{memberId}")
+    @Operation(
+            operationId = "History_getMonthlyHistory",
+            summary = "월별 기록 조회",
+            description = "특정 회원의 특정 년도/월에 해당하는 모든 기록의 ID와 첫 번째 이미지 URL을 조회합니다.")
+    public BaseResponse<MonthlyHistoryResponse> getMonthlyHistory(
+            @PathVariable Long memberId, @RequestParam int year, @RequestParam int month) {
+        MonthlyHistoryResponse response = historyService.getMonthlyHistory(memberId, year, month);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

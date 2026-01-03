@@ -14,6 +14,7 @@ import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
 import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
+import org.clokey.domain.history.dto.response.MonthlyHistoryResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
 import org.clokey.domain.history.exception.HistoryErrorCode;
@@ -22,6 +23,7 @@ import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.*;
 import org.clokey.domain.like.repository.MemberLikeRepository;
 import org.clokey.domain.member.repository.BlockRepository;
+import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.domain.report.repository.ReportRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
@@ -51,6 +53,7 @@ public class HistoryServiceImpl implements HistoryService {
     private final CommentRepository commentRepository;
     private final BlockRepository blockRepository;
     private final ReportRepository reportRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     @Transactional
@@ -269,6 +272,34 @@ public class HistoryServiceImpl implements HistoryService {
         return HistoryClothTagListResponse.of(payloads);
     }
 
+    @Override
+    public MonthlyHistoryResponse getMonthlyHistory(Long memberId, int year, int month) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Member targetMember = getMemberById(memberId);
+
+        validateMemberAccess(currentMember.getId(), targetMember);
+
+        List<History> histories =
+                historyRepository.findByMemberIdAndYearAndMonthNotBanned(memberId, year, month);
+
+        List<MonthlyHistoryResponse.Payload> payloads =
+                histories.stream()
+                        .map(
+                                history -> {
+                                    String firstImageUrl =
+                                            history.getHistoryImages().isEmpty()
+                                                    ? null
+                                                    : history.getHistoryImages()
+                                                            .get(0)
+                                                            .getImageUrl();
+                                    return new MonthlyHistoryResponse.Payload(
+                                            history.getId(), firstImageUrl);
+                                })
+                        .toList();
+
+        return MonthlyHistoryResponse.of(payloads);
+    }
+
     private HistoryImage getHistoryImageById(Long historyImageId) {
         return historyImageRepository
                 .findById(historyImageId)
@@ -466,6 +497,31 @@ public class HistoryServiceImpl implements HistoryService {
 
         if (!historyClothTags.isEmpty()) {
             historyClothTagRepository.deleteAllInBatch(historyClothTags);
+        }
+    }
+
+    private Member getMemberById(Long memberId) {
+        return memberRepository
+                .findById(memberId)
+                .orElseThrow(
+                        () ->
+                                new BaseCustomException(
+                                        org.clokey.domain.member.exception.MemberErrorCode
+                                                .MEMBER_NOT_FOUND));
+    }
+
+    private void validateMemberAccess(Long currentMemberId, Member targetMember) {
+        // 유저가 비공개이고 본인이 아닌 경우 접근 불가
+        if (targetMember.getVisibility() == Visibility.PRIVATE
+                && !targetMember.getId().equals(currentMemberId)) {
+            throw new BaseCustomException(HistoryErrorCode.LIMITED_AUTHORITY);
+        }
+
+        // 유저를 차단했거나 차단 당한 경우
+        if (blockRepository.existsByBlockerIdAndBlockedId(targetMember.getId(), currentMemberId)
+                || blockRepository.existsByBlockerIdAndBlockedId(
+                        currentMemberId, targetMember.getId())) {
+            throw new BaseCustomException(HistoryErrorCode.BLOCKED_AUTHORITY);
         }
     }
 

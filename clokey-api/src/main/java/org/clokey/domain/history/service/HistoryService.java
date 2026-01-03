@@ -16,4 +16,6 @@ public interface HistoryService {
     DailyHistoryResponse getDailyHistory(Long historyId);
 
     HistoryClothTagListResponse getHistoryClothTags(Long historyImageId);
+
+    MonthlyHistoryResponse getMonthlyHistory(Long memberId, int year, int month);
 }
