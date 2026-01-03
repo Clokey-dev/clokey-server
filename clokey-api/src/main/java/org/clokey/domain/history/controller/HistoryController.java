@@ -10,6 +10,7 @@ import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
 import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
+import org.clokey.domain.history.dto.response.HistoryOwnershipCheckResponse;
 import org.clokey.domain.history.dto.response.MonthlyHistoryResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
@@ -98,6 +99,17 @@ public class HistoryController {
     public BaseResponse<MonthlyHistoryResponse> getMonthlyHistory(
             @PathVariable Long memberId, @RequestParam int year, @RequestParam int month) {
         MonthlyHistoryResponse response = historyService.getMonthlyHistory(memberId, year, month);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @GetMapping("/{historyId}/ownership")
+    @Operation(
+            operationId = "History_checkHistoryOwnership",
+            summary = "나의 기록 여부 확인",
+            description = "기록 ID를 통해 해당 기록이 현재 사용자의 기록인지 확인합니다.")
+    public BaseResponse<HistoryOwnershipCheckResponse> checkHistoryOwnership(
+            @PathVariable Long historyId) {
+        HistoryOwnershipCheckResponse response = historyService.checkHistoryOwnership(historyId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

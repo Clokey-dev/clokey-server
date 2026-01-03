@@ -14,6 +14,7 @@ import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
 import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
+import org.clokey.domain.history.dto.response.HistoryOwnershipCheckResponse;
 import org.clokey.domain.history.dto.response.MonthlyHistoryResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
@@ -298,6 +299,16 @@ public class HistoryServiceImpl implements HistoryService {
                         .toList();
 
         return MonthlyHistoryResponse.of(payloads);
+    }
+
+    @Override
+    public HistoryOwnershipCheckResponse checkHistoryOwnership(Long historyId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final History history = getHistoryById(historyId);
+
+        boolean isOwner = history.getMember().getId().equals(currentMember.getId());
+
+        return HistoryOwnershipCheckResponse.of(isOwner);
     }
 
     private HistoryImage getHistoryImageById(Long historyImageId) {

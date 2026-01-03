@@ -18,4 +18,6 @@ public interface HistoryService {
     HistoryClothTagListResponse getHistoryClothTags(Long historyImageId);
 
     MonthlyHistoryResponse getMonthlyHistory(Long memberId, int year, int month);
+
+    HistoryOwnershipCheckResponse checkHistoryOwnership(Long historyId);
 }
