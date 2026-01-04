@@ -1,12 +1,15 @@
 package org.clokey.domain.like.repository;
 
 import java.util.List;
+import java.util.Optional;
 import org.clokey.like.entity.MemberLike;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface MemberLikeRepository extends JpaRepository<MemberLike, Long> {
+
+    long countByHistoryId(Long historyId);
 
     @Query(
             """
@@ -28,4 +31,6 @@ public interface MemberLikeRepository extends JpaRepository<MemberLike, Long> {
         ORDER BY ml.id DESC
         """)
     List<MemberLike> findLikeMembersByHistoryId(Long historyId, Long lastLikeId, Pageable pageable);
+
+    Optional<MemberLike> findByMemberIdAndHistoryId(Long memberId, Long historyId);
 }
