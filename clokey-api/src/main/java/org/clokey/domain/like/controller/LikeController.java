@@ -11,6 +11,7 @@ import org.clokey.global.annotation.PageSize;
 import org.clokey.response.BaseResponse;
 import org.clokey.response.SliceResponse;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/likes")
 @RequiredArgsConstructor
-@Tag(name = "9. 좋아요 API", description = "좋아요 관련 API입니다.")
+@Tag(name = "09. 좋아요 API", description = "좋아요 관련 API입니다.")
 @Validated
 public class LikeController {
 
@@ -37,5 +38,14 @@ public class LikeController {
                 likeService.getLikedHistories(lastLikeId, size);
 
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
+    }
+
+    @PostMapping
+    @Operation(operationId = "Like_toggleLike", summary = "좋아요 생성", description = "기록에 좋아요를 추가합니다")
+    public BaseResponse<Void> toggleLike(@RequestParam("historyId") Long historyId) {
+
+        likeService.toggleLike(historyId);
+
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
 }

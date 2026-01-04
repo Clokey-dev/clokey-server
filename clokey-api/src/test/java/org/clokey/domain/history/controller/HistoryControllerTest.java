@@ -8,7 +8,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
+import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
+import org.clokey.domain.history.dto.response.DailyHistoryResponse;
+import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
+import org.clokey.domain.history.dto.response.HistoryOwnershipCheckResponse;
+import org.clokey.domain.history.dto.response.MonthlyHistoryResponse;
+import org.clokey.domain.history.dto.response.SituationListResponse;
+import org.clokey.domain.history.dto.response.StyleListResponse;
 import org.clokey.domain.history.service.HistoryService;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -516,6 +523,357 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result['hashtags[0]']").value("해시태그는 비워둘 수 없습니다."));
+        }
+    }
+
+    @Nested
+    class 기록_수정_요청_시 {
+
+        @Test
+        void 유효한_요청이면_기록을_수정한다() throws Exception {
+            // given
+            HistoryUpdateRequest request =
+                    new HistoryUpdateRequest(
+                            "updated content",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("tag1", "tag2"),
+                            List.of(
+                                    new HistoryUpdateRequest.Payload(
+                                            "image1",
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            1L, 0.1, 0.2))),
+                                    new HistoryUpdateRequest.Payload("image2", null)));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/histories/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        @ValueSource(strings = {" "})
+        void 수정_내용이_null_또는_공백이면_예외가_발생한다(String content) throws Exception {
+            HistoryUpdateRequest request =
+                    new HistoryUpdateRequest(
+                            content,
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("tag1", "tag2"),
+                            List.of(
+                                    new HistoryUpdateRequest.Payload(
+                                            "image1",
+                                            List.of(
+                                                    new HistoryUpdateRequest.ClothTag(
+                                                            1L, 0.1, 0.2)))));
+
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/histories/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.content").value("기록 내용은 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 수정_이미지목록이_null이면_예외가_발생한다() throws Exception {
+            HistoryUpdateRequest request =
+                    new HistoryUpdateRequest(
+                            "updated content", 1L, List.of(1L, 2L), List.of("tag1", "tag2"), null);
+
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/histories/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.payloads").value("기록 이미지 목록은 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 수정_이미지가_0개면_예외가_발생한다() throws Exception {
+            HistoryUpdateRequest request =
+                    new HistoryUpdateRequest(
+                            "updated content",
+                            1L,
+                            List.of(1L, 2L),
+                            List.of("tag1", "tag2"),
+                            List.of());
+
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/histories/1")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.payloads").value("이미지는 1~10개만 첨부 가능합니다."));
+        }
+    }
+
+    @Nested
+    class 전체_스타일_목록_요청_시 {
+
+        @Test
+        void 유효한_요청이면_전체_스타일_목록을_반환한다() throws Exception {
+            // given
+            StyleListResponse response =
+                    new StyleListResponse(
+                            List.of(
+                                    new StyleListResponse.Content(1L, "testStyle1"),
+                                    new StyleListResponse.Content(2L, "testStyle2"),
+                                    new StyleListResponse.Content(3L, "testStyle3")));
+
+            given(historyService.getAllStyles()).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/histories/styles").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.contents").isArray())
+                    .andExpect(jsonPath("$.result.contents.length()").value(3))
+                    .andExpect(jsonPath("$.result.contents[0].styleId").value(1L))
+                    .andExpect(jsonPath("$.result.contents[0].name").value("testStyle1"))
+                    .andExpect(jsonPath("$.result.contents[1].styleId").value(2L))
+                    .andExpect(jsonPath("$.result.contents[1].name").value("testStyle2"))
+                    .andExpect(jsonPath("$.result.contents[2].styleId").value(3L))
+                    .andExpect(jsonPath("$.result.contents[2].name").value("testStyle3"));
+        }
+    }
+
+    @Nested
+    class 전체_상황_목록_요청_시 {
+
+        @Test
+        void 유효한_요청이면_전체_상황_목록을_반환한다() throws Exception {
+            // given
+            SituationListResponse response =
+                    new SituationListResponse(
+                            List.of(
+                                    new SituationListResponse.Content(1L, "testSituation1"),
+                                    new SituationListResponse.Content(2L, "testSituation2"),
+                                    new SituationListResponse.Content(3L, "testSituation3")));
+
+            given(historyService.getAllSituations()).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/histories/situations").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.contents").isArray())
+                    .andExpect(jsonPath("$.result.contents.length()").value(3))
+                    .andExpect(jsonPath("$.result.contents[0].situationId").value(1L))
+                    .andExpect(jsonPath("$.result.contents[0].name").value("testSituation1"))
+                    .andExpect(jsonPath("$.result.contents[1].situationId").value(2L))
+                    .andExpect(jsonPath("$.result.contents[1].name").value("testSituation2"))
+                    .andExpect(jsonPath("$.result.contents[2].situationId").value(3L))
+                    .andExpect(jsonPath("$.result.contents[2].name").value("testSituation3"));
+        }
+    }
+
+    @Nested
+    class 일별_기록_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_일별_기록을_반환한다() throws Exception {
+            // given
+            DailyHistoryResponse testDailyHistoryResponse =
+                    DailyHistoryResponse.of(
+                            1L,
+                            "testProfileImageUrl",
+                            "testNickname",
+                            List.of(
+                                    new DailyHistoryResponse.ImagePayload(1L, "testImageUrl1"),
+                                    new DailyHistoryResponse.ImagePayload(2L, "testImageUrl2")),
+                            10L,
+                            5L,
+                            java.time.LocalDate.of(2025, 1, 1),
+                            1L,
+                            "testSituation",
+                            List.of(
+                                    new DailyHistoryResponse.StylePayload(1L, "testStyle1"),
+                                    new DailyHistoryResponse.StylePayload(2L, "testStyle2")));
+
+            given(historyService.getDailyHistory(1L)).willReturn(testDailyHistoryResponse);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(get("/histories/1").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.memberId").value(1L))
+                    .andExpect(jsonPath("$.result.profileImageUrl").value("testProfileImageUrl"))
+                    .andExpect(jsonPath("$.result.nickname").value("testNickname"))
+                    .andExpect(jsonPath("$.result.images").isArray())
+                    .andExpect(jsonPath("$.result.images.length()").value(2))
+                    .andExpect(jsonPath("$.result.images[0].imageId").value(1L))
+                    .andExpect(jsonPath("$.result.images[0].imageUrl").value("testImageUrl1"))
+                    .andExpect(jsonPath("$.result.likeCount").value(10L))
+                    .andExpect(jsonPath("$.result.commentCount").value(5L))
+                    .andExpect(jsonPath("$.result.historyDate").value("2025-01-01"))
+                    .andExpect(jsonPath("$.result.situationId").value(1L))
+                    .andExpect(jsonPath("$.result.situationName").value("testSituation"))
+                    .andExpect(jsonPath("$.result.styles").isArray())
+                    .andExpect(jsonPath("$.result.styles.length()").value(2))
+                    .andExpect(jsonPath("$.result.styles[0].styleId").value(1L))
+                    .andExpect(jsonPath("$.result.styles[0].styleName").value("testStyle1"));
+        }
+    }
+
+    @Nested
+    class 기록_이미지_옷_태그_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_기록_이미지에_태그_된_옷들의_정보를_반환한다() throws Exception {
+            // given
+            HistoryClothTagListResponse testHistoryClothTagListResponse =
+                    HistoryClothTagListResponse.of(
+                            List.of(
+                                    new HistoryClothTagListResponse.Payload(
+                                            1L,
+                                            1L,
+                                            "testClothImageUrl1",
+                                            "testClothName1",
+                                            "testBrand1",
+                                            0.5,
+                                            0.7),
+                                    new HistoryClothTagListResponse.Payload(
+                                            2L,
+                                            2L,
+                                            "testClothImageUrl2",
+                                            "testClothName2",
+                                            "testBrand2",
+                                            0.3,
+                                            0.4)));
+
+            given(historyService.getHistoryClothTags(1L))
+                    .willReturn(testHistoryClothTagListResponse);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/histories/cloth-tag/1").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.payloads").isArray())
+                    .andExpect(jsonPath("$.result.payloads.length()").value(2))
+                    .andExpect(jsonPath("$.result.payloads[0].historyClothTagId").value(1L))
+                    .andExpect(jsonPath("$.result.payloads[0].clothId").value(1L))
+                    .andExpect(
+                            jsonPath("$.result.payloads[0].clothImageUrl")
+                                    .value("testClothImageUrl1"))
+                    .andExpect(jsonPath("$.result.payloads[0].name").value("testClothName1"))
+                    .andExpect(jsonPath("$.result.payloads[0].brand").value("testBrand1"))
+                    .andExpect(jsonPath("$.result.payloads[0].locationX").value(0.5))
+                    .andExpect(jsonPath("$.result.payloads[0].locationY").value(0.7));
+        }
+    }
+
+    @Nested
+    class 월별_기록_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_대상의_월별_기록을_반환한다() throws Exception {
+            // given
+            MonthlyHistoryResponse testMonthlyHistoryResponse =
+                    MonthlyHistoryResponse.of(
+                            List.of(
+                                    new MonthlyHistoryResponse.Payload(1L, "testFirstImageUrl1"),
+                                    new MonthlyHistoryResponse.Payload(2L, "testFirstImageUrl2"),
+                                    new MonthlyHistoryResponse.Payload(3L, "testFirstImageUrl3")));
+
+            given(historyService.getMonthlyHistory(1L, 2025, 1))
+                    .willReturn(testMonthlyHistoryResponse);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/histories/monthly/1")
+                                    .param("year", String.valueOf(2025))
+                                    .param("month", String.valueOf(1))
+                                    .contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.payloads").isArray())
+                    .andExpect(jsonPath("$.result.payloads.length()").value(3))
+                    .andExpect(jsonPath("$.result.payloads[0].historyId").value(1L))
+                    .andExpect(
+                            jsonPath("$.result.payloads[0].firstImageUrl")
+                                    .value("testFirstImageUrl1"))
+                    .andExpect(jsonPath("$.result.payloads[1].historyId").value(2L))
+                    .andExpect(
+                            jsonPath("$.result.payloads[1].firstImageUrl")
+                                    .value("testFirstImageUrl2"))
+                    .andExpect(jsonPath("$.result.payloads[2].historyId").value(3L))
+                    .andExpect(
+                            jsonPath("$.result.payloads[2].firstImageUrl")
+                                    .value("testFirstImageUrl3"));
+        }
+    }
+
+    @Nested
+    class 기록_소유_여부_확인_요청_시 {
+
+        @Test
+        void testCheckHistoryOwnership() throws Exception {
+            // given
+            HistoryOwnershipCheckResponse testHistoryOwnershipCheckResponse =
+                    HistoryOwnershipCheckResponse.of(true);
+
+            given(historyService.checkHistoryOwnership(1L))
+                    .willReturn(testHistoryOwnershipCheckResponse);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            get("/histories/1/ownership").contentType(MediaType.APPLICATION_JSON));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.isOwner").value(true));
         }
     }
 }

@@ -2,33 +2,57 @@ package org.clokey.domain.cloth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Stream;
 import org.clokey.IntegrationTest;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.cloth.enums.Season;
+import org.clokey.coordinate.entity.Coordinate;
+import org.clokey.coordinate.entity.CoordinateCloth;
 import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothImagesUploadRequest;
 import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
 import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
+import org.clokey.domain.cloth.dto.response.ClothImagesPresignedUrlResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
+import org.clokey.domain.coordinate.repository.CoordinateRepository;
+import org.clokey.domain.folder.repository.ClothFolderRepository;
+import org.clokey.domain.folder.repository.FolderRepository;
+import org.clokey.domain.history.repository.HistoryClothTagRepository;
+import org.clokey.domain.history.repository.HistoryImageRepository;
+import org.clokey.domain.history.repository.HistoryRepository;
+import org.clokey.domain.history.repository.SituationRepository;
 import org.clokey.domain.image.event.ImageDeleteEvent;
+import org.clokey.domain.lookbook.repository.LookBookRepository;
 import org.clokey.domain.member.repository.MemberRepository;
+import org.clokey.enums.FileExtension;
 import org.clokey.exception.BaseCustomException;
+import org.clokey.folder.entity.ClothFolder;
+import org.clokey.folder.entity.Folder;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
+import org.clokey.history.entity.History;
+import org.clokey.history.entity.HistoryClothTag;
+import org.clokey.history.entity.HistoryImage;
+import org.clokey.history.entity.Situation;
+import org.clokey.lookbook.entity.LookBook;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
 import org.clokey.response.SliceResponse;
+import org.clokey.util.S3Util;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -49,9 +73,61 @@ class ClothServiceTest extends IntegrationTest {
     @Autowired private MemberRepository memberRepository;
     @Autowired private ClothRepository clothRepository;
     @Autowired private CategoryRepository categoryRepository;
+    @Autowired private LookBookRepository lookBookRepository;
+    @Autowired private CoordinateRepository coordinateRepository;
+    @Autowired private CoordinateClothRepository coordinateClothRepository;
+    @Autowired private FolderRepository folderRepository;
+    @Autowired private HistoryRepository historyRepository;
+    @Autowired private HistoryClothTagRepository historyClothTagRepository;
+    @Autowired private HistoryImageRepository historyImageRepository;
+    @Autowired private ClothFolderRepository clothFolderRepository;
+    @Autowired private SituationRepository situationRepository;
 
     @MockitoBean private MemberUtil memberUtil;
+    @MockitoBean private S3Util s3Util;
     @Autowired private ApplicationEvents applicationEvents;
+
+    @Nested
+    class 옷_업로드_presigned_url를_발급할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testClokeyId",
+                            "testNickName",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+
+            memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
+        }
+
+        /** Only Mock Test For Coverage */
+        @Test
+        void 유효한_요청이면_옷을_생성한다() {
+            // given
+            ClothImagesUploadRequest request =
+                    new ClothImagesUploadRequest(
+                            List.of(
+                                    new ClothImagesUploadRequest.Payload(
+                                            FileExtension.JPEG, "testMd5Hash1"),
+                                    new ClothImagesUploadRequest.Payload(
+                                            FileExtension.JPEG, "testMd5Hash2")));
+            given(s3Util.createPresignedUrl(any(), anyLong(), any(), eq("testMd5Hash1")))
+                    .willReturn("testUrl1");
+
+            given(s3Util.createPresignedUrl(any(), anyLong(), any(), eq("testMd5Hash2")))
+                    .willReturn("testUrl2");
+
+            // when
+            ClothImagesPresignedUrlResponse response =
+                    clothService.getClothUploadPresignedUrls(request);
+
+            // then
+            assertThat(response.urls()).containsExactly("testUrl1", "testUrl2");
+        }
+    }
 
     @Nested
     class 옷을_생성할_때 {
@@ -675,6 +751,122 @@ class ClothServiceTest extends IntegrationTest {
             assertThatThrownBy(() -> clothService.updateCloth(1L, request))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(ClothErrorCode.PARENT_CATEGORY_CLOTH.getMessage());
+        }
+    }
+
+    @Nested
+    class 옷을_삭제할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            Category parentCategory = Category.createCategory("testParentCategory", null);
+            Category category = Category.createCategory("testCategory", parentCategory);
+            categoryRepository.saveAll(List.of(parentCategory, category));
+
+            Cloth cloth1 =
+                    Cloth.createCloth(
+                            "testImageUrl1",
+                            "testClothUrl",
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            category,
+                            member1);
+            Cloth cloth2 =
+                    Cloth.createCloth(
+                            "testImageUrl2",
+                            "testClothUrl",
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            category,
+                            member2);
+            clothRepository.saveAll(List.of(cloth1, cloth2));
+
+            // coordinate 관련 매핑 테이블 세팅
+            LookBook lookBook = LookBook.createLookBook("testName", member1);
+            lookBookRepository.save(lookBook);
+
+            Coordinate coordinate =
+                    Coordinate.createCoordinateManual(
+                            "testName", "testMemo", "testImageUrl", member1, lookBook);
+            coordinateRepository.save(coordinate);
+
+            CoordinateCloth coordinateCloth =
+                    CoordinateCloth.createCoordinateCloth(
+                            1.0, 1.0, 1.0, 30.0, 1, coordinate, cloth1);
+            coordinateClothRepository.save(coordinateCloth);
+
+            // folder 관련 매핑 테이블 세팅
+            Folder folder = Folder.createFolder("testName", member1);
+            folderRepository.save(folder);
+
+            ClothFolder clothFolder = ClothFolder.createClothFolder(cloth1, folder);
+            clothFolderRepository.save(clothFolder);
+
+            // history 관련 매핑 테이블 세팅
+            Situation situation = Situation.createSituation("testName");
+            situationRepository.save(situation);
+
+            History history =
+                    History.createHistory(
+                            LocalDate.of(2025, 1, 1), "testContent", member1, situation);
+            historyRepository.save(history);
+
+            HistoryImage historyImage = HistoryImage.createHistoryImage("testImageUrl", history);
+            historyImageRepository.save(historyImage);
+
+            HistoryClothTag historyClothTag =
+                    HistoryClothTag.createHistoryClothTag(historyImage, cloth1, 1.0, 1.0);
+            historyClothTagRepository.save(historyClothTag);
+        }
+
+        @Test
+        void 유효한_요청이면_옷을_삭제하고_관련_매핑테이블을_모두_삭제하고_옷의_이미지를_삭제하는_이벤트를_발행한다() {
+            // when
+            clothService.deleteCloth(1L);
+
+            // then
+            var events = applicationEvents.stream(ImageDeleteEvent.class).toList();
+
+            Assertions.assertAll(
+                    () -> assertThat(events).hasSize(1),
+                    () -> assertThat(events.getFirst().imageUrl()).isEqualTo("testImageUrl1"),
+                    () -> assertThat(coordinateClothRepository.findById(1L).isPresent()).isFalse(),
+                    () -> assertThat(clothFolderRepository.findById(1L).isPresent()).isFalse(),
+                    () -> assertThat(historyClothTagRepository.findById(1L).isPresent()).isFalse());
+        }
+
+        @Test
+        void 옷이_존재하지_않는_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> clothService.deleteCloth(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.ClOTH_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 나의_옷이_아닌_경우_예외가_발생한다() {
+            // when & then
+            assertThatThrownBy(() -> clothService.deleteCloth(2L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.NOT_CLOTH_OWNER.getMessage());
         }
     }
 }

@@ -640,9 +640,11 @@ class MemberServiceTest extends IntegrationTest {
             Follow follow23 = Follow.createFollow(member2, member3);
             Follow follow31 = Follow.createFollow(member3, member1);
             Follow follow32 = Follow.createFollow(member3, member2);
+            Follow follow42 = Follow.createFollow(member4, member2);
             Block block = Block.createBlock(member3, member1);
 
-            followRepository.saveAll(List.of(follow12, follow13, follow23, follow31, follow32));
+            followRepository.saveAll(
+                    List.of(follow12, follow13, follow23, follow31, follow32, follow42));
             blockRepository.save(block);
         }
 
@@ -654,7 +656,7 @@ class MemberServiceTest extends IntegrationTest {
             // then
             assertThat(response.content())
                     .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId3", false), tuple("testCodiveId2", false));
+                    .containsExactly(tuple("testCodiveId2", false));
         }
 
         @Test
@@ -665,7 +667,17 @@ class MemberServiceTest extends IntegrationTest {
             // then
             assertThat(response.content())
                     .extracting("codiveId")
-                    .containsExactly("testCodiveId3", "testCodiveId1");
+                    .containsExactly("testCodiveId4", "testCodiveId1");
+        }
+
+        @Test
+        void 차단_관계의_멤버는_목록에_표시하지_않는다() {
+            // when
+            SliceResponse<FollowMemberResponse> response =
+                    memberService.getFollows(2L, null, true, 10);
+
+            // then
+            assertThat(response.content()).isEmpty();
         }
 
         @Test
@@ -677,7 +689,7 @@ class MemberServiceTest extends IntegrationTest {
             // then
             assertThat(response.content())
                     .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId3", false), tuple("testCodiveId1", true));
+                    .containsExactly(tuple("testCodiveId4", false), tuple("testCodiveId1", true));
         }
 
         @Test
@@ -726,10 +738,29 @@ class MemberServiceTest extends IntegrationTest {
                             "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-            memberRepository.saveAll(List.of(member1, member2));
+            Member member3 =
+                    Member.createMember(
+                            "testEmail3",
+                            "testCodiveId3",
+                            "testNickName3",
+                            OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
+            Member member4 =
+                    Member.createMember(
+                            "testEmail4",
+                            "testCodiveId4",
+                            "testNickName4",
+                            OauthInfo.createOauthInfo("testOauthId4", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2, member3, member4));
             given(memberUtil.getCurrentMember()).willReturn(member1);
+
             Follow follow21 = Follow.createFollow(member2, member1);
-            followRepository.save(follow21);
+            Follow follow34 = Follow.createFollow(member3, member4);
+            Follow follow42 = Follow.createFollow(member4, member2);
+            Follow follow43 = Follow.createFollow(member4, member3);
+            followRepository.saveAll(List.of(follow21, follow34, follow42, follow43));
+
+            Block block13 = Block.createBlock(member1, member3);
+            blockRepository.save(block13);
         }
 
         @Test
@@ -740,7 +771,7 @@ class MemberServiceTest extends IntegrationTest {
             Assertions.assertAll(
                     () -> assertThat(response.codiveId()).isEqualTo("testCodiveId2"),
                     () -> assertThat(response.nickname()).isEqualTo("testNickName2"),
-                    () -> assertThat(response.followerCount()).isZero(),
+                    () -> assertThat(response.followerCount()).isOne(),
                     () -> assertThat(response.isMe()).isFalse());
         }
 
@@ -754,6 +785,32 @@ class MemberServiceTest extends IntegrationTest {
                     () -> assertThat(response.nickname()).isEqualTo("testNickName1"),
                     () -> assertThat(response.followerCount()).isOne(),
                     () -> assertThat(response.isMe()).isTrue());
+        }
+
+        @Test
+        void 차단_관계인_멤버는_팔로워_수에_집계하지_않는다() {
+            // when
+            MemberInfoResponse response = memberService.getMemberInfo(4L);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.codiveId()).isEqualTo("testCodiveId4"),
+                    () -> assertThat(response.nickname()).isEqualTo("testNickName4"),
+                    () -> assertThat(response.followerCount()).isZero(),
+                    () -> assertThat(response.isMe()).isFalse());
+        }
+
+        @Test
+        void 차단_관계인_멤버는_팔로잉_수에_집계하지_않는다() {
+            // when
+            MemberInfoResponse response = memberService.getMemberInfo(4L);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.codiveId()).isEqualTo("testCodiveId4"),
+                    () -> assertThat(response.nickname()).isEqualTo("testNickName4"),
+                    () -> assertThat(response.followingCount()).isOne(),
+                    () -> assertThat(response.isMe()).isFalse());
         }
 
         @Test

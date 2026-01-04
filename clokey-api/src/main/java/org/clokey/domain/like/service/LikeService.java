@@ -6,4 +6,6 @@ import org.clokey.response.SliceResponse;
 public interface LikeService {
     SliceResponse<LikedHistoriesResponse.LikedHistoryPreview> getLikedHistories(
             Long lastLikedId, Integer size);
+
+    void toggleLike(Long historyId);
 }

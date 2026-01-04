@@ -3,6 +3,7 @@ package org.clokey.domain.like.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +30,30 @@ public class LikeControllerTest {
     @Autowired private ObjectMapper objectMapper;
 
     @MockitoBean private LikeService likeService;
+
+    @Nested
+    class 좋아요_요청_시 {
+        @Test
+        void 유효한_요청이면_성공코드를_반환한다() throws Exception {
+            // given
+            long historyId = 1L;
+
+            willDoNothing().given(likeService).toggleLike(historyId);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/likes")
+                                    .param("historyId", String.valueOf(historyId))
+                                    .contentType(MediaType.APPLICATION_JSON));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+    }
 
     @Nested
     class 좋아요한_기록_조회_시 {

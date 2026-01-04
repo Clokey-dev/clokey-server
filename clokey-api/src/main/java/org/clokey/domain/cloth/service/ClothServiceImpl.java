@@ -12,37 +12,62 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothImagesUploadRequest;
 import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
-import org.clokey.domain.cloth.dto.response.ClothCreateResponse;
-import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
-import org.clokey.domain.cloth.dto.response.ClothListResponse;
-import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
+import org.clokey.domain.cloth.dto.response.*;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
+import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.folder.repository.ClothFolderRepository;
+import org.clokey.domain.history.repository.HistoryClothTagRepository;
 import org.clokey.domain.image.event.ImageDeleteEvent;
+import org.clokey.enums.ImageType;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
 import org.clokey.response.SliceResponse;
+import org.clokey.util.S3Util;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/** Cloth Service에서는 외부 AI 서버와 통신을 하는 부분이 존재하며 , Transaction(DB Connection Pool)을 주의하며 사용해야 합니다. */
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ClothServiceImpl implements ClothService {
 
     private final MemberUtil memberUtil;
+    private final S3Util s3Util;
 
     private final ClothRepository clothRepository;
     private final CategoryRepository categoryRepository;
     private final ClothFolderRepository clothFolderRepository;
+    private final HistoryClothTagRepository historyClothTagRepository;
 
     private final ApplicationEventPublisher eventPublisher;
+    private final CoordinateClothRepository coordinateClothRepository;
+
+    @Override
+    public ClothImagesPresignedUrlResponse getClothUploadPresignedUrls(
+            ClothImagesUploadRequest request) {
+        final Member currentMember = memberUtil.getCurrentMember();
+
+        // 중요 :  md5 해시로 변조 확인을 하기 때문에 들어온 순서대로 반환해야함!!
+        List<String> presignedUrls =
+                request.payloads().stream()
+                        .map(
+                                req ->
+                                        s3Util.createPresignedUrl(
+                                                ImageType.CLOTH_IMAGE,
+                                                currentMember.getId(),
+                                                req.fileExtension(),
+                                                req.md5Hashes()))
+                        .toList();
+
+        return ClothImagesPresignedUrlResponse.of(presignedUrls);
+    }
 
     @Override
     @Transactional
@@ -79,6 +104,7 @@ public class ClothServiceImpl implements ClothService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SliceResponse<ClothRecommendListResponse> recommendCategoryClothes(
             Long lastClothId, int size, Long categoryId, Season season) {
         final Member currentMember = memberUtil.getCurrentMember();
@@ -91,6 +117,7 @@ public class ClothServiceImpl implements ClothService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SliceResponse<ClothListResponse> getClothes(
             Long lastClothId,
             int size,
@@ -109,6 +136,7 @@ public class ClothServiceImpl implements ClothService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ClothDetailsResponse getClothDetails(Long clothId) {
         final Member currentMember = memberUtil.getCurrentMember();
         final Cloth cloth = getClothById(clothId);
@@ -140,6 +168,27 @@ public class ClothServiceImpl implements ClothService {
                 request.brand(),
                 request.season(),
                 category);
+    }
+
+    /**
+     * fyi : 옷 삭제시 옷이 속한 Coordinate의 사진에는 옷이 남아 있을 수 있습니다.
+     *
+     * <p>추가적으로, 이로 인해서 옷이 없는 기록, 폴더 등이 생기는 side-effect가 발생할 수 있습니다.
+     */
+    @Override
+    @Transactional
+    public void deleteCloth(Long clothId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final Cloth cloth = getClothById(clothId);
+
+        validateClothOwnership(cloth, currentMember.getId());
+
+        coordinateClothRepository.deleteAllByClothId(cloth.getId());
+        clothFolderRepository.deleteAllByClothId(cloth.getId());
+        historyClothTagRepository.deleteAllByClothId(cloth.getId());
+
+        eventPublisher.publishEvent(ImageDeleteEvent.of(cloth.getClothImageUrl()));
+        clothRepository.delete(cloth);
     }
 
     private Map<Long, Category> getCategoryMapByIds(Set<Long> ids) {

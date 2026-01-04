@@ -85,3 +85,6 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
+
+firebase:
+  credentials-path: ${FIREBASE_CREDENTIALS_PATH}
