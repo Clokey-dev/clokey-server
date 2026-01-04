@@ -25,12 +25,12 @@ import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
 import org.clokey.response.SliceResponse;
+import org.clokey.util.S3Util;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Cloth Service에서는 외부 AI 서버와 통신을 하는 부분이 존재하며 , Transaction(DB Connection Pool)을 주의하며 사용해야 합니다. */
 @Service
 @RequiredArgsConstructor
 public class ClothServiceImpl implements ClothService {
@@ -44,6 +44,7 @@ public class ClothServiceImpl implements ClothService {
 
     private final ApplicationEventPublisher eventPublisher;
     private final CoordinateClothRepository coordinateClothRepository;
+    private final S3Util s3Util;
 
     @Override
     @Transactional
@@ -75,6 +76,11 @@ public class ClothServiceImpl implements ClothService {
                         .toList();
 
         clothRepository.saveAll(clothes);
+
+        List<String> clothImageUrls =
+                request.content().stream().map(ClothCreateRequest::clothImageUrl).toList();
+        // 모든 선택된 url들을 확정하는 로직.
+        s3Util.updateTagsToCompleteByUrls(clothImageUrls);
 
         return ClothCreateResponse.from(clothes);
     }
