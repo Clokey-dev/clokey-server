@@ -31,6 +31,16 @@ public record LikedMembersResponse(
         private final Long lastLikeId;
 
         public LikedMemberPreview(
+                Long id, String codiveId, String imageUrl, String nickname, Long lastLikeId) {
+            this.id = id;
+            this.codiveId = codiveId;
+            this.imageUrl = imageUrl;
+            this.nickname = nickname;
+            this.lastLikeId = lastLikeId;
+            this.followStatus = false;
+        }
+
+        public LikedMemberPreview(
                 Long id, String codiveId, String imageUrl, String nickname, boolean followStatus) {
             this.id = id;
             this.codiveId = codiveId;
