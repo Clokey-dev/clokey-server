@@ -21,12 +21,6 @@ public record LikedHistoriesResponse(
         @Schema(description = "다음 페이지 조회를 위한 커서 ID (MemberLike ID)", example = "100")
         private final Long lastLikeId;
 
-        public LikedHistoryPreview(Long id, Long lastLikeId) {
-            this.id = id;
-            this.lastLikeId = lastLikeId;
-            this.imageUrl = null;
-        }
-
         public LikedHistoryPreview(Long id, String imageUrl) {
             this.id = id;
             this.imageUrl = imageUrl;
