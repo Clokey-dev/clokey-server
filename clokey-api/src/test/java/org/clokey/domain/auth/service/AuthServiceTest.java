@@ -345,20 +345,13 @@ class AuthServiceTest extends IntegrationTest {
     @Nested
     class 회원_탈퇴할_때 {
 
-        private Member targetMember;
-        private Member otherMember;
-        private Category category;
-        private Situation situation;
-        private Style style1;
-        private Style style2;
-        private Hashtag hashtag1;
-        private Hashtag hashtag2;
-        private Term term;
+        private Long targetMemberId;
+        private Long otherMemberId;
 
         @BeforeEach
         void setUp() {
             // 회원 생성 (프로필 이미지 포함)
-            targetMember =
+            Member targetMember =
                     Member.createMember(
                             "targetEmail",
                             "targetClokeyId",
@@ -372,32 +365,37 @@ class AuthServiceTest extends IntegrationTest {
                     "한줄소개",
                     Visibility.PUBLIC);
 
-            otherMember =
+            Member otherMember =
                     Member.createMember(
                             "otherEmail",
                             "otherClokeyId",
                             "otherNickName",
                             OauthInfo.createOauthInfo("otherOauthId", OauthProvider.KAKAO));
 
-            memberRepository.saveAll(List.of(targetMember, otherMember));
+            List<Member> savedMembers =
+                    memberRepository.saveAll(List.of(targetMember, otherMember));
+            targetMember = savedMembers.get(0);
+            otherMember = savedMembers.get(1);
+            targetMemberId = targetMember.getId();
+            otherMemberId = otherMember.getId();
             given(memberUtil.getCurrentMember()).willReturn(targetMember);
 
             // 마스터 데이터 생성
-            category = Category.createCategory("testCategory", null);
+            Category category = Category.createCategory("testCategory", null);
             categoryRepository.save(category);
 
-            situation = Situation.createSituation("testSituation");
+            Situation situation = Situation.createSituation("testSituation");
             situationRepository.save(situation);
 
-            style1 = Style.createStyle("testStyle1");
-            style2 = Style.createStyle("testStyle2");
+            Style style1 = Style.createStyle("testStyle1");
+            Style style2 = Style.createStyle("testStyle2");
             styleRepository.saveAll(List.of(style1, style2));
 
-            hashtag1 = Hashtag.createHashtag("testhashtag1");
-            hashtag2 = Hashtag.createHashtag("testhashtag2");
+            Hashtag hashtag1 = Hashtag.createHashtag("testhashtag1");
+            Hashtag hashtag2 = Hashtag.createHashtag("testhashtag2");
             hashtagRepository.saveAll(List.of(hashtag1, hashtag2));
 
-            term = Term.createTerm("testTitle", "testBody", false);
+            Term term = Term.createTerm("testTitle", "testBody", false);
             termRepository.save(term);
 
             // History 관련 데이터 생성
@@ -537,7 +535,7 @@ class AuthServiceTest extends IntegrationTest {
             // Report 생성 (targetMember가 신고한 경우)
             Report report =
                     Report.createReport(
-                            1L,
+                            history.getId(),
                             targetMember,
                             otherMember,
                             TargetType.HISTORY,
@@ -548,7 +546,7 @@ class AuthServiceTest extends IntegrationTest {
             // Report 생성 (다른 회원이 targetMember를 신고한 경우)
             Report reportTarget =
                     Report.createReport(
-                            1L,
+                            history.getId(),
                             otherMember,
                             targetMember,
                             TargetType.HISTORY,
@@ -566,7 +564,6 @@ class AuthServiceTest extends IntegrationTest {
         }
 
         @Test
-        @Transactional
         void 유효한_요청이면_회원과_관련된_모든_데이터를_삭제하고_이미지_삭제_이벤트를_발행한다() {
             // when
             authService.withdrawMember();
@@ -576,9 +573,7 @@ class AuthServiceTest extends IntegrationTest {
 
             Assertions.assertAll(
                     // 회원 삭제 확인
-                    () ->
-                            assertThat(memberRepository.findById(targetMember.getId()).isEmpty())
-                                    .isTrue(),
+                    () -> assertThat(memberRepository.findById(targetMemberId).isEmpty()).isTrue(),
 
                     // History 관련 데이터 삭제 확인
                     () -> assertThat(historyRepository.findAll()).isEmpty(),
@@ -627,10 +622,7 @@ class AuthServiceTest extends IntegrationTest {
 
                     // RefreshToken 삭제 확인
                     () ->
-                            assertThat(
-                                            refreshTokenRepository
-                                                    .findById(targetMember.getId())
-                                                    .isEmpty())
+                            assertThat(refreshTokenRepository.findById(targetMemberId).isEmpty())
                                     .isTrue(),
 
                     // 이미지 삭제 이벤트 발행 확인
@@ -648,25 +640,15 @@ class AuthServiceTest extends IntegrationTest {
                                             "clothImageUrl3"),
 
                     // 마스터 데이터는 삭제되지 않았는지 확인
-                    () ->
-                            assertThat(categoryRepository.findById(category.getId()).isPresent())
-                                    .isTrue(),
-                    () ->
-                            assertThat(situationRepository.findById(situation.getId()).isPresent())
-                                    .isTrue(),
-                    () -> assertThat(styleRepository.findById(style1.getId()).isPresent()).isTrue(),
-                    () -> assertThat(styleRepository.findById(style2.getId()).isPresent()).isTrue(),
-                    () ->
-                            assertThat(hashtagRepository.findById(hashtag1.getId()).isPresent())
-                                    .isTrue(),
-                    () ->
-                            assertThat(hashtagRepository.findById(hashtag2.getId()).isPresent())
-                                    .isTrue(),
-                    () -> assertThat(termRepository.findById(term.getId()).isPresent()).isTrue(),
+                    () -> assertThat(categoryRepository.findAll()).hasSize(1),
+                    () -> assertThat(situationRepository.findAll()).hasSize(1),
+                    () -> assertThat(styleRepository.findAll()).hasSize(2),
+                    () -> assertThat(hashtagRepository.findAll()).hasSize(2),
+                    () -> assertThat(termRepository.findAll()).hasSize(1),
 
                     // 다른 회원의 데이터는 유지되는지 확인
                     () ->
-                            assertThat(memberRepository.findById(otherMember.getId()).isPresent())
+                            assertThat(memberRepository.findById(otherMemberId).isPresent())
                                     .isTrue());
         }
     }

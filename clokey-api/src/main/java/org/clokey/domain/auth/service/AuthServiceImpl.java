@@ -198,6 +198,13 @@ public class AuthServiceImpl implements AuthService {
                                     .findByHistoryId(historyId)
                                     .forEach(historyHashtagRepository::delete));
 
+            // HistoryStyle 삭제
+            historyIds.forEach(
+                    historyId ->
+                            historyStyleRepository
+                                    .findByHistoryId(historyId)
+                                    .forEach(historyStyleRepository::delete));
+
             // MemberLike 삭제 (해당 회원이 좋아요한 것)
             memberLikeRepository.findAll().stream()
                     .filter(ml -> ml.getMember().getId().equals(memberId))
