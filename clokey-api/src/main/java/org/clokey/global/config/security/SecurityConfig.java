@@ -9,10 +9,7 @@ import org.clokey.domain.auth.service.CustomOAuth2UserService;
 import org.clokey.domain.auth.service.JwtTokenService;
 import org.clokey.global.security.JwtAuthenticationFilter;
 import org.clokey.helper.SpringEnvironmentHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -44,10 +41,7 @@ public class SecurityConfig {
     private final SpringEnvironmentHelper springEnvironmentHelper;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
-    private final ApplicationContext applicationContext;
-
-    @Autowired(required = false)
-    private ClientRegistrationRepository clientRegistrationRepository;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @Value("${swagger.username:default}")
     private String swaggerUsername;
@@ -112,26 +106,16 @@ public class SecurityConfig {
                                         .anyRequest()
                                         .authenticated())
                 .oauth2Login(
-                        oauth2 -> {
-                            oauth2.userInfoEndpoint(
-                                            userInfo ->
-                                                    userInfo.oidcUserService(
-                                                            customOAuth2UserService))
-                                    .successHandler(oidcLoginSuccessHandler);
-                            if (clientRegistrationRepository != null) {
-                                try {
-                                    OAuth2AuthorizationRequestResolver resolver =
-                                            applicationContext.getBean(
-                                                    OAuth2AuthorizationRequestResolver.class);
-                                    oauth2.authorizationEndpoint(
-                                            authorization ->
-                                                    authorization.authorizationRequestResolver(
-                                                            resolver));
-                                } catch (Exception e) {
-                                    // Resolver bean이 없으면 기본 resolver 사용
-                                }
-                            }
-                        })
+                        oauth2 ->
+                                oauth2.userInfoEndpoint(
+                                                userInfo ->
+                                                        userInfo.oidcUserService(
+                                                                customOAuth2UserService))
+                                        .successHandler(oidcLoginSuccessHandler)
+                                        .authorizationEndpoint(
+                                                authorization ->
+                                                        authorization.authorizationRequestResolver(
+                                                                oauth2AuthorizationRequestResolver())))
                 .addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -164,11 +148,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnBean(ClientRegistrationRepository.class)
     public OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver() {
-        if (clientRegistrationRepository == null) {
-            throw new IllegalStateException("ClientRegistrationRepository is required for OAuth2");
-        }
         DefaultOAuth2AuthorizationRequestResolver resolver =
                 new DefaultOAuth2AuthorizationRequestResolver(
                         clientRegistrationRepository, "/oauth2/authorization");
