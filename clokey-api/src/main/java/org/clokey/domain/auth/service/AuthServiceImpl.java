@@ -5,6 +5,7 @@ import org.clokey.domain.auth.dto.AccessTokenDto;
 import org.clokey.domain.auth.dto.RefreshTokenDto;
 import org.clokey.domain.auth.dto.request.DeviceTokenRenewRequest;
 import org.clokey.domain.auth.dto.request.TokenReissueRequest;
+import org.clokey.domain.auth.dto.request.UserStatusUpdateRequest;
 import org.clokey.domain.auth.dto.response.TokenResponse;
 import org.clokey.domain.auth.dto.response.UserStatusResponse;
 import org.clokey.domain.auth.enums.RegisterStatus;
@@ -74,6 +75,17 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenRepository
                 .findById(currentMember.getId())
                 .ifPresent(refreshTokenRepository::delete);
+    }
+
+    @Override
+    @Transactional
+    public void updateUserStatus(UserStatusUpdateRequest request) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        if (request.active()) {
+            currentMember.activate();
+        } else {
+            currentMember.deactivate();
+        }
     }
 
     private Member getMember(RefreshTokenDto refreshTokenDto) {
