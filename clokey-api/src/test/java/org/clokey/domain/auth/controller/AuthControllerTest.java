@@ -246,4 +246,22 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.result.active").value("활성화 여부는 필수입니다."));
         }
     }
+
+    @Nested
+    class 회원_탈퇴_요청_시 {
+
+        @Test
+        void 유효한_요청이면_NO_CONTENT를_반환한다() throws Exception {
+            // given
+            willDoNothing().given(authService).withdrawMember();
+
+            // when & then
+            ResultActions perform = mockMvc.perform(delete("/auth"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+    }
 }
