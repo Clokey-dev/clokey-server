@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.clokey.domain.auth.dto.request.DeviceTokenRenewRequest;
 import org.clokey.domain.auth.dto.request.TokenReissueRequest;
+import org.clokey.domain.auth.dto.request.UserStatusUpdateRequest;
 import org.clokey.domain.auth.dto.response.TokenResponse;
 import org.clokey.domain.auth.dto.response.UserStatusResponse;
 import org.clokey.domain.auth.enums.RegisterStatus;
@@ -182,6 +183,67 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON204"))
                     .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+    }
+
+    @Nested
+    class 회원_상태_변경_요청_시 {
+
+        @Test
+        void 활성화_요청시_회원을_ACTIVE로_변경하고_NO_CONTENT를_반환한다() throws Exception {
+            // given
+            UserStatusUpdateRequest request = new UserStatusUpdateRequest(true);
+            willDoNothing().given(authService).updateUserStatus(request);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/auth/user-status")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+
+        @Test
+        void 비활성화_요청시_회원을_INACTIVE로_변경하고_NO_CONTENT를_반환한다() throws Exception {
+            // given
+            UserStatusUpdateRequest request = new UserStatusUpdateRequest(false);
+            willDoNothing().given(authService).updateUserStatus(request);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/auth/user-status")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"))
+                    .andExpect(jsonPath("$.message").value("요청 성공 및 반환값 없음"));
+        }
+
+        @Test
+        void 활성화_여부가_null이면_예외가_발생한다() throws Exception {
+            // given
+            UserStatusUpdateRequest request = new UserStatusUpdateRequest(null);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/auth/user-status")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.active").value("활성화 여부는 필수입니다."));
         }
     }
 }
