@@ -22,10 +22,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -41,7 +37,6 @@ public class SecurityConfig {
     private final SpringEnvironmentHelper springEnvironmentHelper;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OidcLoginSuccessHandler oidcLoginSuccessHandler;
-    private final ClientRegistrationRepository clientRegistrationRepository;
 
     @Value("${swagger.username:default}")
     private String swaggerUsername;
@@ -111,11 +106,7 @@ public class SecurityConfig {
                                                 userInfo ->
                                                         userInfo.oidcUserService(
                                                                 customOAuth2UserService))
-                                        .successHandler(oidcLoginSuccessHandler)
-                                        .authorizationEndpoint(
-                                                authorization ->
-                                                        authorization.authorizationRequestResolver(
-                                                                oauth2AuthorizationRequestResolver())))
+                                        .successHandler(oidcLoginSuccessHandler))
                 .addFilterBefore(
                         jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -145,15 +136,5 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenService jwtTokenService) {
         return new JwtAuthenticationFilter(jwtTokenService);
-    }
-
-    @Bean
-    public OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver() {
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-                new DefaultOAuth2AuthorizationRequestResolver(
-                        clientRegistrationRepository, "/oauth2/authorization");
-        resolver.setAuthorizationRequestCustomizer(
-                OAuth2AuthorizationRequestCustomizers.withPkce());
-        return resolver;
     }
 }
