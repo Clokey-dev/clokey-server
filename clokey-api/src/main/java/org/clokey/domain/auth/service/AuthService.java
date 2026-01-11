@@ -17,4 +17,8 @@ public interface AuthService {
     void logoutUser();
 
     void updateUserStatus(UserStatusUpdateRequest request);
+
+    void withdrawMember();
+
+    void withdrawMemberById(Long memberId);
 }

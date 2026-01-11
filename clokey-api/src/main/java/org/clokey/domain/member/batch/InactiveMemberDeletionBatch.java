@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.clokey.domain.auth.service.AuthService;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.MemberStatus;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InactiveMemberDeletionBatch {
 
     private final MemberRepository memberRepository;
+    private final AuthService authService;
 
     @Scheduled(cron = "0 0 0 * * *") // 매일 00:00:00
     @Transactional
@@ -26,7 +28,15 @@ public class InactiveMemberDeletionBatch {
                 memberRepository.findInactiveMembersBefore(MemberStatus.INACTIVE, cutoffDate);
 
         log.info("삭제 대상 INACTIVE 회원 수: {}", inactiveMembers.size());
-        memberRepository.deleteAll(inactiveMembers);
+
+        for (Member member : inactiveMembers) {
+            try {
+                authService.withdrawMemberById(member.getId());
+            } catch (Exception e) {
+                log.error("회원 탈퇴 실패 - memberId: {}", member.getId(), e);
+            }
+        }
+
         log.info("INACTIVE 회원 {}명 삭제 완료", inactiveMembers.size());
     }
 }

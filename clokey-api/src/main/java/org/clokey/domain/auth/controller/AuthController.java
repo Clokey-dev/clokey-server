@@ -76,4 +76,14 @@ public class AuthController {
         authService.updateUserStatus(request);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
     }
+
+    @DeleteMapping
+    @Operation(
+            operationId = "Auth_withdrawMember",
+            summary = "회원 탈퇴",
+            description = "(개발용) 회원과 관련된 모든 데이터를 즉시 삭제합니다.")
+    public BaseResponse<Void> withdrawMember() {
+        authService.withdrawMember();
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+    }
 }
