@@ -15,6 +15,7 @@ import org.clokey.domain.auth.dto.AccessTokenDto;
 import org.clokey.domain.auth.dto.RefreshTokenDto;
 import org.clokey.domain.auth.dto.request.DeviceTokenRenewRequest;
 import org.clokey.domain.auth.dto.request.TokenReissueRequest;
+import org.clokey.domain.auth.dto.request.UserStatusUpdateRequest;
 import org.clokey.domain.auth.dto.response.TokenResponse;
 import org.clokey.domain.auth.dto.response.UserStatusResponse;
 import org.clokey.domain.auth.enums.RegisterStatus;
@@ -28,6 +29,7 @@ import org.clokey.global.util.MemberUtil;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.MemberRole;
+import org.clokey.member.enums.MemberStatus;
 import org.clokey.member.enums.OauthProvider;
 import org.clokey.term.entity.MemberTerm;
 import org.clokey.term.entity.Term;
@@ -208,6 +210,57 @@ class AuthServiceTest extends IntegrationTest {
 
             // then
             assertThat(refreshTokenRepository.findById(1L).isEmpty()).isTrue();
+        }
+    }
+
+    @Nested
+    class 회원_상태를_변경할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testClokeyId",
+                            "testNickName",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+
+            memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
+        }
+
+        @Test
+        @Transactional
+        void 활성화_요청이면_회원을_ACTIVE_상태로_변경하고_inactiveDate를_null로_설정한다() {
+            // given
+            Member member = memberRepository.findById(1L).orElseThrow();
+            member.deactivate();
+            memberRepository.save(member);
+
+            UserStatusUpdateRequest request = new UserStatusUpdateRequest(true);
+
+            // when
+            authService.updateUserStatus(request);
+
+            // then
+            Member updatedMember = memberRepository.findById(1L).orElseThrow();
+            assertThat(updatedMember.getMemberStatus()).isEqualTo(MemberStatus.ACTIVE);
+            assertThat(updatedMember.getInactiveDate()).isNull();
+        }
+
+        @Test
+        @Transactional
+        void 비활성화_요청이면_회원을_INACTIVE_상태로_변경하고_inactiveDate를_현재_날짜로_설정한다() {
+            // given
+            UserStatusUpdateRequest request = new UserStatusUpdateRequest(false);
+
+            // when
+            authService.updateUserStatus(request);
+
+            // then
+            Member updatedMember = memberRepository.findById(1L).orElseThrow();
+            assertThat(updatedMember.getMemberStatus()).isEqualTo(MemberStatus.INACTIVE);
+            assertThat(updatedMember.getInactiveDate()).isNotNull();
         }
     }
 }
