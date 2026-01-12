@@ -3,7 +3,6 @@ package org.clokey.util;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.*;
 import java.util.Date;
 import java.util.List;
@@ -69,9 +68,6 @@ public class S3Util {
                         .withContentType("image/" + imageFileExtension)
                         .withExpiration(getPresignedUrlExpiration());
 
-        generatePresignedUrlRequest.addRequestParameter(
-                Headers.S3_CANNED_ACL, CannedAccessControlList.PublicRead.toString());
-
         generatePresignedUrlRequest.addRequestParameter("x-amz-tagging", "status=pending");
 
         generatePresignedUrlRequest.setContentMd5(md5Hash);
@@ -86,9 +82,6 @@ public class S3Util {
                         .withKey(fileName)
                         .withContentType("image/" + imageFileExtension)
                         .withExpiration(getPresignedUrlExpiration());
-
-        generatePresignedUrlRequest.addRequestParameter(
-                Headers.S3_CANNED_ACL, CannedAccessControlList.PublicRead.toString());
 
         generatePresignedUrlRequest.addRequestParameter("x-amz-tagging", "status=pending");
 
