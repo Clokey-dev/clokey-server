@@ -1,6 +1,7 @@
 package org.clokey.domain.history.controller;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -843,6 +844,23 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
                     .andExpect(jsonPath("$.result.isOwner").value(true));
+        }
+    }
+
+    @Nested
+    class 기록_삭제_요청_시 {
+
+        @Test
+        void 유효한_요청이면_기록을_삭제한다() throws Exception {
+            // given
+            willDoNothing().given(historyService).deleteHistory(1L);
+
+            // when & then
+            ResultActions perform = mockMvc.perform(delete("/histories/1"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"));
         }
     }
 }

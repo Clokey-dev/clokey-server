@@ -10,6 +10,7 @@ import org.clokey.TransactionUtil;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.cloth.enums.Season;
+import org.clokey.comment.entitiy.Comment;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
@@ -35,6 +36,7 @@ import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.*;
+import org.clokey.like.entity.MemberLike;
 import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
@@ -1020,6 +1022,114 @@ class HistoryServiceImplTest extends IntegrationTest {
             assertThatThrownBy(() -> historyService.getDailyHistory(3L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(HistoryErrorCode.BLOCKED_AUTHORITY.getMessage());
+        }
+    }
+
+    @Nested
+    class 기록을_삭제할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testClokeyId1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testClokeyId2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            Situation situation = Situation.createSituation("testSituation");
+            situationRepository.save(situation);
+
+            Style style1 = Style.createStyle("testStyle1");
+            Style style2 = Style.createStyle("testStyle2");
+            styleRepository.saveAll(List.of(style1, style2));
+
+            Hashtag hashtag1 = Hashtag.createHashtag("tag1");
+            Hashtag hashtag2 = Hashtag.createHashtag("tag2");
+            hashtagRepository.saveAll(List.of(hashtag1, hashtag2));
+
+            Category category = Category.createCategory("testCategory", null);
+            categoryRepository.save(category);
+
+            Cloth cloth =
+                    Cloth.createCloth(
+                            "testImageUrl",
+                            null,
+                            "testName",
+                            "testBrand",
+                            Season.SPRING,
+                            category,
+                            member1);
+            clothRepository.save(cloth);
+
+            History history =
+                    History.createHistory(LocalDate.now(), "testContent", member1, situation);
+            historyRepository.save(history);
+
+            HistoryImage image1 = HistoryImage.createHistoryImage("image1", history);
+            HistoryImage image2 = HistoryImage.createHistoryImage("image2", history);
+            historyImageRepository.saveAll(List.of(image1, image2));
+
+            HistoryClothTag tag1 = HistoryClothTag.createHistoryClothTag(image1, cloth, 0.1, 0.2);
+            HistoryClothTag tag2 = HistoryClothTag.createHistoryClothTag(image2, cloth, 0.3, 0.4);
+            historyClothTagRepository.saveAll(List.of(tag1, tag2));
+
+            HistoryStyle historyStyle1 = HistoryStyle.createHistoryStyle(history, style1);
+            HistoryStyle historyStyle2 = HistoryStyle.createHistoryStyle(history, style2);
+            historyStyleRepository.saveAll(List.of(historyStyle1, historyStyle2));
+
+            HistoryHashtag historyHashtag1 = HistoryHashtag.createHistoryHashtag(history, hashtag1);
+            HistoryHashtag historyHashtag2 = HistoryHashtag.createHistoryHashtag(history, hashtag2);
+            historyHashtagRepository.saveAll(List.of(historyHashtag1, historyHashtag2));
+
+            MemberLike memberLike = MemberLike.createMemberLike(member2, history);
+            memberLikeRepository.save(memberLike);
+
+            Comment comment = Comment.createParentComment("testComment", member2, history);
+            Comment reply = Comment.createReply("testReply", member1, history, comment);
+            commentRepository.save(comment);
+            commentRepository.save(reply);
+        }
+
+        @Test
+        void validRequestDeletesHistoryAndRelations() {
+            // when
+            historyService.deleteHistory(1L);
+
+            // then
+            assertThat(historyRepository.findById(1L)).isEmpty();
+            assertThat(historyImageRepository.findByHistoryId(1L)).isEmpty();
+            assertThat(historyStyleRepository.findByHistoryId(1L)).isEmpty();
+            assertThat(historyHashtagRepository.findByHistoryId(1L)).isEmpty();
+            assertThat(memberLikeRepository.findByMemberIdAndHistoryId(2L, 1L)).isEmpty();
+            assertThat(commentRepository.findAll()).isEmpty();
+            assertThat(historyClothTagRepository.findAll()).isEmpty();
+        }
+
+        @Test
+        void historyNotFoundThrowsException() {
+            assertThatThrownBy(() -> historyService.deleteHistory(999L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(HistoryErrorCode.HISTORY_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void notOwnerThrowsException() {
+            Member otherMember =
+                    transactionUtil.getResult(() -> memberRepository.findById(2L).orElseThrow());
+            given(memberUtil.getCurrentMember()).willReturn(otherMember);
+
+            assertThatThrownBy(() -> historyService.deleteHistory(1L))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(HistoryErrorCode.LIMITED_AUTHORITY.getMessage());
         }
     }
 }

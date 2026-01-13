@@ -22,6 +22,7 @@ import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.exception.SituationErrorCode;
 import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.*;
+import org.clokey.domain.image.event.ImagesDeleteEvent;
 import org.clokey.domain.like.repository.MemberLikeRepository;
 import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.MemberRepository;
@@ -31,6 +32,8 @@ import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.*;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.Visibility;
+import org.clokey.report.enums.TargetType;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +58,7 @@ public class HistoryServiceImpl implements HistoryService {
     private final BlockRepository blockRepository;
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -309,6 +313,36 @@ public class HistoryServiceImpl implements HistoryService {
         boolean isOwner = history.getMember().getId().equals(currentMember.getId());
 
         return HistoryOwnershipCheckResponse.of(isOwner);
+    }
+
+    @Override
+    @Transactional
+    public void deleteHistory(Long historyId) {
+        final Member currentMember = memberUtil.getCurrentMember();
+        final History history = getHistoryById(historyId);
+
+        validateHistoryOwner(history, currentMember.getId());
+
+        List<HistoryImage> images = historyImageRepository.findByHistoryId(historyId);
+        List<Long> imageIds = images.stream().map(HistoryImage::getId).toList();
+
+        if (!imageIds.isEmpty()) {
+            deleteClothTagsByHistoryImageIds(imageIds);
+            historyImageRepository.deleteAllInBatch(images);
+        }
+
+        clearStylesAndHashtags(historyId);
+        memberLikeRepository.deleteAllByHistoryId(historyId);
+        commentRepository.deleteAllByHistoryId(historyId);
+        reportRepository.deleteAllByTargetTypeAndTargetId(TargetType.HISTORY, historyId);
+
+        historyRepository.delete(history);
+
+        List<String> imageUrls =
+                images.stream().map(HistoryImage::getImageUrl).filter(Objects::nonNull).toList();
+        if (!imageUrls.isEmpty()) {
+            eventPublisher.publishEvent(ImagesDeleteEvent.of(imageUrls));
+        }
     }
 
     private HistoryImage getHistoryImageById(Long historyImageId) {

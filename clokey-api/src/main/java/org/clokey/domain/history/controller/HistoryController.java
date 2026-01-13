@@ -112,4 +112,14 @@ public class HistoryController {
         HistoryOwnershipCheckResponse response = historyService.checkHistoryOwnership(historyId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
+
+    @DeleteMapping("/{historyId}")
+    @Operation(
+            operationId = "History_deleteHistory",
+            summary = "delete history",
+            description = "delete a history by id")
+    public BaseResponse<Void> deleteHistory(@PathVariable Long historyId) {
+        historyService.deleteHistory(historyId);
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
+    }
 }

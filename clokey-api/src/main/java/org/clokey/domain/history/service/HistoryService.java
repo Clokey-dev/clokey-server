@@ -20,4 +20,6 @@ public interface HistoryService {
     MonthlyHistoryResponse getMonthlyHistory(Long memberId, int year, int month);
 
     HistoryOwnershipCheckResponse checkHistoryOwnership(Long historyId);
+
+    void deleteHistory(Long historyId);
 }
