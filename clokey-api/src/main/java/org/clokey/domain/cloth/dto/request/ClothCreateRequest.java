@@ -12,8 +12,8 @@ public record ClothCreateRequest(
         @Schema(description = "옷의 구매처 url (선택)", example = "https://example.com") String clothUrl,
         @Schema(description = "옷의 이름 (선택)", example = "https://example.com") String name,
         @Schema(description = "옷의 브랜드 (선택)", example = "나이키") String brand,
-        @NotNull(message = "옷의 계절은 비워둘 수 없습니다.") @Schema(description = "옷의 계절", example = "SPRING")
-                Season season,
+        @NotEmpty(message = "옷의 계절은 비워둘 수 없습니다.") @Schema(description = "옷의 계절", example = "[\"SPRING\", \"SUMMER\"]")
+                List<Season> seasons,
         @NotNull(message = "옷의 카테고리 ID는 비워둘 수 없습니다.")
                 @Schema(description = "옷의 카테고리 ID", example = "1")
                 Long categoryId) {}

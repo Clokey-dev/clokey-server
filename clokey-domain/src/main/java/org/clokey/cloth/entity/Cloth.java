@@ -29,9 +29,11 @@ public class Cloth extends BaseEntity {
 
     private String brand;
 
+    @ElementCollection(targetClass = Season.class)
+    @CollectionTable(name = "cloth_season", joinColumns = @JoinColumn(name = "cloth_id"))
     @Enumerated(EnumType.STRING)
-    @NotNull
-    private Season season;
+    @Column(name = "season_name")
+    private Set<Season> seasons = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -52,14 +54,14 @@ public class Cloth extends BaseEntity {
             String clothUrl,
             String name,
             String brand,
-            Season season,
+            Set<Season> seasons,
             Category category,
             Member member) {
         this.clothImageUrl = clothImageUrl;
         this.clothUrl = clothUrl;
         this.name = name;
         this.brand = brand;
-        this.season = season;
+        this.seasons = seasons;
         this.category = category;
         this.member = member;
     }
@@ -69,7 +71,7 @@ public class Cloth extends BaseEntity {
             String clothUrl,
             String name,
             String brand,
-            Season season,
+            List<Season> seasons,
             Category category,
             Member member) {
         return Cloth.builder()
@@ -77,7 +79,7 @@ public class Cloth extends BaseEntity {
                 .clothUrl(clothUrl)
                 .name(name)
                 .brand(brand)
-                .season(season)
+                .seasons(new HashSet<>(seasons))
                 .category(category)
                 .member(member)
                 .build();
@@ -88,13 +90,13 @@ public class Cloth extends BaseEntity {
             String clothUrl,
             String name,
             String brand,
-            Season season,
+            List<Season> seasons,
             Category category) {
         this.clothImageUrl = clothImageUrl;
         this.clothUrl = clothUrl;
         this.name = name;
         this.brand = brand;
-        this.season = season;
+        this.seasons = new HashSet<>(seasons);
         this.category = category;
     }
 }

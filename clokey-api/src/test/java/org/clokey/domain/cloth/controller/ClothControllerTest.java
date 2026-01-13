@@ -91,14 +91,14 @@ class ClothControllerTest {
                                             null,
                                             null,
                                             null,
-                                            Season.SPRING,
+                                            List.of(Season.SPRING),
                                             1L),
                                     new ClothCreateRequest(
                                             "testClothImageUrl2",
                                             null,
                                             null,
                                             null,
-                                            Season.SPRING,
+                                            List.of(Season.SPRING, Season.FALL),
                                             1L)));
 
             ClothCreateResponse response = new ClothCreateResponse(List.of(1L, 2L));
