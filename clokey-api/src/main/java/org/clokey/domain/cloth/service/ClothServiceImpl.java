@@ -166,7 +166,7 @@ public class ClothServiceImpl implements ClothService {
                 request.clothUrl(),
                 request.name(),
                 request.brand(),
-                request.season(),
+                request.seasons(),
                 category);
     }
 

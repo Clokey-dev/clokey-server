@@ -38,11 +38,14 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
         // - 계절은 요청한 계절에 가까운 순서대로 페이징을 진행합니다.
         NumberExpression<Integer> seasonPriority =
                 new CaseBuilder()
-                        .when(cloth.season.eq(season))
+                        .when(cloth.seasons.contains(season))
                         .then(1)
-                        .when(cloth.season.in(nextSeason, previousSeason))
+                        .when(
+                                cloth.seasons
+                                        .contains(nextSeason)
+                                        .or(cloth.seasons.contains(previousSeason)))
                         .then(2)
-                        .when(cloth.season.eq(oppositeSeason))
+                        .when(cloth.seasons.contains(oppositeSeason))
                         .then(3)
                         .otherwise(4);
 
@@ -57,7 +60,9 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
                         .where(
                                 cloth.category.id.eq(categoryId),
                                 cloth.member.id.eq(memberId),
-                                cloth.season.in(season, nextSeason, previousSeason, oppositeSeason),
+                                cloth.seasons
+                                        .any()
+                                        .in(season, nextSeason, previousSeason, oppositeSeason),
                                 lastClothIdCondition(
                                         lastClothId,
                                         season,
@@ -114,7 +119,7 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
         if (seasons == null || seasons.isEmpty()) {
             return null;
         }
-        return cloth.season.in(seasons);
+        return cloth.seasons.any().in(seasons);
     }
 
     private BooleanExpression lastClothIdCursor(Long lastClothId, SortDirection direction) {
@@ -145,7 +150,7 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
 
         int lastPriority =
                 calculateSeasonPriority(
-                        lastCloth.getSeason(), season, nextSeason, previousSeason, oppositeSeason);
+                        lastCloth.getSeasons(), season, nextSeason, previousSeason, oppositeSeason);
 
         // 복합 조건: (우선순위 > 마지막 우선순위) OR (우선순위 = 마지막 우선순위 AND ID > 마지막 ID)
         return seasonPriority
@@ -154,16 +159,17 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
     }
 
     private int calculateSeasonPriority(
-            Season clothSeason,
-            Season season,
-            Season nextSeason,
-            Season previousSeason,
-            Season oppositeSeason) {
-        if (clothSeason == season) {
+            java.util.Set<org.clokey.cloth.enums.Season> clothSeasons, // 타입을 Set으로 변경
+            org.clokey.cloth.enums.Season season,
+            org.clokey.cloth.enums.Season nextSeason,
+            org.clokey.cloth.enums.Season previousSeason,
+            org.clokey.cloth.enums.Season oppositeSeason) {
+
+        if (clothSeasons.contains(season)) {
             return 1;
-        } else if (clothSeason == nextSeason || clothSeason == previousSeason) {
+        } else if (clothSeasons.contains(nextSeason) || clothSeasons.contains(previousSeason)) {
             return 2;
-        } else if (clothSeason == oppositeSeason) {
+        } else if (clothSeasons.contains(oppositeSeason)) {
             return 3;
         }
         return 4;
