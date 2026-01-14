@@ -131,6 +131,7 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class 옷을_생성할_때 {
 
         @BeforeEach
@@ -253,6 +254,7 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class 카테고리별_계절_옷을_추천할_때 {
 
         @BeforeEach
@@ -329,7 +331,6 @@ class ClothServiceTest extends IntegrationTest {
         }
 
         @Test
-        @Transactional
         void 유효한_요창이면_가까운_계절순으로_옷을_반환한다() {
             // when
             SliceResponse<ClothRecommendListResponse> response =
@@ -342,7 +343,6 @@ class ClothServiceTest extends IntegrationTest {
         }
 
         @Test
-        @Transactional
         void lastClothId를_입력하면_다음_Cloth_부터_조회한다() {
             // when
             SliceResponse<ClothRecommendListResponse> response =
@@ -394,6 +394,7 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
+    @Transactional
     class 옷_목록을_조회할_때 {
 
         @BeforeEach
@@ -538,19 +539,6 @@ class ClothServiceTest extends IntegrationTest {
             SliceResponse<ClothListResponse> response =
                     clothService.getClothes(null, 10, SortDirection.ASC, null, seasons);
 
-            // 로그 출력: 실제 어떤 ID들이 반환되는지 확인
-            System.out.println("======= [테스트 로그 시작] =======");
-            System.out.println("테스트 입력 (seasons): " + seasons);
-            System.out.println("기대하는 IDs (expected): " + expected);
-
-            // response.content() 리스트 안에 있는 객체들을 하나씩 출력
-            response.content()
-                    .forEach(
-                            item -> {
-                                System.out.println("조회된 데이터: " + item);
-                            });
-            System.out.println("======= [테스트 로그 끝] =======");
-
             // then
             assertThat(response.content())
                     .extracting("clothId")
@@ -559,8 +547,8 @@ class ClothServiceTest extends IntegrationTest {
 
         private static Stream<Arguments> seasonFilterCases() {
             return Stream.of(
-                    Arguments.of(List.of(Season.SUMMER), List.of(3L, 5L)),
                     Arguments.of(List.of(Season.SPRING), List.of(1L, 2L, 4L)),
+                    Arguments.of(List.of(Season.SUMMER), List.of(3L, 5L)),
                     Arguments.of(List.of(Season.FALL), List.of(6L)),
                     Arguments.of(
                             List.of(Season.SPRING, Season.SUMMER), List.of(1L, 2L, 3L, 4L, 5L)));
