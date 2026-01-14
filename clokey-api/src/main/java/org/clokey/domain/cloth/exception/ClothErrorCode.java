@@ -13,7 +13,9 @@ public enum ClothErrorCode implements BaseErrorCode {
 
     NOT_CLOTH_OWNER(403, "CLOTH_4031", "나의 옷이 아닙니다. 권한이 없습니다."),
 
-    ClOTH_NOT_FOUND(404, "CLOTH_4041", "존재하지 않는 옷 입니다.");
+    ClOTH_NOT_FOUND(404, "CLOTH_4041", "존재하지 않는 옷 입니다."),
+
+    AI_SERVER_ERROR(500, "CLOTH_5001", "AI 서버 응답을 받을 수 없습니다.");
 
     private final int status;
     private final String code;

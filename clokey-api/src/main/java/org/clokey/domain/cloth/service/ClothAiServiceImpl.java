@@ -2,6 +2,7 @@ package org.clokey.domain.cloth.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.clokey.cloth.enums.Season;
 import org.clokey.domain.cloth.dto.request.ClothDetectAiRequestDTO;
 import org.clokey.domain.cloth.dto.request.ClothDetectRequest;
 import org.clokey.domain.cloth.dto.request.ClothImagesUploadRequest;
@@ -18,6 +19,8 @@ import org.clokey.domain.cloth.dto.response.HistoryStyleInferenceAiResponseDTO;
 import org.clokey.domain.cloth.dto.response.HistoryStyleInferenceResponse;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.history.exception.HistoryErrorCode;
+import org.clokey.domain.history.exception.SituationErrorCode;
+import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.enums.FileExtension;
 import org.clokey.enums.ImageType;
 import org.clokey.exception.BaseCustomException;
@@ -79,18 +82,54 @@ public class ClothAiServiceImpl implements ClothAiService {
                                 ClothInfoExtractAiResponseDTO.class)
                         .block();
 
+        if (aiResponse.result() == null || aiResponse.result().isEmpty()) {
+            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        }
+
+        if (aiResponse.result().size() != clothImageUrls.size()) {
+            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        }
+
+        List<ClothInfoExtractAiResponseDTO.ResultItem> resultItems = aiResponse.result();
         List<ClothInfoExtractResponse.Payload> payloads =
-                aiResponse.payloads().stream()
-                        .map(
-                                payload ->
-                                        new ClothInfoExtractResponse.Payload(
-                                                payload.clothImageUrl(),
-                                                payload.season(),
-                                                payload.categoryId(),
-                                                payload.categoryName()))
-                        .toList();
+                new java.util.ArrayList<>(resultItems.size());
+
+        for (int i = 0; i < resultItems.size(); i++) {
+            ClothInfoExtractAiResponseDTO.ResultItem resultItem = resultItems.get(i);
+            String clothImageUrl = clothImageUrls.get(i);
+
+            List<ClothInfoExtractAiResponseDTO.CategoryItem> categories = resultItem.categories();
+            if (categories == null || categories.isEmpty()) {
+                throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
+            }
+            ClothInfoExtractAiResponseDTO.CategoryItem categoryItem = categories.get(0);
+
+            List<ClothInfoExtractAiResponseDTO.SeasonItem> seasonItems = resultItem.seasons();
+            if (seasonItems == null || seasonItems.isEmpty()) {
+                throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
+            }
+
+            List<Season> seasons = new java.util.ArrayList<>(seasonItems.size());
+            for (ClothInfoExtractAiResponseDTO.SeasonItem seasonItem : seasonItems) {
+                seasons.add(convertSeasonNameToEnum(seasonItem.name()));
+            }
+
+            payloads.add(
+                    new ClothInfoExtractResponse.Payload(
+                            clothImageUrl, seasons, categoryItem.id(), categoryItem.name()));
+        }
 
         return ClothInfoExtractResponse.of(payloads);
+    }
+
+    private Season convertSeasonNameToEnum(String seasonName) {
+        return switch (seasonName) {
+            case "봄" -> Season.SPRING;
+            case "여름" -> Season.SUMMER;
+            case "가을" -> Season.FALL;
+            case "겨울" -> Season.WINTER;
+            default -> throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
+        };
     }
 
     @Override
@@ -107,16 +146,30 @@ public class ClothAiServiceImpl implements ClothAiService {
                                 HistoryStyleInferenceAiResponseDTO.class)
                         .block();
 
+        if (aiResponse.result() == null) {
+            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        }
+
+        HistoryStyleInferenceAiResponseDTO.Result result = aiResponse.result();
+
+        if (result.situations() == null || result.situations().isEmpty()) {
+            throw new BaseCustomException(SituationErrorCode.SITUATION_NOT_FOUND);
+        }
+        HistoryStyleInferenceAiResponseDTO.SituationItem situationItem = result.situations().get(0);
+
+        if (result.styles() == null || result.styles().isEmpty()) {
+            throw new BaseCustomException(StyleErrorCode.STYLE_NOT_FOUND);
+        }
+
         List<HistoryStyleInferenceResponse.StylePayload> styles =
-                aiResponse.styles().stream()
+                result.styles().stream()
                         .map(
                                 style ->
                                         new HistoryStyleInferenceResponse.StylePayload(
-                                                style.styleId(), style.styleName()))
+                                                style.id(), style.name()))
                         .toList();
 
-        return HistoryStyleInferenceResponse.of(
-                aiResponse.situationId(), aiResponse.situationName(), styles);
+        return HistoryStyleInferenceResponse.of(situationItem.id(), situationItem.name(), styles);
     }
 
     @Override

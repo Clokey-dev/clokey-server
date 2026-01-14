@@ -1,10 +1,15 @@
 package org.clokey.domain.cloth.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import org.clokey.cloth.enums.Season;
 
-public record ClothInfoExtractAiResponseDTO(List<Payload> payloads) {
+public record ClothInfoExtractAiResponseDTO(@JsonProperty("result") List<ResultItem> result) {
 
-    public record Payload(
-            String clothImageUrl, Season season, Long categoryId, String categoryName) {}
+    public record ResultItem(
+            @JsonProperty("categories") List<CategoryItem> categories,
+            @JsonProperty("seasons") List<SeasonItem> seasons) {}
+
+    public record CategoryItem(@JsonProperty("id") Long id, @JsonProperty("name") String name) {}
+
+    public record SeasonItem(@JsonProperty("id") Long id, @JsonProperty("name") String name) {}
 }
