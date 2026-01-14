@@ -533,11 +533,23 @@ class ClothServiceTest extends IntegrationTest {
 
         @ParameterizedTest(name = "계절_필터_테스트 – seasons={0}")
         @MethodSource("seasonFilterCases")
-        @Transactional
         void 계절을_넣는_경우_해당_계절의_옷을_모두_조회한다(List<Season> seasons, List<Long> expected) {
             // when
             SliceResponse<ClothListResponse> response =
                     clothService.getClothes(null, 10, SortDirection.ASC, null, seasons);
+
+            // 로그 출력: 실제 어떤 ID들이 반환되는지 확인
+            System.out.println("======= [테스트 로그 시작] =======");
+            System.out.println("테스트 입력 (seasons): " + seasons);
+            System.out.println("기대하는 IDs (expected): " + expected);
+
+            // response.content() 리스트 안에 있는 객체들을 하나씩 출력
+            response.content()
+                    .forEach(
+                            item -> {
+                                System.out.println("조회된 데이터: " + item);
+                            });
+            System.out.println("======= [테스트 로그 끝] =======");
 
             // then
             assertThat(response.content())
@@ -547,8 +559,8 @@ class ClothServiceTest extends IntegrationTest {
 
         private static Stream<Arguments> seasonFilterCases() {
             return Stream.of(
-                    Arguments.of(List.of(Season.SPRING), List.of(1L, 2L, 4L)),
                     Arguments.of(List.of(Season.SUMMER), List.of(3L, 5L)),
+                    Arguments.of(List.of(Season.SPRING), List.of(1L, 2L, 4L)),
                     Arguments.of(List.of(Season.FALL), List.of(6L)),
                     Arguments.of(
                             List.of(Season.SPRING, Season.SUMMER), List.of(1L, 2L, 3L, 4L, 5L)));
@@ -720,23 +732,15 @@ class ClothServiceTest extends IntegrationTest {
             // when
             clothService.updateCloth(1L, request);
 
-            assertThat(clothRepository.findById(1L).orElseThrow())
-                    .extracting(
-                            "clothImageUrl",
-                            "clothUrl",
-                            "name",
-                            "brand",
-                            "seasons",
-                            "category.id",
-                            "member.id")
-                    .containsExactly(
-                            "newClothImageUrl",
-                            "newClothUrl",
-                            "newName",
-                            "newBrand",
-                            List.of(Season.SUMMER),
-                            2L,
-                            1L);
+            Cloth updatedCloth = clothRepository.findById(1L).orElseThrow();
+            Assertions.assertAll(
+                    () -> assertThat(updatedCloth.getClothImageUrl()).isEqualTo("newClothImageUrl"),
+                    () -> assertThat(updatedCloth.getClothUrl()).isEqualTo("newClothUrl"),
+                    () -> assertThat(updatedCloth.getName()).isEqualTo("newName"),
+                    () -> assertThat(updatedCloth.getBrand()).isEqualTo("newBrand"),
+                    () -> assertThat(updatedCloth.getCategory().getId()).isEqualTo(2L),
+                    () -> assertThat(updatedCloth.getMember().getId()).isEqualTo(1L),
+                    () -> assertThat(updatedCloth.getSeasons()).containsExactly(Season.SUMMER));
         }
 
         @Test

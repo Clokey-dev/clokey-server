@@ -61,8 +61,10 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
                                 cloth.category.id.eq(categoryId),
                                 cloth.member.id.eq(memberId),
                                 cloth.seasons
-                                        .any()
-                                        .in(season, nextSeason, previousSeason, oppositeSeason),
+                                        .contains(season)
+                                        .or(cloth.seasons.contains(nextSeason))
+                                        .or(cloth.seasons.contains(previousSeason))
+                                        .or(cloth.seasons.contains(oppositeSeason)),
                                 lastClothIdCondition(
                                         lastClothId,
                                         season,
