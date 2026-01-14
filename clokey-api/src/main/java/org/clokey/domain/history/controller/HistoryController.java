@@ -130,8 +130,8 @@ public class HistoryController {
     @DeleteMapping("/{historyId}")
     @Operation(
             operationId = "History_deleteHistory",
-            summary = "delete history",
-            description = "delete a history by id")
+            summary = "기록 삭제",
+            description = "기록 ID를 통해 기록을 삭제합니다.")
     public BaseResponse<Void> deleteHistory(@PathVariable Long historyId) {
         historyService.deleteHistory(historyId);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.NO_CONTENT, null);
