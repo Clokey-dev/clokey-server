@@ -132,7 +132,7 @@ CREATE TABLE cloth_season (
                         season_name VARCHAR(255) NOT NULL,
                         UNIQUE (cloth_id, season_name),
                         CONSTRAINT ck_season_name CHECK (season_name IN ('SPRING', 'SUMMER', 'FALL', 'WINTER')),
-                        CONSTRAINT fk_cloth_season_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id),
+                        CONSTRAINT fk_cloth_season_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
 );
 
 
