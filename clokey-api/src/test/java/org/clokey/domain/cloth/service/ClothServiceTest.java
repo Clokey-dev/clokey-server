@@ -152,7 +152,6 @@ class ClothServiceTest extends IntegrationTest {
         }
 
         @Test
-        @Transactional
         void 유효한_요청이면_옷을_생성한다() {
             // given
             ClothCreateRequests request =
@@ -394,11 +393,12 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
-    @Transactional
     class 옷_목록을_조회할_때 {
 
         @BeforeEach
         void setUp() {
+            clothRepository.deleteAllInBatch();
+
             Member member =
                     Member.createMember(
                             "testEmail1",
