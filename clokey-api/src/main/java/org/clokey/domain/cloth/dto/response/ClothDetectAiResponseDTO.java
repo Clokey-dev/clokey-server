@@ -1,10 +1,16 @@
 package org.clokey.domain.cloth.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import org.clokey.cloth.enums.Season;
 
-public record ClothDetectAiResponseDTO(List<Payload> payloads) {
+public record ClothDetectAiResponseDTO(
+        @JsonProperty("isSuccess") Boolean isSuccess,
+        String message,
+        Result result,
+        @JsonProperty("error_code") String errorCode) {
 
-    public record Payload(
-            String clothImageUrl, Season season, Long categoryId, String categoryName) {}
+    public record Result(
+            @JsonProperty("detected_cnt") Integer detectedCnt,
+            @JsonProperty("uploaded_cnt") Integer uploadedCnt,
+            @JsonProperty("uploaded_urls") List<String> uploadedUrls) {}
 }

@@ -1,6 +1,8 @@
 package org.clokey.domain.cloth.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public record ClothInfoExtractAiRequestDTO(
-        List<String> clothImageUrls, List<String> presignedUrls) {}
+        @JsonProperty("download_urls") List<String> clothImageUrls,
+        @JsonProperty("upload_urls") List<String> presignedUrls) {}

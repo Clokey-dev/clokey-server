@@ -189,15 +189,19 @@ public class ClothAiServiceImpl implements ClothAiService {
                                 ClothDetectAiResponseDTO.class)
                         .block();
 
+        if (aiResponse == null || !Boolean.TRUE.equals(aiResponse.isSuccess())) {
+            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        }
+
+        if (aiResponse.result() == null || aiResponse.result().uploadedUrls() == null) {
+            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        }
+
         List<ClothDetectResponse.Payload> payloads =
-                aiResponse.payloads().stream()
+                aiResponse.result().uploadedUrls().stream()
                         .map(
-                                payload ->
-                                        new ClothDetectResponse.Payload(
-                                                payload.clothImageUrl(),
-                                                payload.season(),
-                                                payload.categoryId(),
-                                                payload.categoryName()))
+                                uploadedUrl ->
+                                        new ClothDetectResponse.Payload(stripQuery(uploadedUrl)))
                         .toList();
 
         return ClothDetectResponse.of(payloads);
@@ -213,6 +217,14 @@ public class ClothAiServiceImpl implements ClothAiService {
         if (!s3Util.doesFileExistByUrl(imageUrl)) {
             throw new BaseCustomException(HistoryErrorCode.HISTORY_IMAGE_NOT_FOUND);
         }
+    }
+
+    private String stripQuery(String url) {
+        if (url == null) {
+            return null;
+        }
+        int idx = url.indexOf('?');
+        return idx >= 0 ? url.substring(0, idx) : url;
     }
 
     // TODO : 현재 AI 서버와 비동기 처리와 더불어 양방향 통신을 고려하지 않고 있습니다. 따라서, MD5 해시를 통한 무결성 검증이 불가능하며, JPEG로 고정할
