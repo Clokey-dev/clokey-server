@@ -28,7 +28,6 @@ import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
-import org.clokey.domain.folder.repository.ClothFolderRepository;
 import org.clokey.domain.folder.repository.FolderRepository;
 import org.clokey.domain.history.repository.HistoryClothTagRepository;
 import org.clokey.domain.history.repository.HistoryImageRepository;
@@ -80,7 +79,6 @@ class ClothServiceTest extends IntegrationTest {
     @Autowired private HistoryRepository historyRepository;
     @Autowired private HistoryClothTagRepository historyClothTagRepository;
     @Autowired private HistoryImageRepository historyImageRepository;
-    @Autowired private ClothFolderRepository clothFolderRepository;
     @Autowired private SituationRepository situationRepository;
 
     @MockitoBean private MemberUtil memberUtil;

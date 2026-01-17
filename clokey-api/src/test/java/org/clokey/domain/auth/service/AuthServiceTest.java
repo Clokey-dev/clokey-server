@@ -33,7 +33,6 @@ import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.comment.repository.CommentRepository;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
-import org.clokey.domain.folder.repository.ClothFolderRepository;
 import org.clokey.domain.folder.repository.FolderRepository;
 import org.clokey.domain.history.repository.HashtagRepository;
 import org.clokey.domain.history.repository.HistoryClothTagRepository;
@@ -115,8 +114,6 @@ class AuthServiceTest extends IntegrationTest {
     @Autowired private CoordinateClothRepository coordinateClothRepository;
     @Autowired private LookBookRepository lookBookRepository;
     @Autowired private ClothRepository clothRepository;
-    @Autowired private ClothFolderRepository clothFolderRepository;
-    @Autowired private FolderRepository folderRepository;
     @Autowired private CodiveNotificationRepository codiveNotificationRepository;
     @Autowired private FollowRepository followRepository;
     @Autowired private PendingFollowRepository pendingFollowRepository;
