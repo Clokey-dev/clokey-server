@@ -16,6 +16,8 @@ public record ClothInfoExtractResponse(@Schema(description = "옷 정보 목록"
             @Schema(description = "새로운 옷 사진 URL", example = "https://example.com/cloth.jpg")
                     String clothImageUrl,
             @Schema(description = "계절 목록", example = "SPRING") List<Season> seasons,
-            @Schema(description = "카테고리 ID", example = "1") Long categoryId,
-            @Schema(description = "카테고리 이름", example = "상의") String categoryName) {}
+            @Schema(description = "상위 카테고리 ID", example = "1") Long parentCategoryId,
+            @Schema(description = "상위 카테고리 이름", example = "상의") String parentCategoryName,
+            @Schema(description = "카테고리 ID", example = "11") Long categoryId,
+            @Schema(description = "카테고리 이름", example = "후드티") String categoryName) {}
 }

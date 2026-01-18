@@ -2,7 +2,10 @@ package org.clokey.domain.cloth.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.clokey.category.entity.Category;
 import org.clokey.cloth.enums.Season;
+import org.clokey.domain.category.exception.CategoryErrorCode;
+import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothDetectAiRequestDTO;
 import org.clokey.domain.cloth.dto.request.ClothDetectRequest;
 import org.clokey.domain.cloth.dto.request.ClothImagesUploadRequest;
@@ -39,6 +42,7 @@ import org.springframework.stereotype.Service;
 public class ClothAiServiceImpl implements ClothAiService {
 
     private final MemberUtil memberUtil;
+    private final CategoryRepository categoryRepository;
     private final S3Util s3Util;
     private final WebClientUtil webClientUtil;
     private final WebClientProperties webClientProperties;
@@ -103,6 +107,8 @@ public class ClothAiServiceImpl implements ClothAiService {
                 throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
             }
             ClothInfoExtractAiResponseDTO.CategoryItem categoryItem = categories.get(0);
+            Category category = getCategoryById(categoryItem.id());
+            Category parentCategory = category.getParent();
 
             List<ClothInfoExtractAiResponseDTO.SeasonItem> seasonItems = resultItem.seasons();
             if (seasonItems == null || seasonItems.isEmpty()) {
@@ -116,7 +122,12 @@ public class ClothAiServiceImpl implements ClothAiService {
 
             payloads.add(
                     new ClothInfoExtractResponse.Payload(
-                            clothImageUrl, seasons, categoryItem.id(), categoryItem.name()));
+                            clothImageUrl,
+                            seasons,
+                            parentCategory.getId(),
+                            parentCategory.getName(),
+                            category.getId(),
+                            category.getName()));
         }
 
         return ClothInfoExtractResponse.of(payloads);
@@ -217,6 +228,12 @@ public class ClothAiServiceImpl implements ClothAiService {
         if (!s3Util.doesFileExistByUrl(imageUrl)) {
             throw new BaseCustomException(HistoryErrorCode.HISTORY_IMAGE_NOT_FOUND);
         }
+    }
+
+    private Category getCategoryById(Long categoryId) {
+        return categoryRepository
+                .findByIdWithParent(categoryId)
+                .orElseThrow(() -> new BaseCustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
     }
 
     private String stripQuery(String url) {
