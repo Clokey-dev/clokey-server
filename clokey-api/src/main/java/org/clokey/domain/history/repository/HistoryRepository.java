@@ -25,7 +25,7 @@ public interface HistoryRepository extends JpaRepository<History, Long> {
 
     @Query(
             """
-        select new org.clokey.domain.history.repository.HistoryRepository.HistorySituationInfo(
+        select new org.clokey.domain.history.repository.HistoryRepository$HistorySituationInfo(
             h.id, s.id, s.name
         )
         from History h

@@ -33,8 +33,7 @@ public class FeedController {
         List<Long> parsedSituationIds = FeedRequestParser.parseIds(situationIds, 5);
 
         FeedListResponse response =
-                feedService.getFeeds(
-                        followScope, parsedStyleIds, parsedSituationIds, size, cursor);
+                feedService.getFeeds(followScope, parsedStyleIds, parsedSituationIds, size, cursor);
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 }

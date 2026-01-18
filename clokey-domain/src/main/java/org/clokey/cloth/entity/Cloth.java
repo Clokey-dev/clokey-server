@@ -2,13 +2,10 @@ package org.clokey.cloth.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.*;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.enums.Season;
 import org.clokey.common.model.BaseEntity;
-import org.clokey.folder.entity.ClothFolder;
 import org.clokey.member.entity.Member;
 
 @Entity
@@ -42,9 +39,6 @@ public class Cloth extends BaseEntity {
     @JoinColumn(name = "member_id")
     @NotNull
     private Member member;
-
-    @OneToMany(mappedBy = "cloth")
-    private List<ClothFolder> clothFolders = new ArrayList<>();
 
     @Builder(access = AccessLevel.PRIVATE)
     public Cloth(

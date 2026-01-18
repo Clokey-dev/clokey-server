@@ -11,7 +11,7 @@ public interface HistoryStyleRepository
 
     @Query(
             """
-        select new org.clokey.domain.history.repository.HistoryStyleRepository.HistoryStyleInfo(
+        select new org.clokey.domain.history.repository.HistoryStyleRepository$HistoryStyleInfo(
             hs.history.id, hs.style.id, hs.style.name
         )
         from HistoryStyle hs

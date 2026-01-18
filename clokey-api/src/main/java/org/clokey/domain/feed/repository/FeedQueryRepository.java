@@ -49,6 +49,18 @@ public class FeedQueryRepository {
                 .fetch();
     }
 
+    public List<History> findFeedsByIds(List<Long> historyIds) {
+        if (historyIds == null || historyIds.isEmpty()) {
+            return List.of();
+        }
+        return queryFactory
+                .selectFrom(history)
+                .join(history.member, member)
+                .fetchJoin()
+                .where(history.banned.isFalse(), history.id.in(historyIds))
+                .fetch();
+    }
+
     private BooleanExpression followScopeCondition(Long currentMemberId, FollowScope followScope) {
         if (followScope == null || followScope == FollowScope.ALL) {
             return null;

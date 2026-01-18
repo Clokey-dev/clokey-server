@@ -7,8 +7,7 @@ import java.util.List;
 @Schema(name = "FeedListResponse", description = "피드 목록 응답")
 public record FeedListResponse(
         @Schema(description = "피드 목록") List<FeedItemResponse> items,
-        @Schema(description = "다음 페이지 커서", example = "Y3JlYXRlZEF0fDEwMA==")
-                String nextCursor,
+        @Schema(description = "다음 페이지 커서", example = "Y3JlYXRlZEF0fDEwMA==") String nextCursor,
         @Schema(description = "다음 페이지 존재 여부", example = "true") boolean hasNext) {
     public static FeedListResponse of(
             List<FeedItemResponse> items, String nextCursor, boolean hasNext) {
@@ -18,8 +17,7 @@ public record FeedListResponse(
     @Schema(name = "FeedItemResponse", description = "피드 단일 항목")
     public record FeedItemResponse(
             @Schema(description = "피드 ID", example = "100") Long feedId,
-            @Schema(description = "작성 시각", example = "2025-01-01T12:00:00")
-                    LocalDateTime createdAt,
+            @Schema(description = "작성 시각", example = "2025-01-01T12:00:00") LocalDateTime createdAt,
             @Schema(description = "대표 이미지 URL", example = "https://example.com/image.jpg")
                     String imageUrl,
             @Schema(description = "좋아요 여부", example = "true") boolean isLiked,
