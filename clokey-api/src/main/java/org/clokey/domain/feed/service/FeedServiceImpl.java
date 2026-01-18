@@ -17,10 +17,17 @@ import org.clokey.domain.feed.repository.FeedQueryRepository;
 import org.clokey.domain.feed.util.FeedCursorUtil;
 import org.clokey.domain.feed.util.FeedRequestParser;
 import org.clokey.domain.history.repository.HistoryImageRepository;
+import org.clokey.domain.history.repository.SituationRepository;
+import org.clokey.domain.history.repository.StyleRepository;
+import org.clokey.domain.history.exception.SituationErrorCode;
+import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.like.repository.MemberLikeRepository;
 import org.clokey.domain.member.repository.FollowRepository;
+import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.History;
+import org.clokey.history.entity.Situation;
+import org.clokey.history.entity.Style;
 import org.clokey.member.entity.Member;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +44,8 @@ public class FeedServiceImpl implements FeedService {
     private final HistoryImageRepository historyImageRepository;
     private final MemberLikeRepository memberLikeRepository;
     private final FollowRepository followRepository;
+    private final StyleRepository styleRepository;
+    private final SituationRepository situationRepository;
 
     @Override
     public FeedListResponse getFeeds(
@@ -49,6 +58,9 @@ public class FeedServiceImpl implements FeedService {
         final int pageSize = FeedRequestParser.parseSize(size, 10, 50);
         final FollowScope resolvedScope = followScope == null ? FollowScope.ALL : followScope;
         final FeedCursor decodedCursor = FeedCursorUtil.decode(cursor);
+        final List<Long> resolvedStyleIds = styleIds == null ? List.of() : styleIds;
+        final List<Long> resolvedSituationIds = situationIds == null ? List.of() : situationIds;
+        validateFilters(resolvedStyleIds, resolvedSituationIds);
         final List<Long> pendingFeedIds =
                 decodedCursor == null || decodedCursor.pendingFeedIds() == null
                         ? List.of()
@@ -82,14 +94,12 @@ public class FeedServiceImpl implements FeedService {
                     resolvedScope == FollowScope.ALL
                             ? remainingSlots * ALL_OVERFETCH_MULTIPLIER
                             : remainingSlots;
-            // NOTE: Non-existent styleId/situationId values are not validated and are ignored by IN
-            // filters.
             fetchedHistories =
                     feedQueryRepository.findFeeds(
                             currentMember.getId(),
                             resolvedScope,
-                            styleIds == null ? List.of() : styleIds,
-                            situationIds == null ? List.of() : situationIds,
+                            resolvedStyleIds,
+                            resolvedSituationIds,
                             decodedCursor,
                             fetchSize);
             fetchedHasNext = fetchedHistories.size() > fetchSize;
@@ -187,6 +197,28 @@ public class FeedServiceImpl implements FeedService {
             return Set.of();
         }
         return new HashSet<>(followRepository.findFollowedMemberIds(memberId, authorIds));
+    }
+
+    private void validateFilters(List<Long> styleIds, List<Long> situationIds) {
+        if (!styleIds.isEmpty()) {
+            int count = 0;
+            for (Style style : styleRepository.findAllById(styleIds)) {
+                count++;
+            }
+            if (count != styleIds.size()) {
+                throw new BaseCustomException(StyleErrorCode.STYLE_NOT_FOUND);
+            }
+        }
+
+        if (!situationIds.isEmpty()) {
+            int count = 0;
+            for (Situation situation : situationRepository.findAllById(situationIds)) {
+                count++;
+            }
+            if (count != situationIds.size()) {
+                throw new BaseCustomException(SituationErrorCode.SITUATION_NOT_FOUND);
+            }
+        }
     }
 
     private List<History> interleaveByAuthor(List<History> histories, int limit) {

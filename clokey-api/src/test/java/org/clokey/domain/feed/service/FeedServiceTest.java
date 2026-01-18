@@ -1,6 +1,7 @@
 package org.clokey.domain.feed.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import java.time.LocalDate;
@@ -12,12 +13,15 @@ import org.clokey.domain.feed.dto.response.FeedListResponse;
 import org.clokey.domain.feed.query.FeedCursor;
 import org.clokey.domain.feed.query.FollowScope;
 import org.clokey.domain.feed.util.FeedCursorUtil;
+import org.clokey.domain.history.exception.SituationErrorCode;
+import org.clokey.domain.history.exception.StyleErrorCode;
 import org.clokey.domain.history.repository.HistoryImageRepository;
 import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.history.repository.SituationRepository;
 import org.clokey.domain.like.repository.MemberLikeRepository;
 import org.clokey.domain.member.repository.FollowRepository;
 import org.clokey.domain.member.repository.MemberRepository;
+import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
 import org.clokey.history.entity.History;
 import org.clokey.history.entity.HistoryImage;
@@ -154,6 +158,26 @@ public class FeedServiceTest extends IntegrationTest {
                     .containsExactly(history2_2, history2_1);
             assertThat(second.hasNext()).isFalse();
             assertThat(second.nextCursor()).isNull();
+        }
+
+        @Test
+        void 존재하지_않는_스타일_ID면_예외가_발생한다() {
+            assertThatThrownBy(
+                            () ->
+                                    feedService.getFeeds(
+                                            FollowScope.ALL, List.of(999L), List.of(), 3, null))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(StyleErrorCode.STYLE_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 존재하지_않는_상황_ID면_예외가_발생한다() {
+            assertThatThrownBy(
+                            () ->
+                                    feedService.getFeeds(
+                                            FollowScope.ALL, List.of(), List.of(999L), 3, null))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(SituationErrorCode.SITUATION_NOT_FOUND.getMessage());
         }
     }
 
