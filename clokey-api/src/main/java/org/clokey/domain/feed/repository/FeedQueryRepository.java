@@ -5,8 +5,8 @@ import static org.clokey.history.entity.QHistoryStyle.historyStyle;
 import static org.clokey.member.entity.QFollow.follow;
 import static org.clokey.member.entity.QMember.member;
 
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
