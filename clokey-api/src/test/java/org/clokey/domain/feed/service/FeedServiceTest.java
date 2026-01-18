@@ -19,6 +19,7 @@ import org.clokey.domain.history.repository.HistoryImageRepository;
 import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.history.repository.SituationRepository;
 import org.clokey.domain.like.repository.MemberLikeRepository;
+import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.FollowRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.exception.BaseCustomException;
@@ -27,6 +28,7 @@ import org.clokey.history.entity.History;
 import org.clokey.history.entity.HistoryImage;
 import org.clokey.history.entity.Situation;
 import org.clokey.like.entity.MemberLike;
+import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Follow;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
@@ -45,6 +47,7 @@ public class FeedServiceTest extends IntegrationTest {
     @Autowired private HistoryRepository historyRepository;
     @Autowired private HistoryImageRepository historyImageRepository;
     @Autowired private MemberLikeRepository memberLikeRepository;
+    @Autowired private BlockRepository blockRepository;
     @Autowired private FollowRepository followRepository;
 
     @MockitoBean private MemberUtil memberUtil;
@@ -178,6 +181,36 @@ public class FeedServiceTest extends IntegrationTest {
                                             FollowScope.ALL, List.of(), List.of(999L), 3, null))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(SituationErrorCode.SITUATION_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 차단한_사용자의_피드는_노출되지_않는다() {
+            Member member1 = memberRepository.findByClokeyId("testClokeyId10").orElseThrow();
+            Member member2 = memberRepository.findByClokeyId("testClokeyId20").orElseThrow();
+            blockRepository.save(Block.createBlock(member1, member2));
+
+            FeedListResponse response =
+                    feedService.getFeeds(FollowScope.ALL, List.of(), List.of(), 3, null);
+
+            Map<String, Long> historyIds =
+                    historyRepository.findAll().stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            History::getContent,
+                                            History::getId,
+                                            (left, right) -> left));
+            Long history2_1 = historyIds.get("A1");
+            Long history2_2 = historyIds.get("A2");
+            Long history2_3 = historyIds.get("A3");
+
+            List<Long> feedIds =
+                    response.items().stream()
+                            .map(FeedListResponse.FeedItemResponse::feedId)
+                            .toList();
+
+            assertThat(feedIds).doesNotContain(history2_1, history2_2, history2_3);
+            assertThat(response.items()).hasSize(2);
+            assertThat(response.hasNext()).isFalse();
         }
     }
 
