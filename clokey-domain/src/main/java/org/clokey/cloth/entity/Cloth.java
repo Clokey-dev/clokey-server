@@ -3,9 +3,7 @@ package org.clokey.cloth.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.*;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.enums.Season;
@@ -31,11 +29,9 @@ public class Cloth extends BaseEntity {
 
     private String brand;
 
-    @ElementCollection(targetClass = Season.class)
-    @CollectionTable(name = "cloth_season", joinColumns = @JoinColumn(name = "cloth_id"))
     @Enumerated(EnumType.STRING)
-    @Column(name = "season_name")
-    private Set<Season> seasons = new HashSet<>();
+    @NotNull
+    private Season season;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -56,14 +52,14 @@ public class Cloth extends BaseEntity {
             String clothUrl,
             String name,
             String brand,
-            Set<Season> seasons,
+            Season season,
             Category category,
             Member member) {
         this.clothImageUrl = clothImageUrl;
         this.clothUrl = clothUrl;
         this.name = name;
         this.brand = brand;
-        this.seasons = seasons;
+        this.season = season;
         this.category = category;
         this.member = member;
     }
@@ -73,7 +69,7 @@ public class Cloth extends BaseEntity {
             String clothUrl,
             String name,
             String brand,
-            List<Season> seasons,
+            Season season,
             Category category,
             Member member) {
         return Cloth.builder()
@@ -81,7 +77,7 @@ public class Cloth extends BaseEntity {
                 .clothUrl(clothUrl)
                 .name(name)
                 .brand(brand)
-                .seasons(new HashSet<>(seasons))
+                .season(season)
                 .category(category)
                 .member(member)
                 .build();
@@ -92,13 +88,13 @@ public class Cloth extends BaseEntity {
             String clothUrl,
             String name,
             String brand,
-            List<Season> seasons,
+            Season season,
             Category category) {
         this.clothImageUrl = clothImageUrl;
         this.clothUrl = clothUrl;
         this.name = name;
         this.brand = brand;
-        this.seasons = new HashSet<>(seasons);
+        this.season = season;
         this.category = category;
     }
 }

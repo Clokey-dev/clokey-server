@@ -65,7 +65,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
-import org.springframework.transaction.annotation.Transactional;
 
 @RecordApplicationEvents
 class ClothServiceTest extends IntegrationTest {
@@ -131,7 +130,6 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
-    @Transactional
     class 옷을_생성할_때 {
 
         @BeforeEach
@@ -162,39 +160,57 @@ class ClothServiceTest extends IntegrationTest {
                                             "testClothUrl1",
                                             "testName1",
                                             "testBrand1",
-                                            List.of(Season.SPRING),
+                                            Season.SPRING,
                                             2L),
                                     new ClothCreateRequest(
                                             "testClothImageUrl2",
                                             "testClothUrl2",
                                             "testName2",
                                             "testBrand2",
-                                            List.of(Season.SUMMER),
+                                            Season.SUMMER,
                                             2L)));
 
             // when
             clothService.createClothes(request);
 
             // then
-            Cloth cloth1 = clothRepository.findById(1L).orElseThrow();
             Assertions.assertAll(
-                    () -> assertThat(cloth1.getClothImageUrl()).isEqualTo("testClothImageUrl1"),
-                    () -> assertThat(cloth1.getClothUrl()).isEqualTo("testClothUrl1"),
-                    () -> assertThat(cloth1.getName()).isEqualTo("testName1"),
-                    () -> assertThat(cloth1.getBrand()).isEqualTo("testBrand1"),
-                    () -> assertThat(cloth1.getSeasons()).containsExactlyInAnyOrder(Season.SPRING),
-                    () -> assertThat(cloth1.getCategory().getId()).isEqualTo(2L),
-                    () -> assertThat(cloth1.getMember().getId()).isEqualTo(1L));
-
-            Cloth cloth2 = clothRepository.findById(2L).orElseThrow();
-            Assertions.assertAll(
-                    () -> assertThat(cloth2.getClothImageUrl()).isEqualTo("testClothImageUrl2"),
-                    () -> assertThat(cloth2.getClothUrl()).isEqualTo("testClothUrl2"),
-                    () -> assertThat(cloth2.getName()).isEqualTo("testName2"),
-                    () -> assertThat(cloth2.getBrand()).isEqualTo("testBrand2"),
-                    () -> assertThat(cloth2.getSeasons()).containsExactlyInAnyOrder(Season.SUMMER),
-                    () -> assertThat(cloth2.getCategory().getId()).isEqualTo(2L),
-                    () -> assertThat(cloth2.getMember().getId()).isEqualTo(1L));
+                    () ->
+                            assertThat(clothRepository.findById(1L).orElseThrow())
+                                    .extracting(
+                                            "clothImageUrl",
+                                            "clothUrl",
+                                            "name",
+                                            "brand",
+                                            "season",
+                                            "category.id",
+                                            "member.id")
+                                    .containsExactly(
+                                            "testClothImageUrl1",
+                                            "testClothUrl1",
+                                            "testName1",
+                                            "testBrand1",
+                                            Season.SPRING,
+                                            2L,
+                                            1L),
+                    () ->
+                            assertThat(clothRepository.findById(2L).orElseThrow())
+                                    .extracting(
+                                            "clothImageUrl",
+                                            "clothUrl",
+                                            "name",
+                                            "brand",
+                                            "season",
+                                            "category.id",
+                                            "member.id")
+                                    .containsExactly(
+                                            "testClothImageUrl2",
+                                            "testClothUrl2",
+                                            "testName2",
+                                            "testBrand2",
+                                            Season.SUMMER,
+                                            2L,
+                                            1L));
         }
 
         @Test
@@ -208,14 +224,14 @@ class ClothServiceTest extends IntegrationTest {
                                             "testClothUrl1",
                                             "testName1",
                                             "testBrand1",
-                                            List.of(Season.SPRING),
+                                            Season.SPRING,
                                             2L),
                                     new ClothCreateRequest(
                                             "testClothImageUrl2",
                                             "testClothUrl2",
                                             "testName2",
                                             "testBrand2",
-                                            List.of(Season.SPRING),
+                                            Season.SPRING,
                                             999L)));
 
             // when & then
@@ -235,14 +251,14 @@ class ClothServiceTest extends IntegrationTest {
                                             "testClothUrl1",
                                             "testName1",
                                             "testBrand1",
-                                            List.of(Season.SPRING),
+                                            Season.SPRING,
                                             2L),
                                     new ClothCreateRequest(
                                             "testClothImageUrl2",
                                             "testClothUrl2",
                                             "testName2",
                                             "testBrand2",
-                                            List.of(Season.SPRING),
+                                            Season.SPRING,
                                             1L)));
 
             // when & then
@@ -253,7 +269,6 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
-    @Transactional
     class 카테고리별_계절_옷을_추천할_때 {
 
         @BeforeEach
@@ -273,58 +288,22 @@ class ClothServiceTest extends IntegrationTest {
 
             Cloth cloth1 =
                     Cloth.createCloth(
-                            "testImageUrl1",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SUMMER),
-                            category1,
-                            member);
+                            "testImageUrl1", null, null, null, Season.SUMMER, category1, member);
             Cloth cloth2 =
                     Cloth.createCloth(
-                            "testImageUrl2",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category1,
-                            member);
+                            "testImageUrl2", null, null, null, Season.SPRING, category1, member);
             Cloth cloth3 =
                     Cloth.createCloth(
-                            "testImageUrl3",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category1,
-                            member);
+                            "testImageUrl3", null, null, null, Season.SPRING, category1, member);
             Cloth cloth4 =
                     Cloth.createCloth(
-                            "testImageUrl4",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SUMMER),
-                            category1,
-                            member);
+                            "testImageUrl4", null, null, null, Season.SUMMER, category1, member);
             Cloth cloth5 =
                     Cloth.createCloth(
-                            "testImageUrl5",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.WINTER),
-                            category1,
-                            member);
+                            "testImageUrl5", null, null, null, Season.WINTER, category1, member);
             Cloth cloth6 =
                     Cloth.createCloth(
-                            "testImageUrl6",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.FALL),
-                            category1,
-                            member);
+                            "testImageUrl6", null, null, null, Season.FALL, category1, member);
 
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3, cloth4, cloth5, cloth6));
         }
@@ -397,8 +376,6 @@ class ClothServiceTest extends IntegrationTest {
 
         @BeforeEach
         void setUp() {
-            clothRepository.deleteAllInBatch();
-
             Member member =
                     Member.createMember(
                             "testEmail1",
@@ -415,58 +392,22 @@ class ClothServiceTest extends IntegrationTest {
 
             Cloth cloth1 =
                     Cloth.createCloth(
-                            "testImageUrl1",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category2,
-                            member);
+                            "testImageUrl1", null, null, null, Season.SPRING, category2, member);
             Cloth cloth2 =
                     Cloth.createCloth(
-                            "testImageUrl2",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category2,
-                            member);
+                            "testImageUrl2", null, null, null, Season.SPRING, category2, member);
             Cloth cloth3 =
                     Cloth.createCloth(
-                            "testImageUrl3",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SUMMER),
-                            category2,
-                            member);
+                            "testImageUrl3", null, null, null, Season.SUMMER, category2, member);
             Cloth cloth4 =
                     Cloth.createCloth(
-                            "testImageUrl4",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category3,
-                            member);
+                            "testImageUrl4", null, null, null, Season.SPRING, category3, member);
             Cloth cloth5 =
                     Cloth.createCloth(
-                            "testImageUrl5",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SUMMER),
-                            category3,
-                            member);
+                            "testImageUrl5", null, null, null, Season.SUMMER, category3, member);
             Cloth cloth6 =
                     Cloth.createCloth(
-                            "testImageUrl6",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.FALL),
-                            category3,
-                            member);
+                            "testImageUrl6", null, null, null, Season.FALL, category3, member);
             clothRepository.saveAll(List.of(cloth1, cloth2, cloth3, cloth4, cloth5, cloth6));
         }
 
@@ -600,22 +541,10 @@ class ClothServiceTest extends IntegrationTest {
 
             Cloth cloth1 =
                     Cloth.createCloth(
-                            "testImageUrl1",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category,
-                            member1);
+                            "testImageUrl1", null, null, null, Season.SPRING, category, member1);
             Cloth cloth2 =
                     Cloth.createCloth(
-                            "testImageUrl2",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category,
-                            member2);
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member2);
             clothRepository.saveAll(List.of(cloth1, cloth2));
         }
 
@@ -689,23 +618,16 @@ class ClothServiceTest extends IntegrationTest {
                             "testClothUrl",
                             "testName",
                             "testBrand",
-                            List.of(Season.SPRING),
+                            Season.SPRING,
                             category,
                             member1);
             Cloth cloth2 =
                     Cloth.createCloth(
-                            "testImageUrl2",
-                            null,
-                            null,
-                            null,
-                            List.of(Season.SPRING),
-                            category,
-                            member2);
+                            "testImageUrl2", null, null, null, Season.SPRING, category, member2);
             clothRepository.saveAll(List.of(cloth1, cloth2));
         }
 
         @Test
-        @Transactional
         void 유효한_요청이면_옷을_수정한다() {
             // given
             ClothUpdateRequest request =
@@ -714,21 +636,29 @@ class ClothServiceTest extends IntegrationTest {
                             "newClothUrl",
                             "newName",
                             "newBrand",
-                            List.of(Season.SUMMER),
+                            Season.SUMMER,
                             2L);
 
             // when
             clothService.updateCloth(1L, request);
 
-            Cloth updatedCloth = clothRepository.findById(1L).orElseThrow();
-            Assertions.assertAll(
-                    () -> assertThat(updatedCloth.getClothImageUrl()).isEqualTo("newClothImageUrl"),
-                    () -> assertThat(updatedCloth.getClothUrl()).isEqualTo("newClothUrl"),
-                    () -> assertThat(updatedCloth.getName()).isEqualTo("newName"),
-                    () -> assertThat(updatedCloth.getBrand()).isEqualTo("newBrand"),
-                    () -> assertThat(updatedCloth.getCategory().getId()).isEqualTo(2L),
-                    () -> assertThat(updatedCloth.getMember().getId()).isEqualTo(1L),
-                    () -> assertThat(updatedCloth.getSeasons()).containsExactly(Season.SUMMER));
+            assertThat(clothRepository.findById(1L).orElseThrow())
+                    .extracting(
+                            "clothImageUrl",
+                            "clothUrl",
+                            "name",
+                            "brand",
+                            "season",
+                            "category.id",
+                            "member.id")
+                    .containsExactly(
+                            "newClothImageUrl",
+                            "newClothUrl",
+                            "newName",
+                            "newBrand",
+                            Season.SUMMER,
+                            2L,
+                            1L);
         }
 
         @Test
@@ -740,7 +670,7 @@ class ClothServiceTest extends IntegrationTest {
                             "newClothUrl",
                             "newName",
                             "newBrand",
-                            List.of(Season.SUMMER),
+                            Season.SUMMER,
                             2L);
 
             // when
@@ -760,7 +690,7 @@ class ClothServiceTest extends IntegrationTest {
                             "newClothUrl",
                             "newName",
                             "newBrand",
-                            List.of(Season.SUMMER),
+                            Season.SUMMER,
                             2L);
 
             // when & then
@@ -778,7 +708,7 @@ class ClothServiceTest extends IntegrationTest {
                             "newClothUrl",
                             "newName",
                             "newBrand",
-                            List.of(Season.SUMMER),
+                            Season.SUMMER,
                             999L);
 
             // when & then
@@ -796,7 +726,7 @@ class ClothServiceTest extends IntegrationTest {
                             "newClothUrl",
                             "newName",
                             "newBrand",
-                            List.of(Season.SUMMER),
+                            Season.SUMMER,
                             2L);
 
             // when & then
@@ -814,7 +744,7 @@ class ClothServiceTest extends IntegrationTest {
                             "newClothUrl",
                             "newName",
                             "newBrand",
-                            List.of(Season.SUMMER),
+                            Season.SUMMER,
                             1L);
 
             // when & then
@@ -855,7 +785,7 @@ class ClothServiceTest extends IntegrationTest {
                             "testClothUrl",
                             "testName",
                             "testBrand",
-                            List.of(Season.SPRING),
+                            Season.SPRING,
                             category,
                             member1);
             Cloth cloth2 =
@@ -864,7 +794,7 @@ class ClothServiceTest extends IntegrationTest {
                             "testClothUrl",
                             "testName",
                             "testBrand",
-                            List.of(Season.SPRING),
+                            Season.SPRING,
                             category,
                             member2);
             clothRepository.saveAll(List.of(cloth1, cloth2));

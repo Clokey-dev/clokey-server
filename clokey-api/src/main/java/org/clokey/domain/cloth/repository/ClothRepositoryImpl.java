@@ -7,10 +7,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.cloth.enums.Season;
@@ -41,59 +38,36 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
         // - 계절은 요청한 계절에 가까운 순서대로 페이징을 진행합니다.
         NumberExpression<Integer> seasonPriority =
                 new CaseBuilder()
-                        .when(cloth.seasons.contains(season))
+                        .when(cloth.season.eq(season))
                         .then(1)
-                        .when(
-                                cloth.seasons
-                                        .contains(nextSeason)
-                                        .or(cloth.seasons.contains(previousSeason)))
+                        .when(cloth.season.in(nextSeason, previousSeason))
                         .then(2)
-                        .when(cloth.seasons.contains(oppositeSeason))
+                        .when(cloth.season.eq(oppositeSeason))
                         .then(3)
                         .otherwise(4);
 
-        List<Cloth> entities =
+        List<ClothRecommendListResponse> results =
                 queryFactory
-                        .selectFrom(cloth)
+                        .select(
+                                Projections.constructor(
+                                        ClothRecommendListResponse.class,
+                                        cloth.id,
+                                        cloth.clothImageUrl))
+                        .from(cloth)
                         .where(
                                 cloth.category.id.eq(categoryId),
                                 cloth.member.id.eq(memberId),
-                                cloth.seasons
-                                        .contains(season)
-                                        .or(cloth.seasons.contains(nextSeason))
-                                        .or(cloth.seasons.contains(previousSeason))
-                                        .or(cloth.seasons.contains(oppositeSeason)))
+                                cloth.season.in(season, nextSeason, previousSeason, oppositeSeason),
+                                lastClothIdCondition(
+                                        lastClothId,
+                                        season,
+                                        nextSeason,
+                                        previousSeason,
+                                        oppositeSeason,
+                                        seasonPriority))
                         .orderBy(seasonPriority.asc(), cloth.id.asc())
+                        .limit((long) size + 1)
                         .fetch();
-
-        entities.sort(
-                Comparator.comparingInt(
-                                (Cloth c) ->
-                                        calculatePriority(
-                                                c.getSeasons(),
-                                                season,
-                                                nextSeason,
-                                                previousSeason,
-                                                oppositeSeason))
-                        .thenComparing(Cloth::getId));
-
-        int startIndex = 0;
-        if (lastClothId != null) {
-            for (int i = 0; i < entities.size(); i++) {
-                if (entities.get(i).getId().equals(lastClothId)) {
-                    startIndex = i + 1;
-                    break;
-                }
-            }
-        }
-
-        int endIndex = Math.min(startIndex + size + 1, entities.size());
-        List<Cloth> pagedEntities = entities.subList(startIndex, endIndex);
-
-        List<ClothRecommendListResponse> results =
-                pagedEntities.stream()
-                        .map(c -> new ClothRecommendListResponse(c.getId(), c.getClothImageUrl()))
-                        .collect(Collectors.toList());
 
         return checkLastPage(size, results);
     }
@@ -141,7 +115,7 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
         if (seasons == null || seasons.isEmpty()) {
             return null;
         }
-        return cloth.seasons.any().in(seasons);
+        return cloth.season.in(seasons);
     }
 
     private BooleanExpression lastClothIdCursor(Long lastClothId, SortDirection direction) {
@@ -172,7 +146,7 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
 
         int lastPriority =
                 calculateSeasonPriority(
-                        lastCloth.getSeasons(), season, nextSeason, previousSeason, oppositeSeason);
+                        lastCloth.getSeason(), season, nextSeason, previousSeason, oppositeSeason);
 
         // 복합 조건: (우선순위 > 마지막 우선순위) OR (우선순위 = 마지막 우선순위 AND ID > 마지막 ID)
         return seasonPriority
@@ -181,17 +155,16 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
     }
 
     private int calculateSeasonPriority(
-            java.util.Set<org.clokey.cloth.enums.Season> clothSeasons,
-            org.clokey.cloth.enums.Season season,
-            org.clokey.cloth.enums.Season nextSeason,
-            org.clokey.cloth.enums.Season previousSeason,
-            org.clokey.cloth.enums.Season oppositeSeason) {
-
-        if (clothSeasons.contains(season)) {
+            Season clothSeason,
+            Season season,
+            Season nextSeason,
+            Season previousSeason,
+            Season oppositeSeason) {
+        if (clothSeason == season) {
             return 1;
-        } else if (clothSeasons.contains(nextSeason) || clothSeasons.contains(previousSeason)) {
+        } else if (clothSeason == nextSeason || clothSeason == previousSeason) {
             return 2;
-        } else if (clothSeasons.contains(oppositeSeason)) {
+        } else if (clothSeason == oppositeSeason) {
             return 3;
         }
         return 4;
@@ -206,13 +179,5 @@ public class ClothRepositoryImpl implements ClothRepositoryCustom {
         }
 
         return new SliceImpl<>(results, PageRequest.of(0, pageSize), hasNext);
-    }
-
-    private int calculatePriority(
-            Set<Season> seasons, Season target, Season next, Season prev, Season opp) {
-        if (seasons.contains(target)) return 1;
-        if (seasons.contains(next) || seasons.contains(prev)) return 2;
-        if (seasons.contains(opp)) return 3;
-        return 4;
     }
 }
