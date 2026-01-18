@@ -61,9 +61,6 @@ CREATE TABLE cloth (
                        cloth_url VARCHAR(1000),
                        name VARCHAR(255),
                        brand VARCHAR(255),
-                       season VARCHAR(255) NOT NULL CHECK (
-                           season IN ('SPRING', 'SUMMER', 'FALL', 'WINTER')
-                           ),
                        category_id BIGINT NOT NULL,
                        member_id BIGINT NOT NULL,
                        created_at DATETIME(6) NOT NULL,
@@ -108,6 +105,17 @@ CREATE TABLE comment (
                          CONSTRAINT fk_comment_history FOREIGN KEY (history_id) REFERENCES history(id),
                         CONSTRAINT fk_comment_parent FOREIGN KEY (parent_id) REFERENCES comment(id)
 );
+
+
+CREATE TABLE cloth_season (
+                        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                        cloth_id BIGINT NOT NULL,
+                        season_name VARCHAR(255) NOT NULL,
+                        UNIQUE (cloth_id, season_name),
+                        CONSTRAINT ck_season_name CHECK (season_name IN ('SPRING', 'SUMMER', 'FALL', 'WINTER')),
+                        CONSTRAINT fk_cloth_season_cloth FOREIGN KEY (cloth_id) REFERENCES cloth(id)
+);
+
 
 
 CREATE TABLE situation (
