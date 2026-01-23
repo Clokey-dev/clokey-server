@@ -323,7 +323,7 @@ public class HistoryServiceImpl implements HistoryService {
                                                             .get(0)
                                                             .getImageUrl();
                                     return new MonthlyHistoryResponse.Payload(
-                                            history.getId(), firstImageUrl);
+                                            history.getId(), firstImageUrl, history.getHistoryDate());
                                 })
                         .toList();
 
