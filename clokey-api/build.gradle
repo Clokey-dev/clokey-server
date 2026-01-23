@@ -12,9 +12,6 @@ dependencies {
     runtimeOnly 'com.mysql:mysql-connector-j'
 
     implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
-    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
@@ -25,4 +22,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     implementation 'io.vanslog:spring-data-meilisearch:0.7.3'
+}
+
+// clokey-domain의 Q 클래스가 먼저 생성되도록 보장
+tasks.named('compileJava') {
+    dependsOn(':clokey-domain:compileJava')
+}
+
+// clokey-domain의 generated sources(Q 클래스)를 compile classpath에 포함
+afterEvaluate {
+    def domainProject = project(':clokey-domain')
+    def generatedSourcesDir = new File(domainProject.buildDir, 'generated/sources/annotationProcessor/java/main')
+    if (generatedSourcesDir.exists()) {
+        sourceSets.main.java.srcDirs += generatedSourcesDir
+    }
 }
