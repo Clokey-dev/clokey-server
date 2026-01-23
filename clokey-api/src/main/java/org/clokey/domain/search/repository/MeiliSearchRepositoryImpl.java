@@ -16,10 +16,12 @@ import org.clokey.domain.search.enums.HistorySearchSortType;
 import org.clokey.response.SliceResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
+@Profile("!test")
 public class MeiliSearchRepositoryImpl implements SearchRepository {
 
     private static final String HISTORY_INDEX = "histories";
