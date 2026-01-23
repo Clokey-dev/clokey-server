@@ -86,6 +86,10 @@ public class ClothAiServiceImpl implements ClothAiService {
                                 ClothInfoExtractAiResponseDTO.class)
                         .block();
 
+        if (aiResponse == null || !Boolean.TRUE.equals(aiResponse.isSuccess())) {
+            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        }
+
         if (aiResponse.result() == null || aiResponse.result().isEmpty()) {
             throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
         }
@@ -100,7 +104,7 @@ public class ClothAiServiceImpl implements ClothAiService {
 
         for (int i = 0; i < resultItems.size(); i++) {
             ClothInfoExtractAiResponseDTO.ResultItem resultItem = resultItems.get(i);
-            String clothImageUrl = clothImageUrls.get(i);
+            String clothImageUrl = resultItem.uploadedUrl();
 
             List<ClothInfoExtractAiResponseDTO.CategoryItem> categories = resultItem.categories();
             if (categories == null || categories.isEmpty()) {
@@ -124,8 +128,8 @@ public class ClothAiServiceImpl implements ClothAiService {
                     new ClothInfoExtractResponse.Payload(
                             clothImageUrl,
                             seasons,
-                            parentCategory.getId(),
-                            parentCategory.getName(),
+                            parentCategory != null ? parentCategory.getId() : null,
+                            parentCategory != null ? parentCategory.getName() : null,
                             category.getId(),
                             category.getName()));
         }
@@ -210,9 +214,7 @@ public class ClothAiServiceImpl implements ClothAiService {
 
         List<ClothDetectResponse.Payload> payloads =
                 aiResponse.result().uploadedUrls().stream()
-                        .map(
-                                uploadedUrl ->
-                                        new ClothDetectResponse.Payload(stripQuery(uploadedUrl)))
+                        .map(ClothDetectResponse.Payload::new)
                         .toList();
 
         return ClothDetectResponse.of(payloads);
