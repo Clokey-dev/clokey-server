@@ -832,11 +832,17 @@ public class HistoryControllerTest {
                     MonthlyHistoryResponse.of(
                             List.of(
                                     new MonthlyHistoryResponse.Payload(
-                                            1L, "testFirstImageUrl1", java.time.LocalDate.of(2025, 1, 1)),
+                                            1L,
+                                            "testFirstImageUrl1",
+                                            java.time.LocalDate.of(2025, 1, 1)),
                                     new MonthlyHistoryResponse.Payload(
-                                            2L, "testFirstImageUrl2", java.time.LocalDate.of(2025, 1, 2)),
+                                            2L,
+                                            "testFirstImageUrl2",
+                                            java.time.LocalDate.of(2025, 1, 2)),
                                     new MonthlyHistoryResponse.Payload(
-                                            3L, "testFirstImageUrl3", java.time.LocalDate.of(2025, 1, 3))));
+                                            3L,
+                                            "testFirstImageUrl3",
+                                            java.time.LocalDate.of(2025, 1, 3))));
 
             given(historyService.getMonthlyHistory(1L, 2025, 1))
                     .willReturn(testMonthlyHistoryResponse);
@@ -859,20 +865,17 @@ public class HistoryControllerTest {
                     .andExpect(
                             jsonPath("$.result.payloads[0].firstImageUrl")
                                     .value("testFirstImageUrl1"))
-                    .andExpect(
-                            jsonPath("$.result.payloads[0].historyDate").value("2025-01-01"))
+                    .andExpect(jsonPath("$.result.payloads[0].historyDate").value("2025-01-01"))
                     .andExpect(jsonPath("$.result.payloads[1].historyId").value(2L))
                     .andExpect(
                             jsonPath("$.result.payloads[1].firstImageUrl")
                                     .value("testFirstImageUrl2"))
-                    .andExpect(
-                            jsonPath("$.result.payloads[1].historyDate").value("2025-01-02"))
+                    .andExpect(jsonPath("$.result.payloads[1].historyDate").value("2025-01-02"))
                     .andExpect(jsonPath("$.result.payloads[2].historyId").value(3L))
                     .andExpect(
                             jsonPath("$.result.payloads[2].firstImageUrl")
                                     .value("testFirstImageUrl3"))
-                    .andExpect(
-                            jsonPath("$.result.payloads[2].historyDate").value("2025-01-03"));
+                    .andExpect(jsonPath("$.result.payloads[2].historyDate").value("2025-01-03"));
         }
     }
 
