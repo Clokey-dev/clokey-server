@@ -3,7 +3,7 @@ package org.clokey.domain.member.dto.response;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record MemberInfoResponse(
-        @Schema(description = "조회할 멤버의 Codive ID", example = "codive123") String codiveId,
+        @Schema(description = "조회할 멤버의 memberId", example = "1L") Long memberId,
         @Schema(description = "조회할 멤버의 닉네임", example = "닉네임123") String nickname,
         @Schema(description = "조회할 멤버의 한줄소개", example = "코디브 너무 좋아~~ㅋㅋ") String bio,
         @Schema(description = "조회할 멤버의 팔로워 수", example = "150") Long followerCount,

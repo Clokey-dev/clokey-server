@@ -30,7 +30,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                 .select(
                         Projections.constructor(
                                 MemberInfoResponse.class,
-                                member.clokeyId,
+                                member.id,
                                 member.nickname,
                                 member.bio,
                                 JPAExpressions.select(follow.count())
@@ -66,7 +66,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                 .select(
                         Projections.constructor(
                                 MemberInfoResponse.class,
-                                member.clokeyId,
+                                member.id,
                                 member.nickname,
                                 member.bio,
                                 JPAExpressions.select(follow.count())
