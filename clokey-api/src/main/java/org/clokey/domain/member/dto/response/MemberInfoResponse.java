@@ -12,5 +12,6 @@ public record MemberInfoResponse(
                         description = "조회할 멤버의 프로필 이미지 URL",
                         example = "https://example.com/profile/john.jpg")
                 String profileImageUrl,
+        @Schema(description = "조회할 멤버가 공개 계정인지?", example = "true") boolean isPublic,
         @Schema(description = "요청자가 조회할 멤버를 팔로우하고 있는지?", example = "true") boolean isFollowing,
         @Schema(description = "조회할 멤버가 요청자 본인인지?", example = "false") boolean isMe) {}
