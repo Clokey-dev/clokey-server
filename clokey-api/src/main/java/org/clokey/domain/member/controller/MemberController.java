@@ -144,7 +144,6 @@ public class MemberController {
             summary = "내 정보 조회 API",
             description = "로그인한 사용자의 본인 정보를 조회합니다.")
     public BaseResponse<MemberInfoResponse> getMyInfo() {
-        return BaseResponse.onSuccess(
-                GlobalBaseSuccessCode.OK, memberService.getMyInfo());
+        return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, memberService.getMyInfo());
     }
 }
