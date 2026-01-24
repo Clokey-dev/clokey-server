@@ -57,9 +57,8 @@ public class MemberLikeRepositoryImpl implements MemberLikeRepositoryCustom {
                                 Projections.constructor(
                                         LikedMembersResponse.LikedMemberPreview.class,
                                         member.id,
-                                        member.clokeyId,
-                                        member.profileImageUrl,
                                         member.nickname,
+                                        member.profileImageUrl,
                                         memberLike.id))
                         .from(memberLike)
                         .join(memberLike.member, member)

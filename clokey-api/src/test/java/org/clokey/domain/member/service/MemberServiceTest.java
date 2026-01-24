@@ -62,7 +62,6 @@ class MemberServiceTest extends IntegrationTest {
             Member member =
                     Member.createMember(
                             "testEmail",
-                            "oldClokeyId",
                             "oldNickname",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
@@ -77,7 +76,6 @@ class MemberServiceTest extends IntegrationTest {
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "newNickname",
-                            "newClokeyId",
                             "newBio",
                             Visibility.PUBLIC,
                             "https://img.example.com/profile.jpg",
@@ -90,14 +88,12 @@ class MemberServiceTest extends IntegrationTest {
             assertThat(memberRepository.findById(1L).orElseThrow())
                     .extracting(
                             "nickname",
-                            "clokeyId",
                             "bio",
                             "profileImageUrl",
                             "profileBackImageUrl",
                             "visibility")
                     .containsExactly(
                             "newNickname",
-                            "newClokeyId",
                             "newBio",
                             "https://img.example.com/profile.jpg",
                             "https://img.example.com/back.jpg",
@@ -149,22 +145,22 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"testClokeyId1", "distinctId1", "distinctId2"})
-        void 현재_ID_또는_중복되지_않는_ID를_입력하면_false를_반환한다(String clokeyId) {
+        @ValueSource(strings = {"testNickname1", "distinctId1", "distinctId2"})
+        void 현재_닉네임_또는_중복되지_않는_닉네임을_입력하면_false를_반환한다(String nickname) {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
 
             // when& then
-            assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isFalse();
+            assertThat(memberService.checkDuplicateNickName(request).duplicated()).isFalse();
         }
 
         @Test
-        void 중복되는_ID를_입력한_경우_true를_반환한다() {
+        void 중복되는_닉네임을_입력한_경우_true를_반환한다() {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testClokeyId2");
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testNickname2");
 
             // when& then
-            assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isTrue();
+            assertThat(memberService.checkDuplicateNickName(request).duplicated()).isTrue();
         }
     }
 
@@ -463,7 +459,6 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickname1",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             memberRepository.save(member1);
@@ -474,21 +469,21 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 유효한_요청이면_본인_여부를_반환한다() {
             // given
-            String clokeyId = "testClokeyId1";
+            String nickname = "testNickname1";
 
             // when
-            MyselfCheckResponse response = memberService.checkIsMyself(clokeyId);
+            MyselfCheckResponse response = memberService.checkIsMyself(nickname);
 
             // then
             assertThat(response.isMyself()).isEqualTo(true);
         }
 
         @Test
-        void 클로키_아이디가_존재하지_않으면_예외가_발생한다() {
+        void 닉네임이_존재하지_않으면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> memberService.checkIsMyself("WrongId"))
                     .isInstanceOf(BaseCustomException.class)
-                    .hasMessage("해당 클로키 아이디를 찾을 수 없습니다.");
+                    .hasMessage("해당 닉네임을 찾을 수 없습니다.");
         }
     }
 
