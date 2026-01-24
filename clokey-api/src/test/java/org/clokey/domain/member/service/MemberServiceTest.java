@@ -109,7 +109,6 @@ class MemberServiceTest extends IntegrationTest {
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "testNickname",
-                            "testClokeyId",
                             "testBio",
                             Visibility.PUBLIC,
                             "profile.jpg",
@@ -130,13 +129,11 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickname1",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickname2",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
@@ -151,7 +148,7 @@ class MemberServiceTest extends IntegrationTest {
             DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
 
             // when& then
-            assertThat(memberService.checkDuplicateNickName(request).duplicated()).isFalse();
+            assertThat(memberService.checkDuplicateNickname(request).duplicated()).isFalse();
         }
 
         @Test
@@ -160,7 +157,7 @@ class MemberServiceTest extends IntegrationTest {
             DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testNickname2");
 
             // when& then
-            assertThat(memberService.checkDuplicateNickName(request).duplicated()).isTrue();
+            assertThat(memberService.checkDuplicateNickname(request).duplicated()).isTrue();
         }
     }
 
@@ -171,19 +168,16 @@ class MemberServiceTest extends IntegrationTest {
             Member me =
                     Member.createMember(
                             "me@test.com",
-                            "meId",
                             "me",
                             OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
             Member publicUser =
                     Member.createMember(
                             "public@test.com",
-                            "publicId",
                             "pub",
                             OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
             Member privateUser =
                     Member.createMember(
                             "private@test.com",
-                            "privateId",
                             "pri",
                             OauthInfo.createOauthInfo("priOauth", OauthProvider.KAKAO));
             privateUser.changeVisibility();
@@ -269,19 +263,16 @@ class MemberServiceTest extends IntegrationTest {
             Member me =
                     Member.createMember(
                             "me@test.com",
-                            "meId",
                             "me",
                             OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
             Member publicUser =
                     Member.createMember(
                             "public@test.com",
-                            "publicId",
                             "pub",
                             OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
             Member privateUser =
                     Member.createMember(
                             "private@test.com",
-                            "privateId",
                             "pri",
                             OauthInfo.createOauthInfo("priOauth", OauthProvider.KAKAO));
             privateUser.changeVisibility();
@@ -391,13 +382,11 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickname1",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickname2",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
@@ -495,19 +484,16 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2, member3));
@@ -528,8 +514,8 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId3", "testCodiveId2");
+                    .extracting("nickname")
+                    .containsExactly("testNickName3", "testNickName2");
         }
 
         @Test
@@ -603,25 +589,21 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             Member member4 =
                     Member.createMember(
                             "testEmail4",
-                            "testCodiveId4",
                             "testNickName4",
                             OauthInfo.createOauthInfo("testOauthId4", OauthProvider.KAKAO));
 
@@ -650,8 +632,8 @@ class MemberServiceTest extends IntegrationTest {
                     memberService.getFollows(1L, null, true, 10);
             // then
             assertThat(response.content())
-                    .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId2", false));
+                    .extracting("nickname", "isMe")
+                    .containsExactly(tuple("testNickName2", false));
         }
 
         @Test
@@ -661,8 +643,8 @@ class MemberServiceTest extends IntegrationTest {
                     memberService.getFollows(2L, null, false, 10);
             // then
             assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId4", "testCodiveId1");
+                    .extracting("nickname")
+                    .containsExactly("testNickName4", "testNickName1");
         }
 
         @Test
@@ -683,8 +665,8 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             assertThat(response.content())
-                    .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId4", false), tuple("testCodiveId1", true));
+                    .extracting("nickname", "isMe")
+                    .containsExactly(tuple("testNickName4", false), tuple("testNickName1", true));
         }
 
         @Test
@@ -724,25 +706,21 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             Member member4 =
                     Member.createMember(
                             "testEmail4",
-                            "testCodiveId4",
                             "testNickName4",
                             OauthInfo.createOauthInfo("testOauthId4", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2, member3, member4));
@@ -829,19 +807,16 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2, member3));
