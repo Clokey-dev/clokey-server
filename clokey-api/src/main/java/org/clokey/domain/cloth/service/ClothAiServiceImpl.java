@@ -20,6 +20,7 @@ import org.clokey.domain.cloth.dto.response.ClothInfoExtractAiResponseDTO;
 import org.clokey.domain.cloth.dto.response.ClothInfoExtractResponse;
 import org.clokey.domain.cloth.dto.response.HistoryStyleInferenceAiResponseDTO;
 import org.clokey.domain.cloth.dto.response.HistoryStyleInferenceResponse;
+import org.clokey.domain.cloth.exception.ClothAiErrorCode;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.exception.SituationErrorCode;
@@ -78,24 +79,33 @@ public class ClothAiServiceImpl implements ClothAiService {
         List<String> presignedUrls =
                 createPresignedUrls(currentMember.getId(), clothImageUrls.size());
 
-        ClothInfoExtractAiResponseDTO aiResponse =
-                webClientUtil
-                        .postToAiServer(
-                                webClientProperties.clothInferencePath(),
-                                new ClothInfoExtractAiRequestDTO(clothImageUrls, presignedUrls),
-                                ClothInfoExtractAiResponseDTO.class)
-                        .block();
+        ClothInfoExtractAiResponseDTO aiResponse;
+        try {
+            aiResponse =
+                    webClientUtil
+                            .postToAiServer(
+                                    webClientProperties.clothInferencePath(),
+                                    new ClothInfoExtractAiRequestDTO(clothImageUrls, presignedUrls),
+                                    ClothInfoExtractAiResponseDTO.class)
+                            .block();
+        } catch (Exception e) {
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_REQUEST_FAILED);
+        }
 
-        if (aiResponse == null || !Boolean.TRUE.equals(aiResponse.isSuccess())) {
-            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        if (aiResponse == null) {
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_REQUEST_FAILED);
+        }
+
+        if (!Boolean.TRUE.equals(aiResponse.isSuccess())) {
+            throw new BaseCustomException(mapAiErrorCode(aiResponse.errorCode()));
         }
 
         if (aiResponse.result() == null || aiResponse.result().isEmpty()) {
-            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_INVALID_RESPONSE);
         }
 
         if (aiResponse.result().size() != clothImageUrls.size()) {
-            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_RESULT_MISMATCH);
         }
 
         List<ClothInfoExtractAiResponseDTO.ResultItem> resultItems = aiResponse.result();
@@ -153,16 +163,21 @@ public class ClothAiServiceImpl implements ClothAiService {
 
         validateImageUrl(historyImageUrl);
 
-        HistoryStyleInferenceAiResponseDTO aiResponse =
-                webClientUtil
-                        .postToAiServer(
-                                webClientProperties.styleInferencePath(),
-                                new HistoryStyleInferenceAiRequestDTO(historyImageUrl),
-                                HistoryStyleInferenceAiResponseDTO.class)
-                        .block();
+        HistoryStyleInferenceAiResponseDTO aiResponse;
+        try {
+            aiResponse =
+                    webClientUtil
+                            .postToAiServer(
+                                    webClientProperties.styleInferencePath(),
+                                    new HistoryStyleInferenceAiRequestDTO(historyImageUrl),
+                                    HistoryStyleInferenceAiResponseDTO.class)
+                            .block();
+        } catch (Exception e) {
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_REQUEST_FAILED);
+        }
 
         if (aiResponse.result() == null) {
-            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_INVALID_RESPONSE);
         }
 
         HistoryStyleInferenceAiResponseDTO.Result result = aiResponse.result();
@@ -196,20 +211,29 @@ public class ClothAiServiceImpl implements ClothAiService {
 
         List<String> presignedUrls = createPresignedUrls(currentMember.getId(), 10);
 
-        ClothDetectAiResponseDTO aiResponse =
-                webClientUtil
-                        .postToAiServer(
-                                webClientProperties.clothDetectPath(),
-                                new ClothDetectAiRequestDTO(imageUrl, presignedUrls),
-                                ClothDetectAiResponseDTO.class)
-                        .block();
+        ClothDetectAiResponseDTO aiResponse;
+        try {
+            aiResponse =
+                    webClientUtil
+                            .postToAiServer(
+                                    webClientProperties.clothDetectPath(),
+                                    new ClothDetectAiRequestDTO(imageUrl, presignedUrls),
+                                    ClothDetectAiResponseDTO.class)
+                            .block();
+        } catch (Exception e) {
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_REQUEST_FAILED);
+        }
 
-        if (aiResponse == null || !Boolean.TRUE.equals(aiResponse.isSuccess())) {
-            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+        if (aiResponse == null) {
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_REQUEST_FAILED);
+        }
+
+        if (!Boolean.TRUE.equals(aiResponse.isSuccess())) {
+            throw new BaseCustomException(mapAiErrorCode(aiResponse.errorCode()));
         }
 
         if (aiResponse.result() == null || aiResponse.result().uploadedUrls() == null) {
-            throw new BaseCustomException(ClothErrorCode.AI_SERVER_ERROR);
+            throw new BaseCustomException(ClothAiErrorCode.AI_SERVER_INVALID_RESPONSE);
         }
 
         List<ClothDetectResponse.Payload> payloads =
@@ -238,12 +262,20 @@ public class ClothAiServiceImpl implements ClothAiService {
                 .orElseThrow(() -> new BaseCustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
     }
 
-    private String stripQuery(String url) {
-        if (url == null) {
-            return null;
+    private ClothAiErrorCode mapAiErrorCode(String aiErrorCode) {
+        if (aiErrorCode == null || aiErrorCode.isBlank()) {
+            return ClothAiErrorCode.AI_SERVER_INVALID_RESPONSE;
         }
-        int idx = url.indexOf('?');
-        return idx >= 0 ? url.substring(0, idx) : url;
+
+        return switch (aiErrorCode) {
+            case "S3_DOWNLOAD_FAILED" -> ClothAiErrorCode.AI_S3_DOWNLOAD_FAILED;
+            case "S3_UPLOAD_FAILED" -> ClothAiErrorCode.AI_S3_UPLOAD_FAILED;
+            case "INVAILED_METHOD", "INVALID_METHOD" -> ClothAiErrorCode.AI_INVALID_METHOD;
+            case "UNEXPECTED_EXCEPTION" -> ClothAiErrorCode.AI_UNEXPECTED_EXCEPTION;
+            case "DETECT_EMPTY" -> ClothAiErrorCode.AI_DETECT_EMPTY;
+            case "CROP_EMPTY" -> ClothAiErrorCode.AI_CROP_EMPTY;
+            default -> ClothAiErrorCode.AI_SERVER_INVALID_RESPONSE;
+        };
     }
 
     // TODO : 현재 AI 서버와 비동기 처리와 더불어 양방향 통신을 고려하지 않고 있습니다. 따라서, MD5 해시를 통한 무결성 검증이 불가능하며, JPEG로 고정할
