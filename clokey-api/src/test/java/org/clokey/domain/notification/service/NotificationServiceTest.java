@@ -81,8 +81,7 @@ public class NotificationServiceTest extends IntegrationTest {
                             "testEmail1",
                             "followFrom",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
-            member1.updateProfile(
-                    "followFrom", "example.com", "example2.com", "한줄소개~", Visibility.PUBLIC);
+            member1.updateProfile("followFrom", "example.com", "한줄소개~", Visibility.PUBLIC);
             Member member2 =
                     Member.createMember(
                             "testEmail2",
@@ -137,8 +136,7 @@ public class NotificationServiceTest extends IntegrationTest {
                             "testEmail1",
                             "followFrom",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
-            member1.updateProfile(
-                    "followFrom", "example.com", "example2.com", "한줄소개~", Visibility.PUBLIC);
+            member1.updateProfile("followFrom", "example.com", "한줄소개~", Visibility.PUBLIC);
             Member member2 =
                     Member.createMember(
                             "testEmail2",
@@ -195,8 +193,7 @@ public class NotificationServiceTest extends IntegrationTest {
                             "testEmail1",
                             "commenter",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
-            member1.updateProfile(
-                    "commenter", "example.com", "example2.com", "한줄소개~", Visibility.PUBLIC);
+            member1.updateProfile("commenter", "example.com", "한줄소개~", Visibility.PUBLIC);
             Member member2 =
                     Member.createMember(
                             "testEmail2",
@@ -268,8 +265,7 @@ public class NotificationServiceTest extends IntegrationTest {
                             "testEmail1",
                             "replier",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
-            member1.updateProfile(
-                    "replier", "example.com", "example2.com", "한줄소개~", Visibility.PUBLIC);
+            member1.updateProfile("replier", "example.com", "한줄소개~", Visibility.PUBLIC);
             Member member2 =
                     Member.createMember(
                             "testEmail2",
