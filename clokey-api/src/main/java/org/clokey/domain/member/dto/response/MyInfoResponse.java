@@ -15,4 +15,3 @@ public record MyInfoResponse(
                 String profileImageUrl,
         @Schema(description = "조회할 멤버가 공개 계정인지?", example = "true") boolean isPublic,
         @Schema(description = "조회할 멤버가 요청자 본인인지?", example = "true") boolean isMe) {}
-
