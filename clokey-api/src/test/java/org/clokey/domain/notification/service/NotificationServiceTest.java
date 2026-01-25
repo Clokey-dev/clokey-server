@@ -362,7 +362,7 @@ public class NotificationServiceTest extends IntegrationTest {
                             member1,
                             "테스트 알림2",
                             "http://testImageURl2.test",
-                            "testClokeyId",
+                            "testNickname",
                             RedirectType.MEMBER_REDIRECT);
             notification2.updateReadStatus(ReadStatus.READ);
 
@@ -441,7 +441,7 @@ public class NotificationServiceTest extends IntegrationTest {
                             member1,
                             "테스트 알림2",
                             "http://testImageURl2.test",
-                            "testClokeyId",
+                            "testNickname",
                             RedirectType.MEMBER_REDIRECT);
             notification2.updateReadStatus(ReadStatus.READ);
 
