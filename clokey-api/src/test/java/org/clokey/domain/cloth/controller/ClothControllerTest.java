@@ -33,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-@WebMvcTest(ClothController.class)
+@WebMvcTest({ClothController.class, ClothAiController.class})
 @AutoConfigureMockMvc(addFilters = false)
 class ClothControllerTest {
 
@@ -66,7 +66,7 @@ class ClothControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            post("/clothes/images")
+                            post("/cloth-ai/images")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 

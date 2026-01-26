@@ -70,6 +70,7 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 class ClothServiceTest extends IntegrationTest {
 
     @Autowired private ClothService clothService;
+    @Autowired private ClothAiService clothAiService;
     @Autowired private MemberRepository memberRepository;
     @Autowired private ClothRepository clothRepository;
     @Autowired private CategoryRepository categoryRepository;
@@ -122,7 +123,7 @@ class ClothServiceTest extends IntegrationTest {
 
             // when
             ClothImagesPresignedUrlResponse response =
-                    clothService.getClothUploadPresignedUrls(request);
+                    clothAiService.getClothUploadPresignedUrls(request);
 
             // then
             assertThat(response.urls()).containsExactly("testUrl1", "testUrl2");
@@ -309,7 +310,7 @@ class ClothServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 유효한_요창이면_가까운_계절순으로_옷을_반환한다() {
+        void 유효한_요청이면_가까운_계절순으로_옷을_반환한다() {
             // when
             SliceResponse<ClothRecommendListResponse> response =
                     clothService.recommendCategoryClothes(null, 6, 1L, Season.SPRING);
