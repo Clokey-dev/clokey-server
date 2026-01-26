@@ -1,7 +1,9 @@
 package org.clokey.domain.member.service;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.*;
@@ -12,6 +14,7 @@ import org.clokey.domain.member.repository.BlockRepository;
 import org.clokey.domain.member.repository.FollowRepository;
 import org.clokey.domain.member.repository.MemberRepository;
 import org.clokey.domain.member.repository.PendingFollowRepository;
+import org.clokey.domain.search.event.MeiliSearchSyncEvent;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.paging.SortDirection;
 import org.clokey.global.util.MemberUtil;
@@ -32,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberUtil memberUtil;
-
+    private final HistoryRepository historyRepository;
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
     private final PendingFollowRepository pendingFollowRepository;
@@ -51,21 +54,28 @@ public class MemberServiceImpl implements MemberService {
         // s3 삭제 로직 구현 이후에 반영 필요 -> 배경 및 프로필 이미지를 없애버리는 경우
 
         currentMember.updateProfile(
-                request.nickname(),
-                request.clokeyId(),
-                request.profileImageUrl(),
-                request.profileBackImageUrl(),
-                request.bio(),
-                request.visibility());
+                request.nickname(), request.profileImageUrl(), request.bio(), request.visibility());
+
+        // Member 동기화
+        eventPublisher.publishEvent(
+                MeiliSearchSyncEvent.of(
+                        MeiliSearchSyncEvent.EntityType.MEMBER, currentMember.getId()));
+
+        // Member의 모든 History 동기화
+        List<Long> historyIds = historyRepository.findAllIdsByMemberId(currentMember.getId());
+        for (Long historyId : historyIds) {
+            eventPublisher.publishEvent(
+                    MeiliSearchSyncEvent.of(MeiliSearchSyncEvent.EntityType.HISTORY, historyId));
+        }
     }
 
     @Override
-    public DuplicatedIdCheckResponse checkDuplicateClokeyId(DuplicatedIdCheckRequest request) {
+    public DuplicatedIdCheckResponse checkDuplicateNickname(DuplicatedIdCheckRequest request) {
         final Member currentMember = memberUtil.getCurrentMember();
 
         boolean duplicated =
-                !request.clokeyId().equals(currentMember.getClokeyId())
-                        && memberRepository.existsByClokeyId(request.clokeyId());
+                !request.nickname().equals(currentMember.getNickname())
+                        && memberRepository.existsByNickname(request.nickname());
 
         return DuplicatedIdCheckResponse.of(duplicated);
     }
@@ -90,11 +100,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MyselfCheckResponse checkIsMyself(String clokeyId) {
-        validateExistsClokeyId(clokeyId);
+    public MyselfCheckResponse checkIsMyself(String nickname) {
+        validateExistsNickname(nickname);
         Member currentMember = memberUtil.getCurrentMember();
 
-        boolean isMyself = currentMember.getClokeyId().equals(clokeyId);
+        boolean isMyself = currentMember.getNickname().equals(nickname);
 
         return MyselfCheckResponse.of(isMyself);
     }
@@ -139,6 +149,12 @@ public class MemberServiceImpl implements MemberService {
         Member targetMember = getMemberById(memberId);
 
         return memberRepository.findMemberInfoById(currentMember.getId(), memberId);
+    }
+
+    @Override
+    public MyInfoResponse getMyInfo() {
+        Member currentMember = memberUtil.getCurrentMember();
+        return memberRepository.findMyInfoById(currentMember.getId());
     }
 
     private void validateVisualizeBannedMember(Member member, ProfileUpdateRequest request) {
@@ -211,9 +227,9 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    private void validateExistsClokeyId(String clokeyId) {
-        if (!memberRepository.existsByClokeyId(clokeyId)) {
-            throw new BaseCustomException(MemberErrorCode.CLOKEY_ID_NOT_FOUND);
+    private void validateExistsNickname(String nickname) {
+        if (!memberRepository.existsByNickname(nickname)) {
+            throw new BaseCustomException(MemberErrorCode.NICKNAME_NOT_FOUND);
         }
     }
 
@@ -259,9 +275,9 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    private Member getMemberByCodiveId(String codiveId) {
+    private Member getMemberByNickname(String nickname) {
         return memberRepository
-                .findByClokeyId(codiveId)
+                .findByNickname(nickname)
                 .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 

@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import org.clokey.cloth.entity.Cloth;
 import org.clokey.comment.entitiy.Comment;
 import org.clokey.common.model.BaseEntity;
-import org.clokey.folder.entity.Folder;
 import org.clokey.history.entity.History;
 import org.clokey.like.entity.MemberLike;
 import org.clokey.member.enums.MemberRole;
@@ -32,11 +31,7 @@ public class Member extends BaseEntity {
 
     @NotNull private String email;
 
-    @Column(unique = true)
-    @NotNull
-    private String clokeyId;
-
-    @Column(length = 30)
+    @Column(unique = true, length = 30)
     @NotNull
     private String nickname;
 
@@ -55,7 +50,6 @@ public class Member extends BaseEntity {
     private Visibility visibility;
 
     private String profileImageUrl;
-    private String profileBackImageUrl;
 
     @Column(length = 100)
     private String bio;
@@ -80,9 +74,6 @@ public class Member extends BaseEntity {
     private List<Comment> comments = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    private List<Folder> folders = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member")
     private List<MemberLike> memberLikes = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
@@ -97,14 +88,12 @@ public class Member extends BaseEntity {
     @Builder(access = AccessLevel.PRIVATE)
     private Member(
             String email,
-            String clokeyId,
             String nickname,
             OauthInfo oauthInfo,
             MemberStatus memberStatus,
             MemberRole memberRole,
             Visibility visibility) {
         this.email = email;
-        this.clokeyId = clokeyId;
         this.nickname = nickname;
         this.oauthInfo = oauthInfo;
         this.memberStatus = memberStatus;
@@ -112,11 +101,9 @@ public class Member extends BaseEntity {
         this.visibility = visibility;
     }
 
-    public static Member createMember(
-            String email, String clokeyId, String nickname, OauthInfo oauthInfo) {
+    public static Member createMember(String email, String nickname, OauthInfo oauthInfo) {
         return Member.builder()
                 .email(email)
-                .clokeyId(clokeyId)
                 .nickname(nickname)
                 .oauthInfo(oauthInfo)
                 .memberStatus(MemberStatus.ACTIVE)
@@ -126,16 +113,9 @@ public class Member extends BaseEntity {
     }
 
     public void updateProfile(
-            String nickname,
-            String clokeyId,
-            String profileImageUrl,
-            String profileBackImageUrl,
-            String bio,
-            Visibility visibility) {
+            String nickname, String profileImageUrl, String bio, Visibility visibility) {
         this.nickname = nickname;
-        this.clokeyId = clokeyId;
         this.profileImageUrl = profileImageUrl;
-        this.profileBackImageUrl = profileBackImageUrl;
         this.bio = bio;
         this.visibility = visibility;
     }
@@ -151,5 +131,15 @@ public class Member extends BaseEntity {
 
     public void updateDeviceToken(String deviceToken) {
         this.deviceToken = deviceToken;
+    }
+
+    public void activate() {
+        this.memberStatus = MemberStatus.ACTIVE;
+        this.inactiveDate = null;
+    }
+
+    public void deactivate() {
+        this.memberStatus = MemberStatus.INACTIVE;
+        this.inactiveDate = LocalDate.now();
     }
 }

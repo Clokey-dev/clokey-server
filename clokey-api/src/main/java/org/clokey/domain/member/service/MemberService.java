@@ -10,7 +10,7 @@ public interface MemberService {
 
     void updateProfile(ProfileUpdateRequest request);
 
-    DuplicatedIdCheckResponse checkDuplicateClokeyId(DuplicatedIdCheckRequest request);
+    DuplicatedIdCheckResponse checkDuplicateNickname(DuplicatedIdCheckRequest request);
 
     void toggleFollow(Long userId);
 
@@ -18,7 +18,7 @@ public interface MemberService {
 
     void toggleBlockStatus(Long memberId);
 
-    MyselfCheckResponse checkIsMyself(String clokeyId);
+    MyselfCheckResponse checkIsMyself(String nickname);
 
     SliceResponse<BlockedMemberResponse> getBlockedMembers(
             Long lastBlockedId, Integer size, SortDirection direction);
@@ -27,4 +27,6 @@ public interface MemberService {
             Long memberId, Long lastFollowId, boolean isFollowing, Integer size);
 
     MemberInfoResponse getMemberInfo(Long memberId);
+
+    MyInfoResponse getMyInfo();
 }

@@ -49,10 +49,8 @@ class MemberControllerTest {
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "testNickname",
-                            "testClokeyId",
                             "testBio",
                             Visibility.PUBLIC,
-                            "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg");
 
             willDoNothing().given(memberService).updateProfile(any(ProfileUpdateRequest.class));
@@ -80,10 +78,8 @@ class MemberControllerTest {
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             nickname,
-                            "testClokeyId",
                             "testBio",
                             Visibility.PRIVATE,
-                            "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg");
 
             // when
@@ -104,15 +100,13 @@ class MemberControllerTest {
         @ParameterizedTest
         @NullAndEmptySource
         @ValueSource(strings = {" "})
-        void 클로키_아이디가_비어있으면_예외가_발생한다(String clokeyId) throws Exception {
+        void 닉네임이_비어있으면_예외가_발생한다(String nickname) throws Exception {
             // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "testNickname",
-                            clokeyId,
+                            nickname,
                             "testBio",
                             Visibility.PRIVATE,
-                            "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg");
 
             // when
@@ -127,7 +121,7 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.clokeyId").value("Clokey ID는 비워둘 수 없습니다."));
+                    .andExpect(jsonPath("$.result.nickname").value("닉네임은 비워둘 수 없습니다."));
         }
 
         @Test
@@ -137,10 +131,8 @@ class MemberControllerTest {
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "testNickname",
-                            "testClokeyId",
                             longBio,
                             Visibility.PRIVATE,
-                            "https://img.example.com/bg.jpg",
                             "https://img.example.com/bg.jpg");
 
             // when
@@ -168,12 +160,12 @@ class MemberControllerTest {
             DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("test_clokey_id");
             DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(true);
 
-            given(memberService.checkDuplicateClokeyId(request)).willReturn(response);
+            given(memberService.checkDuplicateNickname(request)).willReturn(response);
 
             // when
             ResultActions perform =
                     mockMvc.perform(
-                            post("/users/check-duplicate-id")
+                            post("/users/check-duplicate-nickname")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -186,14 +178,14 @@ class MemberControllerTest {
         }
 
         @Test
-        void 클로키_아이디가_null이면_예외가_발생한다() throws Exception {
+        void 닉네임이_null이면_예외가_발생한다() throws Exception {
             // given
             DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(null);
 
             // when
             ResultActions perform =
                     mockMvc.perform(
-                            post("/users/check-duplicate-id")
+                            post("/users/check-duplicate-nickname")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -202,20 +194,20 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.clokeyId").value("Clokey ID는 비워둘 수 없습니다."));
+                    .andExpect(jsonPath("$.result.nickname").value("닉네임은 비워둘 수 없습니다."));
         }
 
         // 허용 종류 : 영문(소문자) , 숫자, 언더바(_), 점(.)
         @ParameterizedTest
         @ValueSource(strings = {"clokey clokey", "CLOKEY", "클로키", "clokey-user", "clokey,,user^^"})
-        void 클로키_아이디_제약조건을_위배하면_예외가_발생한다(String clokeyId) throws Exception {
+        void 닉네임_제약조건을_위배하면_예외가_발생한다(String nickname) throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
 
             // when
             ResultActions perform =
                     mockMvc.perform(
-                            post("/users/check-duplicate-id")
+                            post("/users/check-duplicate-nickname")
                                     .contentType(MediaType.APPLICATION_JSON)
                                     .content(objectMapper.writeValueAsString(request)));
 
@@ -225,8 +217,8 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(
-                            jsonPath("$.result.clokeyId")
-                                    .value("Clokey ID는 영어 소문자, 숫자, 언더바(_), 점(.)만 허용됩니다."));
+                            jsonPath("$.result.nickname")
+                                    .value("닉네임은 영어 소문자, 숫자, 언더바(_), 점(.)만 허용됩니다."));
         }
     }
 
@@ -305,14 +297,14 @@ class MemberControllerTest {
         @Test
         void 유효한_요청이면_본인인지_여부를_반환한다() throws Exception {
             // given
-            String clokeyId = "test123";
+            String nickname = "test123";
             MyselfCheckResponse response = new MyselfCheckResponse(true);
 
-            given(memberService.checkIsMyself(clokeyId)).willReturn(response);
+            given(memberService.checkIsMyself(nickname)).willReturn(response);
 
             // when
             ResultActions perform =
-                    mockMvc.perform(get("/users/check-myself").param("clokeyId", clokeyId));
+                    mockMvc.perform(get("/users/check-myself").param("nickname", nickname));
 
             // then
             perform.andExpect(status().isOk())
@@ -424,7 +416,6 @@ class MemberControllerTest {
                                     2L,
                                     2L,
                                     "nickname1",
-                                    "codive123",
                                     "https://img.example.com/bg.jpg",
                                     false,
                                     false),
@@ -432,7 +423,6 @@ class MemberControllerTest {
                                     1L,
                                     1L,
                                     "nickname2",
-                                    "codive456",
                                     "https://img.example2.com/bg.jpg",
                                     true,
                                     false));
@@ -465,7 +455,6 @@ class MemberControllerTest {
                                     2L,
                                     2L,
                                     "nickname2",
-                                    "codive123",
                                     "https://img.example.com/bg.jpg",
                                     false,
                                     false),
@@ -473,7 +462,6 @@ class MemberControllerTest {
                                     1L,
                                     1L,
                                     "nickname1",
-                                    "codive456",
                                     "https://img.example2.com/bg.jpg",
                                     true,
                                     true));
@@ -506,7 +494,6 @@ class MemberControllerTest {
                                     2L,
                                     2L,
                                     "nickname1",
-                                    "codive123",
                                     "https://img.example.com/bg.jpg",
                                     true,
                                     false));
@@ -556,12 +543,13 @@ class MemberControllerTest {
             // given
             MemberInfoResponse result =
                     new MemberInfoResponse(
-                            "codive123",
+                            1L,
                             "nickname123",
                             "한줄소개입니다~",
                             123L,
                             321L,
                             "https://img.example.com/bg.jpg",
+                            true,
                             true,
                             false);
             given(memberService.getMemberInfo(1L)).willReturn(result);
@@ -573,7 +561,43 @@ class MemberControllerTest {
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
                     .andExpect(jsonPath("$.code").value("COMMON200"))
-                    .andExpect(jsonPath("$.result.codiveId").value("codive123"));
+                    .andExpect(jsonPath("$.result.memberId").value(1L))
+                    .andExpect(jsonPath("$.result.isPublic").value(true));
+        }
+    }
+
+    @Nested
+    class 내_정보_조회_요청_시 {
+
+        @Test
+        void 유효한_요청이면_내_정보를_반환한다() throws Exception {
+            // given
+            MyInfoResponse result =
+                    new MyInfoResponse(
+                            1L,
+                            "myNickname",
+                            "내 한줄소개",
+                            "me@example.com",
+                            10L,
+                            5L,
+                            "https://img.example.com/me.jpg",
+                            true,
+                            true);
+            given(memberService.getMyInfo()).willReturn(result);
+
+            // when
+            ResultActions perform = mockMvc.perform(get("/users/me"));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.memberId").value(1L))
+                    .andExpect(jsonPath("$.result.nickname").value("myNickname"))
+                    .andExpect(jsonPath("$.result.email").value("me@example.com"))
+                    .andExpect(jsonPath("$.result.isPublic").value(true))
+                    .andExpect(jsonPath("$.result.isMe").value(true));
         }
     }
 }

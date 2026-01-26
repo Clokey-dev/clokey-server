@@ -71,7 +71,6 @@ class StatisticsServiceTest extends IntegrationTest {
             Member member =
                     Member.createMember(
                             "testEmail",
-                            "testClokeyId",
                             "testNickName",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             memberRepository.save(member);
@@ -98,7 +97,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             clothRepository.save(cloth);
@@ -130,7 +129,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             clothRepository.save(cloth);
@@ -180,7 +179,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             clothRepository.save(cloth);
@@ -216,7 +215,6 @@ class StatisticsServiceTest extends IntegrationTest {
             Member member =
                     Member.createMember(
                             "testEmail",
-                            "testClokeyId",
                             "testNickName",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             memberRepository.save(member);
@@ -262,7 +260,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName1",
                                     "testBrand1",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -270,7 +268,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName2",
                                     "testBrand2",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -278,7 +276,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName3",
                                     "testBrand3",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -286,7 +284,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName4",
                                     "testBrand4",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -294,7 +292,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName5",
                                     "testBrand5",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             // 카테고리 2 3개
@@ -303,7 +301,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName6",
                                     "testBrand6",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             Cloth.createCloth(
@@ -311,7 +309,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName7",
                                     "testBrand7",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             Cloth.createCloth(
@@ -319,7 +317,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName8",
                                     "testBrand8",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             // 카테고리 3 2개
@@ -328,7 +326,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName9",
                                     "testBrand9",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory3,
                                     member),
                             Cloth.createCloth(
@@ -336,7 +334,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName10",
                                     "testBrand10",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory3,
                                     member));
             clothRepository.saveAll(clothes);
@@ -373,7 +371,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName1",
                                     "testBrand1",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -381,7 +379,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName2",
                                     "testBrand2",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -389,7 +387,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName3",
                                     "testBrand3",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -397,7 +395,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName4",
                                     "testBrand4",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -405,7 +403,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName5",
                                     "testBrand5",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             // 카테고리 2 3개
@@ -414,7 +412,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName6",
                                     "testBrand6",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             Cloth.createCloth(
@@ -422,7 +420,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName7",
                                     "testBrand7",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             Cloth.createCloth(
@@ -430,7 +428,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName8",
                                     "testBrand8",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             // 카테고리 3 2개
@@ -439,7 +437,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName9",
                                     "testBrand9",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory3,
                                     member),
                             Cloth.createCloth(
@@ -447,7 +445,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName10",
                                     "testBrand10",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory3,
                                     member),
                             // 카테고리 4 1개
@@ -456,7 +454,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName11",
                                     "testBrand11",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory4,
                                     member));
             clothRepository.saveAll(clothes);
@@ -495,7 +493,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName1",
                                     "testBrand1",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -503,7 +501,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName2",
                                     "testBrand2",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -511,7 +509,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName3",
                                     "testBrand3",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -519,7 +517,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName4",
                                     "testBrand4",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             Cloth.createCloth(
@@ -527,7 +525,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName5",
                                     "testBrand5",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory1,
                                     member),
                             // 카테고리 2 3개
@@ -536,7 +534,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName6",
                                     "testBrand6",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             Cloth.createCloth(
@@ -544,7 +542,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName7",
                                     "testBrand7",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             Cloth.createCloth(
@@ -552,7 +550,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName8",
                                     "testBrand8",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory2,
                                     member),
                             // 카테고리 3 2개
@@ -561,7 +559,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName9",
                                     "testBrand9",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory3,
                                     member),
                             Cloth.createCloth(
@@ -569,7 +567,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName10",
                                     "testBrand10",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory3,
                                     member),
                             // 카테고리 4 1개
@@ -578,7 +576,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName11",
                                     "testBrand11",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory4,
                                     member),
                             // 카테고리 5 1개
@@ -587,7 +585,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName12",
                                     "testBrand12",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     childCategory5,
                                     member));
             clothRepository.saveAll(clothes);
@@ -650,7 +648,6 @@ class StatisticsServiceTest extends IntegrationTest {
             Member member =
                     Member.createMember(
                             "testEmail",
-                            "testClokeyId",
                             "testNickName",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             memberRepository.save(member);
@@ -679,7 +676,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName1",
                                     "testBrand1",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -687,7 +684,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName2",
                                     "testBrand2",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -695,7 +692,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName3",
                                     "testBrand3",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -703,7 +700,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName4",
                                     "testBrand4",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -711,7 +708,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName5",
                                     "testBrand5",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             // 카테고리 2 3개
@@ -720,7 +717,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName6",
                                     "testBrand6",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -728,7 +725,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName7",
                                     "testBrand7",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -736,7 +733,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName8",
                                     "testBrand8",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             // 카테고리 3 2개
@@ -745,7 +742,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName9",
                                     "testBrand9",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             Cloth.createCloth(
@@ -753,7 +750,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName10",
                                     "testBrand10",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member));
             clothRepository.saveAll(clothes);
@@ -791,7 +788,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName1",
                                     "testBrand1",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -799,7 +796,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName2",
                                     "testBrand2",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -807,7 +804,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName3",
                                     "testBrand3",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -815,7 +812,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName4",
                                     "testBrand4",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -823,7 +820,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName5",
                                     "testBrand5",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             // 카테고리 2 4개
@@ -832,7 +829,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName6",
                                     "testBrand6",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -840,7 +837,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName7",
                                     "testBrand7",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -848,7 +845,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName8",
                                     "testBrand8",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -856,7 +853,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName9",
                                     "testBrand9",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             // 카테고리 3 3개
@@ -865,7 +862,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName10",
                                     "testBrand10",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             Cloth.createCloth(
@@ -873,7 +870,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName11",
                                     "testBrand11",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             Cloth.createCloth(
@@ -881,7 +878,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName12",
                                     "testBrand12",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             // 카테고리 4 2개
@@ -890,7 +887,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName13",
                                     "testBrand13",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category4,
                                     member),
                             Cloth.createCloth(
@@ -898,7 +895,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName14",
                                     "testBrand14",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category4,
                                     member),
                             // 카테고리 5 1개
@@ -907,7 +904,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName15",
                                     "testBrand15",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category5,
                                     member));
             clothRepository.saveAll(clothes);
@@ -948,7 +945,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName1",
                                     "testBrand1",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -956,7 +953,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName2",
                                     "testBrand2",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -964,7 +961,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName3",
                                     "testBrand3",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -972,7 +969,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName4",
                                     "testBrand4",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -980,7 +977,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName5",
                                     "testBrand5",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             Cloth.createCloth(
@@ -988,7 +985,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName6",
                                     "testBrand6",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category1,
                                     member),
                             // 카테고리 2 5개
@@ -997,7 +994,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName7",
                                     "testBrand7",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -1005,7 +1002,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName8",
                                     "testBrand8",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -1013,7 +1010,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName9",
                                     "testBrand9",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -1021,7 +1018,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName10",
                                     "testBrand10",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             Cloth.createCloth(
@@ -1029,7 +1026,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName11",
                                     "testBrand11",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category2,
                                     member),
                             // 카테고리 3 4개
@@ -1038,7 +1035,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName12",
                                     "testBrand12",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             Cloth.createCloth(
@@ -1046,7 +1043,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName13",
                                     "testBrand13",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             Cloth.createCloth(
@@ -1054,7 +1051,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName14",
                                     "testBrand14",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             Cloth.createCloth(
@@ -1062,7 +1059,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName15",
                                     "testBrand15",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category3,
                                     member),
                             // 카테고리 4 3개
@@ -1071,7 +1068,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName16",
                                     "testBrand16",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category4,
                                     member),
                             Cloth.createCloth(
@@ -1079,7 +1076,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName17",
                                     "testBrand17",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category4,
                                     member),
                             Cloth.createCloth(
@@ -1087,7 +1084,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName18",
                                     "testBrand18",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category4,
                                     member),
                             // 카테고리 5 2개
@@ -1096,7 +1093,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName19",
                                     "testBrand19",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category5,
                                     member),
                             Cloth.createCloth(
@@ -1104,7 +1101,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName20",
                                     "testBrand20",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category5,
                                     member),
                             // 카테고리 6 1개
@@ -1113,7 +1110,7 @@ class StatisticsServiceTest extends IntegrationTest {
                                     null,
                                     "testName21",
                                     "testBrand21",
-                                    Season.SPRING,
+                                    List.of(Season.SPRING),
                                     category6,
                                     member));
             clothRepository.saveAll(clothes);
@@ -1154,7 +1151,6 @@ class StatisticsServiceTest extends IntegrationTest {
             Member member =
                     Member.createMember(
                             "testEmail",
-                            "testClokeyId",
                             "testNickName",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             memberRepository.save(member);
@@ -1181,7 +1177,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth utilizedCloth2 =
@@ -1190,7 +1186,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName2",
                             "testBrand2",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth unutilizedCloth =
@@ -1199,7 +1195,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName3",
                             "testBrand3",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
 
@@ -1255,7 +1251,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth unutilizedCloth2 =
@@ -1264,7 +1260,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName2",
                             "testBrand2",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
 
@@ -1294,7 +1290,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth utilizedCloth2 =
@@ -1303,7 +1299,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName2",
                             "testBrand2",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
 
@@ -1360,7 +1356,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth defaultUnutilizedCloth =
@@ -1369,7 +1365,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName2",
                             "testBrand2",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth unutilizedCloth =
@@ -1378,7 +1374,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName3",
                             "testBrand3",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
 
@@ -1438,7 +1434,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName1",
                             "testBrand1",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth utilizedCloth2 =
@@ -1447,7 +1443,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName2",
                             "testBrand2",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
             Cloth unutilizedCloth =
@@ -1456,7 +1452,7 @@ class StatisticsServiceTest extends IntegrationTest {
                             null,
                             "testName3",
                             "testBrand3",
-                            Season.SPRING,
+                            List.of(Season.SPRING),
                             category,
                             member);
 

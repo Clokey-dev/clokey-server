@@ -12,6 +12,7 @@ import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.BlockedMemberResponse;
 import org.clokey.domain.member.dto.response.FollowMemberResponse;
 import org.clokey.domain.member.dto.response.MemberInfoResponse;
+import org.clokey.domain.member.dto.response.MyInfoResponse;
 import org.clokey.domain.member.dto.response.MyselfCheckResponse;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.BlockRepository;
@@ -62,7 +63,6 @@ class MemberServiceTest extends IntegrationTest {
             Member member =
                     Member.createMember(
                             "testEmail",
-                            "oldClokeyId",
                             "oldNickname",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
@@ -77,30 +77,20 @@ class MemberServiceTest extends IntegrationTest {
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
                             "newNickname",
-                            "newClokeyId",
                             "newBio",
                             Visibility.PUBLIC,
-                            "https://img.example.com/profile.jpg",
-                            "https://img.example.com/back.jpg");
+                            "https://img.example.com/profile.jpg");
 
             // when
             memberService.updateProfile(request);
 
             // then
             assertThat(memberRepository.findById(1L).orElseThrow())
-                    .extracting(
-                            "nickname",
-                            "clokeyId",
-                            "bio",
-                            "profileImageUrl",
-                            "profileBackImageUrl",
-                            "visibility")
+                    .extracting("nickname", "bio", "profileImageUrl", "visibility")
                     .containsExactly(
                             "newNickname",
-                            "newClokeyId",
                             "newBio",
                             "https://img.example.com/profile.jpg",
-                            "https://img.example.com/back.jpg",
                             Visibility.PUBLIC);
         }
 
@@ -112,12 +102,7 @@ class MemberServiceTest extends IntegrationTest {
             memberRepository.save(current);
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "testNickname",
-                            "testClokeyId",
-                            "testBio",
-                            Visibility.PUBLIC,
-                            "profile.jpg",
-                            "back.jpg");
+                            "testNickname", "testBio", Visibility.PUBLIC, "profile.jpg");
 
             // when & then
             assertThatThrownBy(() -> memberService.updateProfile(request))
@@ -134,13 +119,11 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickname1",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickname2",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
@@ -149,22 +132,22 @@ class MemberServiceTest extends IntegrationTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"testClokeyId1", "distinctId1", "distinctId2"})
-        void 현재_ID_또는_중복되지_않는_ID를_입력하면_false를_반환한다(String clokeyId) {
+        @ValueSource(strings = {"testNickname1", "distinctId1", "distinctId2"})
+        void 현재_닉네임_또는_중복되지_않는_닉네임을_입력하면_false를_반환한다(String nickname) {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(clokeyId);
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
 
             // when& then
-            assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isFalse();
+            assertThat(memberService.checkDuplicateNickname(request).duplicated()).isFalse();
         }
 
         @Test
-        void 중복되는_ID를_입력한_경우_true를_반환한다() {
+        void 중복되는_닉네임을_입력한_경우_true를_반환한다() {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testClokeyId2");
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("testNickname2");
 
             // when& then
-            assertThat(memberService.checkDuplicateClokeyId(request).duplicated()).isTrue();
+            assertThat(memberService.checkDuplicateNickname(request).duplicated()).isTrue();
         }
     }
 
@@ -175,19 +158,16 @@ class MemberServiceTest extends IntegrationTest {
             Member me =
                     Member.createMember(
                             "me@test.com",
-                            "meId",
                             "me",
                             OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
             Member publicUser =
                     Member.createMember(
                             "public@test.com",
-                            "publicId",
                             "pub",
                             OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
             Member privateUser =
                     Member.createMember(
                             "private@test.com",
-                            "privateId",
                             "pri",
                             OauthInfo.createOauthInfo("priOauth", OauthProvider.KAKAO));
             privateUser.changeVisibility();
@@ -273,19 +253,16 @@ class MemberServiceTest extends IntegrationTest {
             Member me =
                     Member.createMember(
                             "me@test.com",
-                            "meId",
                             "me",
                             OauthInfo.createOauthInfo("meOauth", OauthProvider.KAKAO));
             Member publicUser =
                     Member.createMember(
                             "public@test.com",
-                            "publicId",
                             "pub",
                             OauthInfo.createOauthInfo("pubOauth", OauthProvider.KAKAO));
             Member privateUser =
                     Member.createMember(
                             "private@test.com",
-                            "privateId",
                             "pri",
                             OauthInfo.createOauthInfo("priOauth", OauthProvider.KAKAO));
             privateUser.changeVisibility();
@@ -395,13 +372,11 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickname1",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickname2",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
 
@@ -463,7 +438,6 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickname1",
                             OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
             memberRepository.save(member1);
@@ -474,21 +448,21 @@ class MemberServiceTest extends IntegrationTest {
         @Test
         void 유효한_요청이면_본인_여부를_반환한다() {
             // given
-            String clokeyId = "testClokeyId1";
+            String nickname = "testNickname1";
 
             // when
-            MyselfCheckResponse response = memberService.checkIsMyself(clokeyId);
+            MyselfCheckResponse response = memberService.checkIsMyself(nickname);
 
             // then
             assertThat(response.isMyself()).isEqualTo(true);
         }
 
         @Test
-        void 클로키_아이디가_존재하지_않으면_예외가_발생한다() {
+        void 닉네임이_존재하지_않으면_예외가_발생한다() {
             // when & then
             assertThatThrownBy(() -> memberService.checkIsMyself("WrongId"))
                     .isInstanceOf(BaseCustomException.class)
-                    .hasMessage("해당 클로키 아이디를 찾을 수 없습니다.");
+                    .hasMessage("해당 닉네임을 찾을 수 없습니다.");
         }
     }
 
@@ -500,19 +474,16 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2, member3));
@@ -533,8 +504,8 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId3", "testCodiveId2");
+                    .extracting("nickname")
+                    .containsExactly("testNickName3", "testNickName2");
         }
 
         @Test
@@ -608,25 +579,21 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             Member member4 =
                     Member.createMember(
                             "testEmail4",
-                            "testCodiveId4",
                             "testNickName4",
                             OauthInfo.createOauthInfo("testOauthId4", OauthProvider.KAKAO));
 
@@ -655,8 +622,8 @@ class MemberServiceTest extends IntegrationTest {
                     memberService.getFollows(1L, null, true, 10);
             // then
             assertThat(response.content())
-                    .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId2", false));
+                    .extracting("nickname", "isMe")
+                    .containsExactly(tuple("testNickName2", false));
         }
 
         @Test
@@ -666,8 +633,8 @@ class MemberServiceTest extends IntegrationTest {
                     memberService.getFollows(2L, null, false, 10);
             // then
             assertThat(response.content())
-                    .extracting("codiveId")
-                    .containsExactly("testCodiveId4", "testCodiveId1");
+                    .extracting("nickname")
+                    .containsExactly("testNickName4", "testNickName1");
         }
 
         @Test
@@ -688,8 +655,8 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             assertThat(response.content())
-                    .extracting("codiveId", "isMe")
-                    .containsExactly(tuple("testCodiveId4", false), tuple("testCodiveId1", true));
+                    .extracting("nickname", "isMe")
+                    .containsExactly(tuple("testNickName4", false), tuple("testNickName1", true));
         }
 
         @Test
@@ -729,25 +696,21 @@ class MemberServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testCodiveId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testCodiveId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             Member member3 =
                     Member.createMember(
                             "testEmail3",
-                            "testCodiveId3",
                             "testNickName3",
                             OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
             Member member4 =
                     Member.createMember(
                             "testEmail4",
-                            "testCodiveId4",
                             "testNickName4",
                             OauthInfo.createOauthInfo("testOauthId4", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2, member3, member4));
@@ -769,9 +732,10 @@ class MemberServiceTest extends IntegrationTest {
             MemberInfoResponse response = memberService.getMemberInfo(2L);
             // then
             Assertions.assertAll(
-                    () -> assertThat(response.codiveId()).isEqualTo("testCodiveId2"),
+                    () -> assertThat(response.memberId()).isEqualTo(2L),
                     () -> assertThat(response.nickname()).isEqualTo("testNickName2"),
                     () -> assertThat(response.followerCount()).isOne(),
+                    () -> assertThat(response.isPublic()).isTrue(),
                     () -> assertThat(response.isMe()).isFalse());
         }
 
@@ -781,9 +745,10 @@ class MemberServiceTest extends IntegrationTest {
             MemberInfoResponse response = memberService.getMemberInfo(1L);
             // then
             Assertions.assertAll(
-                    () -> assertThat(response.codiveId()).isEqualTo("testCodiveId1"),
+                    () -> assertThat(response.memberId()).isEqualTo(1L),
                     () -> assertThat(response.nickname()).isEqualTo("testNickName1"),
                     () -> assertThat(response.followerCount()).isOne(),
+                    () -> assertThat(response.isPublic()).isTrue(),
                     () -> assertThat(response.isMe()).isTrue());
         }
 
@@ -794,9 +759,10 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             Assertions.assertAll(
-                    () -> assertThat(response.codiveId()).isEqualTo("testCodiveId4"),
+                    () -> assertThat(response.memberId()).isEqualTo(4L),
                     () -> assertThat(response.nickname()).isEqualTo("testNickName4"),
                     () -> assertThat(response.followerCount()).isZero(),
+                    () -> assertThat(response.isPublic()).isTrue(),
                     () -> assertThat(response.isMe()).isFalse());
         }
 
@@ -807,9 +773,10 @@ class MemberServiceTest extends IntegrationTest {
 
             // then
             Assertions.assertAll(
-                    () -> assertThat(response.codiveId()).isEqualTo("testCodiveId4"),
+                    () -> assertThat(response.memberId()).isEqualTo(4L),
                     () -> assertThat(response.nickname()).isEqualTo("testNickName4"),
                     () -> assertThat(response.followingCount()).isOne(),
+                    () -> assertThat(response.isPublic()).isTrue(),
                     () -> assertThat(response.isMe()).isFalse());
         }
 
@@ -819,6 +786,72 @@ class MemberServiceTest extends IntegrationTest {
             assertThatThrownBy(() -> memberService.getMemberInfo(33L))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(MemberErrorCode.MEMBER_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    class 내_정보를_조회할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member1 =
+                    Member.createMember(
+                            "testEmail1",
+                            "testNickName1",
+                            OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
+            Member member2 =
+                    Member.createMember(
+                            "testEmail2",
+                            "testNickName2",
+                            OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
+            Member member3 =
+                    Member.createMember(
+                            "testEmail3",
+                            "testNickName3",
+                            OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
+            memberRepository.saveAll(List.of(member1, member2, member3));
+            given(memberUtil.getCurrentMember()).willReturn(member1);
+
+            Follow follow21 = Follow.createFollow(member2, member1);
+            Follow follow31 = Follow.createFollow(member3, member1);
+            Follow follow12 = Follow.createFollow(member1, member2);
+            Follow follow13 = Follow.createFollow(member1, member3);
+            followRepository.saveAll(List.of(follow21, follow31, follow12, follow13));
+
+            Block block13 = Block.createBlock(member1, member3);
+            blockRepository.save(block13);
+        }
+
+        @Test
+        void 유효한_요청이면_내_정보를_반환한다() {
+            // when
+            MyInfoResponse response = memberService.getMyInfo();
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.memberId()).isEqualTo(1L),
+                    () -> assertThat(response.nickname()).isEqualTo("testNickName1"),
+                    () -> assertThat(response.email()).isEqualTo("testEmail1"),
+                    () -> assertThat(response.isPublic()).isTrue(),
+                    () -> assertThat(response.isMe()).isTrue());
+        }
+
+        @Test
+        void 차단_관계인_멤버는_팔로워_수에_집계하지_않는다() {
+            // when - member1 팔로워: member2, member3. member1이 member3 차단 → 1명만 집계
+            MyInfoResponse response = memberService.getMyInfo();
+
+            // then
+            assertThat(response.followerCount()).isOne();
+        }
+
+        @Test
+        void 차단_관계인_멤버는_팔로잉_수에_집계하지_않는다() {
+            // when - member1 팔로잉: member2, member3. member1이 member3 차단 → 1명만 집계
+            MyInfoResponse response = memberService.getMyInfo();
+
+            // then
+            assertThat(response.followingCount()).isOne();
         }
     }
 }

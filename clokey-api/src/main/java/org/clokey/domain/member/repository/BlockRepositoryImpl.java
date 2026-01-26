@@ -31,7 +31,7 @@ public class BlockRepositoryImpl implements BlockRepositoryCustom {
                                         BlockedMemberResponse.class,
                                         block.id,
                                         member.id,
-                                        member.clokeyId,
+                                        member.nickname,
                                         member.profileImageUrl))
                         .from(block)
                         .join(block.blocked, member)
@@ -51,6 +51,16 @@ public class BlockRepositoryImpl implements BlockRepositoryCustom {
         }
 
         return direction == SortDirection.DESC ? block.id.lt(blockId) : block.id.gt(blockId);
+    }
+
+    @Override
+    public List<Long> findBlockedMemberIdsByBlockerId(Long blockerId) {
+        return queryFactory
+                .select(block.blocked.id)
+                .from(block)
+                .where(block.blocker.id.eq(blockerId))
+                .distinct()
+                .fetch();
     }
 
     private <T> Slice<T> checkLastPage(int pageSize, List<T> results) {

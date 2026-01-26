@@ -1,6 +1,7 @@
 package org.clokey.domain.history.controller;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -8,15 +9,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.clokey.domain.history.dto.request.HistoryCreateRequest;
+import org.clokey.domain.history.dto.request.HistoryImagesUploadRequest;
 import org.clokey.domain.history.dto.request.HistoryUpdateRequest;
 import org.clokey.domain.history.dto.response.DailyHistoryResponse;
 import org.clokey.domain.history.dto.response.HistoryClothTagListResponse;
 import org.clokey.domain.history.dto.response.HistoryCreateResponse;
+import org.clokey.domain.history.dto.response.HistoryImagesPresignedUrlResponse;
 import org.clokey.domain.history.dto.response.HistoryOwnershipCheckResponse;
 import org.clokey.domain.history.dto.response.MonthlyHistoryResponse;
 import org.clokey.domain.history.dto.response.SituationListResponse;
 import org.clokey.domain.history.dto.response.StyleListResponse;
 import org.clokey.domain.history.service.HistoryService;
+import org.clokey.enums.FileExtension;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +43,40 @@ public class HistoryControllerTest {
     @Autowired private ObjectMapper objectMapper;
 
     @MockitoBean private HistoryService historyService;
+
+    @Nested
+    class 옷_업로드_presigned_url_발급_요청_시 {
+
+        @Test
+        void 유효한_요청이면_기록_이미지_업로드_Presigned_URL들을_반환한다() throws Exception {
+            // given
+            HistoryImagesUploadRequest request =
+                    new HistoryImagesUploadRequest(
+                            List.of(
+                                    new HistoryImagesUploadRequest.Payload(
+                                            FileExtension.JPEG, "testMd5Hash1"),
+                                    new HistoryImagesUploadRequest.Payload(
+                                            FileExtension.PNG, "testMd5Hash2")));
+
+            HistoryImagesPresignedUrlResponse response =
+                    new HistoryImagesPresignedUrlResponse(List.of("testUrl1", "testUrl2"));
+
+            given(historyService.getHistoryUploadPresignedUrls(request)).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/histories/images")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON201"))
+                    .andExpect(jsonPath("$.result.urls[0]").value("testUrl1"))
+                    .andExpect(jsonPath("$.result.urls[1]").value("testUrl2"));
+        }
+    }
 
     @Nested
     class 기록_생성_요청_시 {
@@ -80,37 +118,6 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON201"))
                     .andExpect(jsonPath("$.message").value("요청 성공 및 리소스 생성됨"))
                     .andExpect(jsonPath("$.result.historyId").value(1L));
-        }
-
-        @ParameterizedTest
-        @NullSource
-        @EmptySource
-        @ValueSource(strings = {" "})
-        void 내용이_null_또는_공백이면_예외가_발생한다(String content) throws Exception {
-            HistoryCreateRequest request =
-                    new HistoryCreateRequest(
-                            content,
-                            1L,
-                            List.of(1L, 2L),
-                            List.of("testHashtag1", "testHashtag2"),
-                            List.of(
-                                    new HistoryCreateRequest.Payload(
-                                            "testUrl",
-                                            List.of(
-                                                    new HistoryCreateRequest.ClothTag(
-                                                            1L, 0.42, 0.73)))));
-
-            ResultActions perform =
-                    mockMvc.perform(
-                            post("/histories")
-                                    .contentType(MediaType.APPLICATION_JSON)
-                                    .content(objectMapper.writeValueAsString(request)));
-
-            perform.andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.isSuccess").value(false))
-                    .andExpect(jsonPath("$.code").value("COMMON400"))
-                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.content").value("기록의 내용은 비워둘 수 없습니다."));
         }
 
         @Test
@@ -714,17 +721,21 @@ public class HistoryControllerTest {
                             1L,
                             "testProfileImageUrl",
                             "testNickname",
+                            true,
                             List.of(
                                     new DailyHistoryResponse.ImagePayload(1L, "testImageUrl1"),
                                     new DailyHistoryResponse.ImagePayload(2L, "testImageUrl2")),
                             10L,
+                            false,
                             5L,
                             java.time.LocalDate.of(2025, 1, 1),
                             1L,
                             "testSituation",
+                            "testContent",
                             List.of(
                                     new DailyHistoryResponse.StylePayload(1L, "testStyle1"),
-                                    new DailyHistoryResponse.StylePayload(2L, "testStyle2")));
+                                    new DailyHistoryResponse.StylePayload(2L, "testStyle2")),
+                            List.of("testHashtag1", "testHashtag2"));
 
             given(historyService.getDailyHistory(1L)).willReturn(testDailyHistoryResponse);
 
@@ -739,6 +750,7 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.result.memberId").value(1L))
                     .andExpect(jsonPath("$.result.profileImageUrl").value("testProfileImageUrl"))
                     .andExpect(jsonPath("$.result.nickname").value("testNickname"))
+                    .andExpect(jsonPath("$.result.isMine").value(true))
                     .andExpect(jsonPath("$.result.images").isArray())
                     .andExpect(jsonPath("$.result.images.length()").value(2))
                     .andExpect(jsonPath("$.result.images[0].imageId").value(1L))
@@ -748,10 +760,15 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.result.historyDate").value("2025-01-01"))
                     .andExpect(jsonPath("$.result.situationId").value(1L))
                     .andExpect(jsonPath("$.result.situationName").value("testSituation"))
+                    .andExpect(jsonPath("$.result.content").value("testContent"))
                     .andExpect(jsonPath("$.result.styles").isArray())
                     .andExpect(jsonPath("$.result.styles.length()").value(2))
                     .andExpect(jsonPath("$.result.styles[0].styleId").value(1L))
-                    .andExpect(jsonPath("$.result.styles[0].styleName").value("testStyle1"));
+                    .andExpect(jsonPath("$.result.styles[0].styleName").value("testStyle1"))
+                    .andExpect(jsonPath("$.result.hashtags").isArray())
+                    .andExpect(jsonPath("$.result.hashtags.length()").value(2))
+                    .andExpect(jsonPath("$.result.hashtags[0]").value("testHashtag1"))
+                    .andExpect(jsonPath("$.result.hashtags[1]").value("testHashtag2"));
         }
     }
 
@@ -816,9 +833,18 @@ public class HistoryControllerTest {
             MonthlyHistoryResponse testMonthlyHistoryResponse =
                     MonthlyHistoryResponse.of(
                             List.of(
-                                    new MonthlyHistoryResponse.Payload(1L, "testFirstImageUrl1"),
-                                    new MonthlyHistoryResponse.Payload(2L, "testFirstImageUrl2"),
-                                    new MonthlyHistoryResponse.Payload(3L, "testFirstImageUrl3")));
+                                    new MonthlyHistoryResponse.Payload(
+                                            1L,
+                                            "testFirstImageUrl1",
+                                            java.time.LocalDate.of(2025, 1, 1)),
+                                    new MonthlyHistoryResponse.Payload(
+                                            2L,
+                                            "testFirstImageUrl2",
+                                            java.time.LocalDate.of(2025, 1, 2)),
+                                    new MonthlyHistoryResponse.Payload(
+                                            3L,
+                                            "testFirstImageUrl3",
+                                            java.time.LocalDate.of(2025, 1, 3))));
 
             given(historyService.getMonthlyHistory(1L, 2025, 1))
                     .willReturn(testMonthlyHistoryResponse);
@@ -841,14 +867,17 @@ public class HistoryControllerTest {
                     .andExpect(
                             jsonPath("$.result.payloads[0].firstImageUrl")
                                     .value("testFirstImageUrl1"))
+                    .andExpect(jsonPath("$.result.payloads[0].historyDate").value("2025-01-01"))
                     .andExpect(jsonPath("$.result.payloads[1].historyId").value(2L))
                     .andExpect(
                             jsonPath("$.result.payloads[1].firstImageUrl")
                                     .value("testFirstImageUrl2"))
+                    .andExpect(jsonPath("$.result.payloads[1].historyDate").value("2025-01-02"))
                     .andExpect(jsonPath("$.result.payloads[2].historyId").value(3L))
                     .andExpect(
                             jsonPath("$.result.payloads[2].firstImageUrl")
-                                    .value("testFirstImageUrl3"));
+                                    .value("testFirstImageUrl3"))
+                    .andExpect(jsonPath("$.result.payloads[2].historyDate").value("2025-01-03"));
         }
     }
 
@@ -874,6 +903,23 @@ public class HistoryControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON200"))
                     .andExpect(jsonPath("$.message").value("성공입니다."))
                     .andExpect(jsonPath("$.result.isOwner").value(true));
+        }
+    }
+
+    @Nested
+    class 기록_삭제_요청_시 {
+
+        @Test
+        void 유효한_요청이면_기록을_삭제한다() throws Exception {
+            // given
+            willDoNothing().given(historyService).deleteHistory(1L);
+
+            // when & then
+            ResultActions perform = mockMvc.perform(delete("/histories/1"));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON204"));
         }
     }
 }

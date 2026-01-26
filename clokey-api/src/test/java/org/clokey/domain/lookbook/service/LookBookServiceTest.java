@@ -64,7 +64,6 @@ class LookBookServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
@@ -92,14 +91,12 @@ class LookBookServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
@@ -151,14 +148,12 @@ class LookBookServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
@@ -174,7 +169,13 @@ class LookBookServiceTest extends IntegrationTest {
 
             Cloth cloth =
                     Cloth.createCloth(
-                            "testImageUrl", null, null, null, Season.SPRING, category, member1);
+                            "testImageUrl",
+                            null,
+                            null,
+                            null,
+                            List.of(Season.SPRING),
+                            category,
+                            member1);
 
             clothRepository.saveAll(List.of(cloth));
 
@@ -268,14 +269,12 @@ class LookBookServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
@@ -303,7 +302,15 @@ class LookBookServiceTest extends IntegrationTest {
                     lookBookService.getLookBooks(null, 3, SortDirection.ASC);
 
             // then
-            assertThat(response.content()).extracting("lookBookId").containsExactly(1L, 2L, 3L);
+            Assertions.assertAll(
+                    () ->
+                            assertThat(response.content())
+                                    .extracting("lookBookId")
+                                    .containsExactly(1L, 2L, 3L),
+                    () ->
+                            assertThat(response.content())
+                                    .extracting("count")
+                                    .containsExactly(1L, 1L, 0L));
         }
 
         @Test
@@ -385,14 +392,12 @@ class LookBookServiceTest extends IntegrationTest {
             Member member1 =
                     Member.createMember(
                             "testEmail1",
-                            "testClokeyId1",
                             "testNickName1",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 
             Member member2 =
                     Member.createMember(
                             "testEmail2",
-                            "testClokeyId2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId1", OauthProvider.KAKAO));
 

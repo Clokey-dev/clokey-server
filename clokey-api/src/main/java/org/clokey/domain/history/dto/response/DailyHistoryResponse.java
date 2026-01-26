@@ -9,36 +9,48 @@ public record DailyHistoryResponse(
         @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg")
                 String profileImageUrl,
         @Schema(description = "닉네임", example = "포테토남") String nickname,
+        @Schema(description = "작성자 본인 여부", example = "true") Boolean isMine,
         @Schema(description = "기록 이미지 목록") List<DailyHistoryResponse.ImagePayload> images,
         @Schema(description = "좋아요 개수", example = "10") Long likeCount,
+        @Schema(description = "좋아요 여부", example = "true") Boolean liked,
         @Schema(description = "댓글 개수", example = "5") Long commentCount,
         @Schema(description = "기록 날짜", example = "2025-01-01") LocalDate historyDate,
         @Schema(description = "상황 ID", example = "1") Long situationId,
         @Schema(description = "상황 이름", example = "데일리") String situationName,
-        @Schema(description = "스타일 목록") List<DailyHistoryResponse.StylePayload> styles) {
+        @Schema(description = "본문 내용", example = "오늘 날씨가 좋아서 산책을 다녀왔어요") String content,
+        @Schema(description = "스타일 목록") List<DailyHistoryResponse.StylePayload> styles,
+        @Schema(description = "해시태그 목록", example = "[\"데일리룩\", \"오늘의코디\"]") List<String> hashtags) {
 
     public static DailyHistoryResponse of(
             Long memberId,
             String profileImageUrl,
             String nickname,
+            Boolean isMine,
             List<ImagePayload> images,
             Long likeCount,
+            boolean liked,
             Long commentCount,
             LocalDate historyDate,
             Long situationId,
             String situationName,
-            List<StylePayload> styles) {
+            String content,
+            List<StylePayload> styles,
+            List<String> hashtags) {
         return new DailyHistoryResponse(
                 memberId,
                 profileImageUrl,
                 nickname,
+                isMine,
                 images,
                 likeCount,
+                liked,
                 commentCount,
                 historyDate,
                 situationId,
                 situationName,
-                styles);
+                content,
+                styles,
+                hashtags);
     }
 
     @Schema(name = "DailyHistoryResponseImagePayload", description = "기록 이미지 정보")
