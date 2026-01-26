@@ -1,6 +1,9 @@
 package org.clokey.domain.cloth.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.clokey.category.entity.Category;
 import org.clokey.cloth.enums.Season;
@@ -112,6 +115,17 @@ public class ClothAiServiceImpl implements ClothAiService {
         List<ClothInfoExtractResponse.Payload> payloads =
                 new java.util.ArrayList<>(resultItems.size());
 
+        Set<Long> categoryIds =
+                resultItems.stream()
+                        .map(ClothInfoExtractAiResponseDTO.ResultItem::categories)
+                        .filter(categories -> categories != null && !categories.isEmpty())
+                        .map(categories -> categories.get(0).id())
+                        .collect(Collectors.toSet());
+
+        Map<Long, Category> categoryMap =
+                categoryRepository.findAllByIdWithParent(categoryIds).stream()
+                        .collect(Collectors.toMap(Category::getId, c -> c));
+
         for (int i = 0; i < resultItems.size(); i++) {
             ClothInfoExtractAiResponseDTO.ResultItem resultItem = resultItems.get(i);
             String clothImageUrl = resultItem.uploadedUrl();
@@ -121,7 +135,10 @@ public class ClothAiServiceImpl implements ClothAiService {
                 throw new BaseCustomException(ClothErrorCode.ClOTH_NOT_FOUND);
             }
             ClothInfoExtractAiResponseDTO.CategoryItem categoryItem = categories.get(0);
-            Category category = getCategoryById(categoryItem.id());
+            Category category = categoryMap.get(categoryItem.id());
+            if (category == null) {
+                throw new BaseCustomException(CategoryErrorCode.CATEGORY_NOT_FOUND);
+            }
             Category parentCategory = category.getParent();
 
             List<ClothInfoExtractAiResponseDTO.SeasonItem> seasonItems = resultItem.seasons();
@@ -254,12 +271,6 @@ public class ClothAiServiceImpl implements ClothAiService {
         if (!s3Util.doesFileExistByUrl(imageUrl)) {
             throw new BaseCustomException(HistoryErrorCode.HISTORY_IMAGE_NOT_FOUND);
         }
-    }
-
-    private Category getCategoryById(Long categoryId) {
-        return categoryRepository
-                .findByIdWithParent(categoryId)
-                .orElseThrow(() -> new BaseCustomException(CategoryErrorCode.CATEGORY_NOT_FOUND));
     }
 
     private ClothAiErrorCode mapAiErrorCode(String aiErrorCode) {
