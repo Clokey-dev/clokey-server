@@ -5,6 +5,7 @@ import static org.clokey.history.entity.QHistory.history;
 import static org.clokey.history.entity.QHistoryImage.historyImage;
 import static org.clokey.member.entity.QMember.member;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -71,9 +72,9 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
             results = results.subList(0, size);
         }
 
-        List<Long> parentIdsWithReplies =
+        List<Tuple> replyCounts =
                 queryFactory
-                        .select(comment.comment.id)
+                        .select(comment.comment.id, comment.id.count())
                         .from(comment)
                         .where(
                                 comment.comment.id.in(
@@ -83,9 +84,13 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                         .groupBy(comment.comment.id)
                         .fetch();
 
-        // 각 부모 댓글이 대댓글을 가지고 있는지 여부 조회
-        Map<Long, Boolean> repliedMap =
-                parentIdsWithReplies.stream().collect(Collectors.toMap(id -> id, id -> true));
+        // 각 부모 댓글별 대댓글 개수 조회
+        Map<Long, Long> replyCountMap =
+                replyCounts.stream()
+                        .collect(
+                                Collectors.toMap(
+                                        tuple -> tuple.get(comment.comment.id),
+                                        tuple -> tuple.get(comment.id.count())));
 
         List<CommentListResponse> finalResults =
                 results.stream()
@@ -97,7 +102,8 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                                 c.nickname(),
                                                 c.profileImageUrl(),
                                                 c.content(),
-                                                repliedMap.getOrDefault(c.commentId(), false),
+                                                replyCountMap.getOrDefault(c.commentId(), 0L) > 0,
+                                                replyCountMap.getOrDefault(c.commentId(), 0L),
                                                 c.isMine()))
                         .toList();
 
