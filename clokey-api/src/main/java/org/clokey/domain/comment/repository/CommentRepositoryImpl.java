@@ -9,6 +9,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                                         member.profileImageUrl,
                                         comment.content,
                                         Expressions.constant(false),
+                                        Expressions.constant(0L),
                                         member.id.eq(currentMemberId)))
                         .from(comment)
                         .join(comment.member, member)
@@ -72,9 +74,10 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
             results = results.subList(0, size);
         }
 
+        NumberExpression<Long> replyCountExpression = comment.id.count();
         List<Tuple> replyCounts =
                 queryFactory
-                        .select(comment.comment.id, comment.id.count())
+                        .select(comment.comment.id, replyCountExpression)
                         .from(comment)
                         .where(
                                 comment.comment.id.in(
@@ -90,7 +93,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                         .collect(
                                 Collectors.toMap(
                                         tuple -> tuple.get(comment.comment.id),
-                                        tuple -> tuple.get(comment.id.count())));
+                                        tuple -> tuple.get(replyCountExpression)));
 
         List<CommentListResponse> finalResults =
                 results.stream()
