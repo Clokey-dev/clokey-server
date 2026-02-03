@@ -37,6 +37,7 @@ import org.clokey.response.SliceResponse;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -368,6 +369,7 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
     }
 
     @Async
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void sendPushAfterCommit(PushSendEvent event) {
         try {
