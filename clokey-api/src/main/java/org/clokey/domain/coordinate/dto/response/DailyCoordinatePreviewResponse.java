@@ -1,10 +1,8 @@
 package org.clokey.domain.coordinate.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.clokey.coordinate.entity.Coordinate;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import org.clokey.coordinate.entity.Coordinate;
 
 public record DailyCoordinatePreviewResponse(
         @Schema(description = "오늘의 코디의 ID", example = "1") Long coordinateId,

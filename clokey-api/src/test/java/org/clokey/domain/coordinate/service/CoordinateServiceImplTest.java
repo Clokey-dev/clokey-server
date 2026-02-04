@@ -50,32 +50,20 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 @RecordApplicationEvents
 class CoordinateServiceImplTest extends IntegrationTest {
 
-    @Autowired
-    private TransactionUtil transactionUtil;
-    @Autowired
-    private RedisCleaner redisCleaner;
-    @Autowired
-    private ApplicationEvents applicationEvents;
+    @Autowired private TransactionUtil transactionUtil;
+    @Autowired private RedisCleaner redisCleaner;
+    @Autowired private ApplicationEvents applicationEvents;
 
-    @Autowired
-    private CoordinateRepository coordinateRepository;
-    @Autowired
-    private MemberRepository memberRepository;
-    @Autowired
-    private CoordinateClothRepository coordinateClothRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private ClothRepository clothRepository;
-    @Autowired
-    private CoordinateService coordinateService;
-    @Autowired
-    private LookBookRepository lookBookRepository;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @Autowired private CoordinateRepository coordinateRepository;
+    @Autowired private MemberRepository memberRepository;
+    @Autowired private CoordinateClothRepository coordinateClothRepository;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private ClothRepository clothRepository;
+    @Autowired private CoordinateService coordinateService;
+    @Autowired private LookBookRepository lookBookRepository;
+    @Autowired private StringRedisTemplate redisTemplate;
 
-    @MockitoBean
-    private MemberUtil memberUtil;
+    @MockitoBean private MemberUtil memberUtil;
 
     @Nested
     class 오늘의_코디를_생성할_때 {
@@ -1997,9 +1985,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
-            Coordinate coordinate1 =
-                    Coordinate.createDailyCoordinate(
-                            "testImageUrl1", member1);
+            Coordinate coordinate1 = Coordinate.createDailyCoordinate("testImageUrl1", member1);
             coordinateRepository.save(coordinate1);
         }
 
@@ -2016,7 +2002,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
 
         @Test
         void 오늘의_코디가_존재하지_않으면_예외가_발생한다() {
-            //given
+            // given
             Member member = memberRepository.findById(2L).orElseThrow();
             given(memberUtil.getCurrentMember()).willReturn(member);
 
@@ -2046,9 +2032,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
-            Coordinate coordinate1 =
-                    Coordinate.createDailyCoordinate(
-                            "testImageUrl1", member1);
+            Coordinate coordinate1 = Coordinate.createDailyCoordinate("testImageUrl1", member1);
             coordinateRepository.save(coordinate1);
 
             Category parentCategory = Category.createCategory("testParentCategory", null);
@@ -2138,7 +2122,7 @@ class CoordinateServiceImplTest extends IntegrationTest {
 
         @Test
         void 오늘의_코디가_존재하지_않으면_예외가_발생한다() {
-            //given
+            // given
             Member member = memberRepository.findById(2L).orElseThrow();
             given(memberUtil.getCurrentMember()).willReturn(member);
 

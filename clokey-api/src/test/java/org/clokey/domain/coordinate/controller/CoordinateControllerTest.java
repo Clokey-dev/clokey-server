@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -1678,7 +1677,8 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            get("/coordinate/daily/today/preview").contentType(MediaType.APPLICATION_JSON));
+                            get("/coordinate/daily/today/preview")
+                                    .contentType(MediaType.APPLICATION_JSON));
 
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
@@ -1730,7 +1730,8 @@ class CoordinateControllerTest {
             // when & then
             ResultActions perform =
                     mockMvc.perform(
-                            get("/coordinate/daily/today/details").contentType(MediaType.APPLICATION_JSON));
+                            get("/coordinate/daily/today/details")
+                                    .contentType(MediaType.APPLICATION_JSON));
 
             perform.andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))

@@ -107,8 +107,7 @@ public class CoordinateController {
             summary = "오늘의 코디 Preview 조회",
             description = "오늘의 코디의 Preview를 조회하는 API입니다.")
     public BaseResponse<DailyCoordinatePreviewResponse> getTodayCoordinatePreview() {
-        DailyCoordinatePreviewResponse response =
-                coordinateService.getTodayCoordinatePreview();
+        DailyCoordinatePreviewResponse response = coordinateService.getTodayCoordinatePreview();
         return BaseResponse.onSuccess(GlobalBaseSuccessCode.OK, response);
     }
 

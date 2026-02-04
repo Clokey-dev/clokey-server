@@ -334,8 +334,7 @@ public class CoordinateServiceImpl implements CoordinateService {
         final Member currentMember = memberUtil.getCurrentMember();
         final Coordinate coordinate = getTodayDailyCoordinate(currentMember);
 
-        return coordinateRepository.findAllCoordinateDetailsByCoordinateId(
-                        coordinate.getId());
+        return coordinateRepository.findAllCoordinateDetailsByCoordinateId(coordinate.getId());
     }
 
     @Override
