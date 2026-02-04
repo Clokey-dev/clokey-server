@@ -590,7 +590,14 @@ class CommentServiceTest extends IntegrationTest {
                             "testEmail2",
                             "testNickName2",
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
-            memberRepository.saveAll(List.of(member1, member2));
+
+            Member member3 =
+                    Member.createMember(
+                            "testEmail3",
+                            "testNickName3",
+                            OauthInfo.createOauthInfo("testOauthId3", OauthProvider.KAKAO));
+
+            memberRepository.saveAll(List.of(member1, member2, member3));
             given(memberUtil.getCurrentMember()).willReturn(member1);
 
             Situation situation = Situation.createSituation("testSituation");
@@ -606,7 +613,10 @@ class CommentServiceTest extends IntegrationTest {
             Comment reply1 = Comment.createReply("testContent1", member1, history, comment1);
             Comment reply2 = Comment.createReply("testContent2", member1, history, comment1);
             Comment reply3 = Comment.createReply("testContent3", member1, history, comment2);
-            commentRepository.saveAll(List.of(comment1, comment2, reply1, reply2, reply3));
+            Comment otherComment = Comment.createParentComment("otherContent", member2, history);
+            Comment otherReply = Comment.createReply("otherReply", member2, history, otherComment);
+            commentRepository.saveAll(
+                    List.of(comment1, comment2, reply1, reply2, reply3, otherComment, otherReply));
         }
 
         @Test
@@ -642,13 +652,49 @@ class CommentServiceTest extends IntegrationTest {
         }
 
         @Test
-        void 댓글_작성자가_아닌_경우_예외가_발생한다() {
+        void 글_작성자는_내_글에_달린_남의_댓글을_삭제할_수_있고_대댓글도_함께_삭제된다() {
             // given
-            Member member = memberRepository.findById(2L).orElseThrow();
+            Member historyOwner = memberRepository.findById(1L).orElseThrow();
+            given(memberUtil.getCurrentMember()).willReturn(historyOwner);
+
+            Comment otherComment =
+                    commentRepository.findAll().stream()
+                            .filter(c -> c.getComment() == null)
+                            .filter(c -> "otherContent".equals(c.getContent()))
+                            .findFirst()
+                            .orElseThrow();
+
+            Comment otherReply =
+                    commentRepository.findAll().stream()
+                            .filter(c -> c.getComment() != null)
+                            .filter(c -> "otherReply".equals(c.getContent()))
+                            .findFirst()
+                            .orElseThrow();
+
+            // when
+            commentService.deleteComment(otherComment.getId());
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(commentRepository.findById(otherComment.getId())).isEmpty(),
+                    () -> assertThat(commentRepository.findById(otherReply.getId())).isEmpty());
+        }
+
+        @Test
+        void 글_작성자도_아니고_댓글_작성자도_아니면_남의_댓글을_삭제할_수_없다() {
+            // given
+            Member member = memberRepository.findById(3L).orElseThrow();
             given(memberUtil.getCurrentMember()).willReturn(member);
 
+            Comment otherComment =
+                    commentRepository.findAll().stream()
+                            .filter(c -> c.getComment() == null)
+                            .filter(c -> "otherContent".equals(c.getContent()))
+                            .findFirst()
+                            .orElseThrow();
+
             // when & then
-            assertThatThrownBy(() -> commentService.deleteComment(1L))
+            assertThatThrownBy(() -> commentService.deleteComment(otherComment.getId()))
                     .isInstanceOf(BaseCustomException.class)
                     .hasMessage(CommentErrorCode.NOT_MY_COMMENT.getMessage());
         }
