@@ -28,6 +28,7 @@ import org.clokey.history.entity.History;
 import org.clokey.history.entity.HistoryImage;
 import org.clokey.history.entity.Situation;
 import org.clokey.like.entity.MemberLike;
+import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Follow;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
@@ -198,6 +199,11 @@ public class FeedServiceTest extends IntegrationTest {
 
         @Test
         void 차단한_사용자의_피드는_노출되지_않는다() {
+            // given
+            Member member1 = memberRepository.findByNickname("testNickName1").orElseThrow();
+            Member member2 = memberRepository.findByNickname("testNickName2").orElseThrow();
+            blockRepository.save(Block.createBlock(member1, member2));
+
             // when
             FeedListResponse response =
                     feedService.getFeeds(FollowScope.ALL, List.of(), List.of(), 3, null);
@@ -240,17 +246,18 @@ public class FeedServiceTest extends IntegrationTest {
                                             (left, right) -> left));
             Long history3_1 = historyIds.get("B1");
             Long history3_2 = historyIds.get("B2");
+            Long history2_3 = historyIds.get("A3");
             Long history4_1 = historyIds.get("C1");
             Long history4_2 = historyIds.get("C2");
 
-            assertThat(response.items()).hasSize(2);
+            assertThat(response.items()).hasSize(3);
             List<Long> feedIds =
                     response.items().stream()
                             .map(FeedListResponse.FeedItemResponse::feedId)
                             .toList();
-            assertThat(feedIds).containsExactly(history3_2, history3_1);
+            assertThat(feedIds).containsExactly(history3_2, history2_3, history3_1);
             assertThat(feedIds).doesNotContain(history4_1, history4_2);
-            assertThat(response.hasNext()).isFalse();
+            assertThat(response.hasNext()).isTrue();
         }
     }
 
@@ -398,17 +405,18 @@ public class FeedServiceTest extends IntegrationTest {
                                             (left, right) -> left));
             Long history3_1 = historyIds.get("B1");
             Long history3_2 = historyIds.get("B2");
+            Long history2_3 = historyIds.get("A3");
             Long history4_1 = historyIds.get("C1");
             Long history4_2 = historyIds.get("C2");
 
-            assertThat(response.items()).hasSize(2);
+            assertThat(response.items()).hasSize(3);
             List<Long> feedIds =
                     response.items().stream()
                             .map(FeedListResponse.FeedItemResponse::feedId)
                             .toList();
-            assertThat(feedIds).containsExactly(history3_2, history3_1);
+            assertThat(feedIds).containsExactly(history3_2, history3_1, history2_3);
             assertThat(feedIds).doesNotContain(history4_1, history4_2);
-            assertThat(response.hasNext()).isFalse();
+            assertThat(response.hasNext()).isTrue();
         }
     }
 }
