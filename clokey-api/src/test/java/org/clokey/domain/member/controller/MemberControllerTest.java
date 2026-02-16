@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
-import org.clokey.domain.member.dto.request.DuplicatedIdCheckRequest;
+import org.clokey.domain.member.dto.request.DuplicatedNicknameCheckRequest;
 import org.clokey.domain.member.dto.request.ProfileUpdateRequest;
 import org.clokey.domain.member.dto.response.*;
 import org.clokey.domain.member.service.MemberService;
@@ -162,7 +162,8 @@ class MemberControllerTest {
         @Test
         void 유효한_요청이면_중복_여부를_반환한다() throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("clokey.홍길동");
+            DuplicatedNicknameCheckRequest request =
+                    new DuplicatedNicknameCheckRequest("clokey.홍길동");
             DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(true);
 
             given(memberService.checkDuplicateNickname(request)).willReturn(response);
@@ -185,7 +186,7 @@ class MemberControllerTest {
         @Test
         void 닉네임이_null이면_예외가_발생한다() throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(null);
+            DuplicatedNicknameCheckRequest request = new DuplicatedNicknameCheckRequest(null);
 
             // when
             ResultActions perform =
@@ -207,7 +208,7 @@ class MemberControllerTest {
         @ValueSource(strings = {" "})
         void 닉네임이_비어있으면_예외가_발생한다(String nickname) throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
+            DuplicatedNicknameCheckRequest request = new DuplicatedNicknameCheckRequest(nickname);
 
             // when
             ResultActions perform =
@@ -232,7 +233,7 @@ class MemberControllerTest {
                 strings = {"clokey clokey", "CLOKEY", "clokey-user", "clokey,,user^^", "clokey1"})
         void 닉네임_제약조건을_위배하면_예외가_발생한다(String nickname) throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
+            DuplicatedNicknameCheckRequest request = new DuplicatedNicknameCheckRequest(nickname);
 
             // when
             ResultActions perform =
@@ -254,8 +255,8 @@ class MemberControllerTest {
         @Test
         void 닉네임이_20자를_초과하면_예외가_발생한다() throws Exception {
             // given
-            DuplicatedIdCheckRequest request =
-                    new DuplicatedIdCheckRequest("abcdefghijklmnopqrstu");
+            DuplicatedNicknameCheckRequest request =
+                    new DuplicatedNicknameCheckRequest("abcdefghijklmnopqrstu");
 
             // when
             ResultActions perform =
@@ -276,7 +277,7 @@ class MemberControllerTest {
         @ValueSource(strings = {"clokey", "홍길동", "clokey.홍길동", "abc_def"})
         void 닉네임_제약조건을_만족하면_중복_여부를_반환한다(String nickname) throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
+            DuplicatedNicknameCheckRequest request = new DuplicatedNicknameCheckRequest(nickname);
             DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(false);
             given(memberService.checkDuplicateNickname(request)).willReturn(response);
 

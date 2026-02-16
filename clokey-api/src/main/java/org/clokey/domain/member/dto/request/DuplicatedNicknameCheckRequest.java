@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public record DuplicatedIdCheckRequest(
+public record DuplicatedNicknameCheckRequest(
         @NotBlank(message = "닉네임은 비워둘 수 없습니다.")
                 @Size(max = 20, message = "닉네임은 20자 이하여야 합니다.")
                 @Pattern(
