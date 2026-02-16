@@ -1,5 +1,6 @@
 package org.clokey.domain.member.controller;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
@@ -94,7 +95,9 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.nickname").value("닉네임은 비워둘 수 없습니다."));
+                    .andExpect(
+                            jsonPath("$.result.nickname")
+                                    .value(containsString("닉네임은 비워둘 수 없습니다.")));
         }
 
         @ParameterizedTest
@@ -121,7 +124,9 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.isSuccess").value(false))
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                    .andExpect(jsonPath("$.result.nickname").value("닉네임은 비워둘 수 없습니다."));
+                    .andExpect(
+                            jsonPath("$.result.nickname")
+                                    .value(containsString("닉네임은 비워둘 수 없습니다.")));
         }
 
         @Test
@@ -157,7 +162,7 @@ class MemberControllerTest {
         @Test
         void 유효한_요청이면_중복_여부를_반환한다() throws Exception {
             // given
-            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("test_clokey_id");
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest("clokey.홍길동");
             DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(true);
 
             given(memberService.checkDuplicateNickname(request)).willReturn(response);
@@ -197,9 +202,34 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.result.nickname").value("닉네임은 비워둘 수 없습니다."));
         }
 
-        // 허용 종류 : 영문(소문자) , 숫자, 언더바(_), 점(.)
         @ParameterizedTest
-        @ValueSource(strings = {"clokey clokey", "CLOKEY", "클로키", "clokey-user", "clokey,,user^^"})
+        @NullAndEmptySource
+        @ValueSource(strings = {" "})
+        void 닉네임이_비어있으면_예외가_발생한다(String nickname) throws Exception {
+            // given
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/check-duplicate-nickname")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(
+                            jsonPath("$.result.nickname")
+                                    .value(containsString("닉네임은 비워둘 수 없습니다.")));
+        }
+
+        // 허용 종류 : 영어 소문자, 한글, 언더바(_), 점(.)
+        @ParameterizedTest
+        @ValueSource(
+                strings = {"clokey clokey", "CLOKEY", "clokey-user", "clokey,,user^^", "clokey1"})
         void 닉네임_제약조건을_위배하면_예외가_발생한다(String nickname) throws Exception {
             // given
             DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
@@ -218,7 +248,51 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(
                             jsonPath("$.result.nickname")
-                                    .value("닉네임은 영어 소문자, 숫자, 언더바(_), 점(.)만 허용됩니다."));
+                                    .value("닉네임은 영어 소문자, 한글, 언더바(_), 점(.)만 허용됩니다."));
+        }
+
+        @Test
+        void 닉네임이_20자를_초과하면_예외가_발생한다() throws Exception {
+            // given
+            DuplicatedIdCheckRequest request =
+                    new DuplicatedIdCheckRequest("abcdefghijklmnopqrstu");
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/check-duplicate-nickname")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.nickname").value("닉네임은 20자 이하여야 합니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"clokey", "홍길동", "clokey.홍길동", "abc_def"})
+        void 닉네임_제약조건을_만족하면_중복_여부를_반환한다(String nickname) throws Exception {
+            // given
+            DuplicatedIdCheckRequest request = new DuplicatedIdCheckRequest(nickname);
+            DuplicatedIdCheckResponse response = new DuplicatedIdCheckResponse(false);
+            given(memberService.checkDuplicateNickname(request)).willReturn(response);
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/users/check-duplicate-nickname")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON200"))
+                    .andExpect(jsonPath("$.message").value("성공입니다."))
+                    .andExpect(jsonPath("$.result.duplicated").value(false));
         }
     }
 
