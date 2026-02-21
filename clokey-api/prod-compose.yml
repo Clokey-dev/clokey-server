@@ -30,7 +30,7 @@ services:
       # Apple OIDC
       APPLE_CLIENT_ID: ${APPLE_CLIENT_ID}
       APPLE_CLIENT_SECRET: ${APPLE_CLIENT_SECRET}
-
+      APPLE_REDIRECT_URI: ${APPLE_REDIRECT_URI}
 
       # Firebase
       FIREBASE_CREDENTIALS_PATH: /run/secrets/firebase-sa.json
