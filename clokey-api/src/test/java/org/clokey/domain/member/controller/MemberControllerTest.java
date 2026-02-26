@@ -49,7 +49,7 @@ class MemberControllerTest {
             // given
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "testNickname",
+                            "testnickname",
                             "testBio",
                             Visibility.PUBLIC,
                             "https://img.example.com/bg.jpg");
@@ -135,7 +135,7 @@ class MemberControllerTest {
             String longBio = "a".repeat(101);
             ProfileUpdateRequest request =
                     new ProfileUpdateRequest(
-                            "testNickname",
+                            "testnickname",
                             longBio,
                             Visibility.PRIVATE,
                             "https://img.example.com/bg.jpg");
@@ -153,6 +153,59 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.code").value("COMMON400"))
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(jsonPath("$.result.bio").value("바이오는 100자를 넘길 수 없습니다."));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"clokey clokey", "CLOKEY", "clokey-user", "clokey1"})
+        void 닉네임_패턴을_위배하면_예외가_발생한다(String nickname) throws Exception {
+            // given
+            ProfileUpdateRequest request =
+                    new ProfileUpdateRequest(
+                            nickname,
+                            "testBio",
+                            Visibility.PRIVATE,
+                            "https://img.example.com/bg.jpg");
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/users")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(
+                            jsonPath("$.result.nickname")
+                                    .value("닉네임은 영어 소문자, 한글, 언더바(_), 점(.)만 허용됩니다."));
+        }
+
+        @Test
+        void 닉네임이_20자를_초과하면_예외가_발생한다() throws Exception {
+            // given
+            ProfileUpdateRequest request =
+                    new ProfileUpdateRequest(
+                            "abcdefghijklmnopqrstu",
+                            "testBio",
+                            Visibility.PRIVATE,
+                            "https://img.example.com/bg.jpg");
+
+            // when
+            ResultActions perform =
+                    mockMvc.perform(
+                            patch("/users")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            // then
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+                    .andExpect(jsonPath("$.result.nickname").value("닉네임은 20자 이하여야 합니다."));
         }
     }
 
