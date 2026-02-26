@@ -11,8 +11,8 @@ public record ProfileUpdateRequest(
         @NotBlank(message = "닉네임은 비워둘 수 없습니다.")
                 @Size(max = 20, message = "닉네임은 20자 이하여야 합니다.")
                 @Pattern(
-                        regexp = "^[a-z가-힣._]+$",
-                        message = "닉네임은 영어 소문자, 한글, 언더바(_), 점(.)만 허용됩니다.")
+                        regexp = "^[a-z0-9가-힣._]+$",
+                        message = "닉네임은 영어 소문자, 숫자, 한글, 언더바(_), 점(.)만 허용됩니다.")
                 @Schema(description = "사용자의 닉네임", example = "juwon")
                 String nickname,
         @Schema(description = "사용자의 한줄 소개", example = "한줄 소개")

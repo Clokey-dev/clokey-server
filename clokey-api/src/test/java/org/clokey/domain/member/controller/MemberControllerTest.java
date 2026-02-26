@@ -156,7 +156,7 @@ class MemberControllerTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"clokey clokey", "CLOKEY", "clokey-user", "clokey1"})
+        @ValueSource(strings = {"clokey clokey", "CLOKEY", "clokey-user"})
         void 닉네임_패턴을_위배하면_예외가_발생한다(String nickname) throws Exception {
             // given
             ProfileUpdateRequest request =
@@ -180,7 +180,7 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(
                             jsonPath("$.result.nickname")
-                                    .value("닉네임은 영어 소문자, 한글, 언더바(_), 점(.)만 허용됩니다."));
+                                    .value("닉네임은 영어 소문자, 숫자, 한글, 언더바(_), 점(.)만 허용됩니다."));
         }
 
         @Test
@@ -280,10 +280,9 @@ class MemberControllerTest {
                                     .value(containsString("닉네임은 비워둘 수 없습니다.")));
         }
 
-        // 허용 종류 : 영어 소문자, 한글, 언더바(_), 점(.)
+        // 허용 종류 : 영어 소문자, 숫자, 한글, 언더바(_), 점(.)
         @ParameterizedTest
-        @ValueSource(
-                strings = {"clokey clokey", "CLOKEY", "clokey-user", "clokey,,user^^", "clokey1"})
+        @ValueSource(strings = {"clokey clokey", "CLOKEY", "clokey-user", "clokey,,user^^"})
         void 닉네임_제약조건을_위배하면_예외가_발생한다(String nickname) throws Exception {
             // given
             DuplicatedNicknameCheckRequest request = new DuplicatedNicknameCheckRequest(nickname);
@@ -302,7 +301,7 @@ class MemberControllerTest {
                     .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
                     .andExpect(
                             jsonPath("$.result.nickname")
-                                    .value("닉네임은 영어 소문자, 한글, 언더바(_), 점(.)만 허용됩니다."));
+                                    .value("닉네임은 영어 소문자, 숫자, 한글, 언더바(_), 점(.)만 허용됩니다."));
         }
 
         @Test
@@ -327,7 +326,7 @@ class MemberControllerTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"clokey", "홍길동", "clokey.홍길동", "abc_def"})
+        @ValueSource(strings = {"clokey", "홍길동", "clokey.홍길동", "abc_def", "clokey1"})
         void 닉네임_제약조건을_만족하면_중복_여부를_반환한다(String nickname) throws Exception {
             // given
             DuplicatedNicknameCheckRequest request = new DuplicatedNicknameCheckRequest(nickname);
