@@ -62,7 +62,8 @@ public class AppleAwareOAuth2AuthorizationRequestResolver
     private OAuth2AuthorizationRequest enforceAppleResponseMode(
             OAuth2AuthorizationRequest authorizationRequest) {
         String authorizationRequestUri =
-                UriComponentsBuilder.fromUriString(authorizationRequest.getAuthorizationRequestUri())
+                UriComponentsBuilder.fromUriString(
+                                authorizationRequest.getAuthorizationRequestUri())
                         .replaceQueryParam("response_mode", "form_post")
                         .build(true)
                         .toUriString();
