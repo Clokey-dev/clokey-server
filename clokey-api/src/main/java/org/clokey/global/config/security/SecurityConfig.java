@@ -159,7 +159,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnBean(ClientRegistrationRepository.class)
     public OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver() {
         if (clientRegistrationRepository == null) {
             throw new IllegalStateException("ClientRegistrationRepository is required for OAuth2");
