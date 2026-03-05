@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.clokey.domain.member.dto.response.FollowMemberResponse;
 import org.clokey.member.entity.QBlock;
 import org.clokey.member.entity.QFollow;
+import org.clokey.member.enums.Visibility;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -38,6 +39,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                                         member.id,
                                         member.nickname,
                                         member.profileImageUrl,
+                                        member.visibility.eq(Visibility.PUBLIC),
                                         JPAExpressions.selectOne()
                                                 .from(followSub)
                                                 .where(
@@ -72,6 +74,7 @@ public class FollowRepositoryImpl implements FollowRepositoryCustom {
                                         member.id,
                                         member.nickname,
                                         member.profileImageUrl,
+                                        member.visibility.eq(Visibility.PUBLIC),
                                         JPAExpressions.selectOne()
                                                 .from(followSub)
                                                 .where(
