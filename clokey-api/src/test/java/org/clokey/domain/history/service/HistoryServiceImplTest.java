@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import org.clokey.IntegrationTest;
 import org.clokey.TransactionUtil;
@@ -58,6 +59,8 @@ import org.springframework.test.context.event.RecordApplicationEvents;
 
 @RecordApplicationEvents
 class HistoryServiceImplTest extends IntegrationTest {
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     @Autowired private TransactionUtil transactionUtil;
 
@@ -1334,10 +1337,10 @@ class HistoryServiceImplTest extends IntegrationTest {
             situationRepository.save(situation);
 
             History todayHistory =
-                    History.createHistory(LocalDate.now(), "testContent", member1, situation);
+                    History.createHistory(LocalDate.now(KST), "testContent", member1, situation);
             History otherHistory =
                     History.createHistory(
-                            LocalDate.now().minusDays(1), "oldContent", member2, situation);
+                            LocalDate.now(KST).minusDays(1), "oldContent", member2, situation);
             historyRepository.saveAll(List.of(todayHistory, otherHistory));
         }
 
