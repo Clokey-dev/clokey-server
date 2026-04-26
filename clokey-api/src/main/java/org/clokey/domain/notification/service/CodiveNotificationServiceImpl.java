@@ -6,12 +6,9 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.clokey.comment.entitiy.Comment;
 import org.clokey.domain.comment.event.NewCommentEvent;
 import org.clokey.domain.comment.event.NewReplyEvent;
-import org.clokey.domain.comment.exception.CommentErrorCode;
 import org.clokey.domain.comment.repository.CommentRepository;
-import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.like.event.NewLikeEvent;
 import org.clokey.domain.member.exception.MemberErrorCode;
@@ -22,11 +19,9 @@ import org.clokey.domain.notification.dto.response.UnreadNotificationResponse;
 import org.clokey.domain.notification.exception.NotificationErrorCode;
 import org.clokey.domain.notification.repository.CodiveNotificationRepository;
 import org.clokey.domain.term.enums.TermInfo;
-import org.clokey.domain.term.exception.TermErrorCode;
 import org.clokey.domain.term.repository.MemberTermRepository;
 import org.clokey.exception.BaseCustomException;
 import org.clokey.global.util.MemberUtil;
-import org.clokey.history.entity.History;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.MemberStatus;
 import org.clokey.notification.entity.CodiveNotification;
@@ -34,6 +29,7 @@ import org.clokey.notification.enums.NotificationType;
 import org.clokey.notification.enums.ReadStatus;
 import org.clokey.notification.enums.RedirectType;
 import org.clokey.response.SliceResponse;
+import org.clokey.term.entity.MemberTerm;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -327,18 +323,6 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
                 .orElseThrow(() -> new BaseCustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
-    private History getHistoryById(Long historyId) {
-        return historyRepository
-                .findById(historyId)
-                .orElseThrow(() -> new BaseCustomException(HistoryErrorCode.HISTORY_NOT_FOUND));
-    }
-
-    private Comment getCommentById(Long commentId) {
-        return commentRepository
-                .findById(commentId)
-                .orElseThrow(() -> new BaseCustomException(CommentErrorCode.COMMENT_NOT_FOUND));
-    }
-
     private CodiveNotification getNotificationById(Long notificationId) {
         return codiveNotificationRepository
                 .findById(notificationId)
@@ -348,22 +332,19 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
                                         NotificationErrorCode.NOTIFICATION_NOT_FOUND));
     }
 
-    private boolean isAbleToSendNotification(Member followToMember) {
+    private boolean isAbleToSendNotification(Member member) {
+        if (member.getMemberStatus() != MemberStatus.ACTIVE) {
+            return false;
+        }
 
-        boolean isActive = (followToMember.getMemberStatus() == MemberStatus.ACTIVE);
+        if (member.getDeviceToken() == null || member.getDeviceToken().isBlank()) {
+            return false;
+        }
 
-        boolean hasDeviceToken =
-                (followToMember.getDeviceToken() != null
-                        && !followToMember.getDeviceToken().isBlank());
-
-        boolean hasAgreed =
-                memberTermRepository
-                        .findByMemberIdAndTermId(
-                                followToMember.getId(), TermInfo.PUSH_NOTIFICATION_RECEIVE.getId())
-                        .orElseThrow(() -> new BaseCustomException(TermErrorCode.TERM_NOT_FOUND))
-                        .isAgreed();
-
-        return isActive && hasDeviceToken && hasAgreed;
+        return memberTermRepository
+                .findByMemberIdAndTermId(member.getId(), TermInfo.PUSH_NOTIFICATION_RECEIVE.getId())
+                .map(MemberTerm::isAgreed)
+                .orElse(false);
     }
 
     @Async
@@ -373,8 +354,13 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
         try {
             firebaseMessaging.send(event.message());
         } catch (FirebaseMessagingException e) {
-            log.warn("[Notification] Firebase 전송 실패", e);
-            throw new BaseCustomException(NotificationErrorCode.NOTIFICATION_FIREBASE_ERROR);
+            log.warn(
+                    "[Notification] Firebase 전송 실패: errorCode={}, message={}",
+                    e.getMessagingErrorCode(),
+                    e.getMessage(),
+                    e);
+        } catch (Exception e) {
+            log.error("[Notification] Firebase 전송 중 예기치 않은 오류 발생", e);
         }
     }
 
