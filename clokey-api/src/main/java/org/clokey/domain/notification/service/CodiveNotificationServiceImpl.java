@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.clokey.domain.comment.event.NewCommentEvent;
 import org.clokey.domain.comment.event.NewReplyEvent;
-import org.clokey.domain.comment.repository.CommentRepository;
-import org.clokey.domain.history.repository.HistoryRepository;
 import org.clokey.domain.like.event.NewLikeEvent;
 import org.clokey.domain.member.exception.MemberErrorCode;
 import org.clokey.domain.member.repository.MemberRepository;
@@ -30,6 +28,7 @@ import org.clokey.notification.enums.ReadStatus;
 import org.clokey.notification.enums.RedirectType;
 import org.clokey.response.SliceResponse;
 import org.clokey.term.entity.MemberTerm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -47,8 +46,6 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
     private final MemberRepository memberRepository;
     private final CodiveNotificationRepository codiveNotificationRepository;
     private final MemberTermRepository memberTermRepository;
-    private final HistoryRepository historyRepository;
-    private final CommentRepository commentRepository;
     private final FirebaseMessaging firebaseMessaging;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -62,7 +59,12 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
 
     private static final String TODAY_TEMPERATURE_NOTIFICATION =
             "오늘의 기온은 %d도 입니다!\n날씨에 맞는 오늘의 옷차림이 기다리고 있어요👀";
-    private static final String TODAY_TEMPERATURE_IMAGE_URL = "https://example.com/temperature.png";
+
+    @Value("${DEFAULT_PROFILE_IMAGE_URL:}")
+    private String configuredDefaultProfileImageUrl;
+
+    @Value("${TODAY_TEMPERATURE_IMAGE_URL:}")
+    private String configuredTemperatureImageUrl;
 
     @Override
     @Transactional
@@ -73,10 +75,10 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
         if (isAbleToSendNotification(followToMember)) {
             String content =
                     String.format(NEW_FOLLOWER_NOTIFICATION, followFromMember.getNickname());
-            String profileImageUrl = followFromMember.getProfileImageUrl();
+            String profileImageUrl =
+                    resolveNotificationImageUrl(followFromMember.getProfileImageUrl());
 
-            Notification notification =
-                    Notification.builder().setBody(content).setImage(profileImageUrl).build();
+            Notification notification = createPushNotification(content, profileImageUrl);
 
             Message message =
                     Message.builder()
@@ -111,10 +113,10 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
             String content =
                     String.format(
                             NEW_PENDING_FOLLOWER_NOTIFICATION, followFromMember.getNickname());
-            String profileImageUrl = followFromMember.getProfileImageUrl();
+            String profileImageUrl =
+                    resolveNotificationImageUrl(followFromMember.getProfileImageUrl());
 
-            Notification notification =
-                    Notification.builder().setBody(content).setImage(profileImageUrl).build();
+            Notification notification = createPushNotification(content, profileImageUrl);
 
             Message message =
                     Message.builder()
@@ -151,10 +153,9 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
                             NEW_COMMENT_NOTIFICATION,
                             event.commenterNickname(),
                             event.commentContent());
-            String profileImageUrl = event.commenterProfileImageUrl();
+            String profileImageUrl = resolveNotificationImageUrl(event.commenterProfileImageUrl());
 
-            Notification notification =
-                    Notification.builder().setBody(content).setImage(profileImageUrl).build();
+            Notification notification = createPushNotification(content, profileImageUrl);
 
             Message message =
                     Message.builder()
@@ -187,10 +188,9 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
             String content =
                     String.format(
                             NEW_REPLY_NOTIFICATION, event.replierNickname(), event.replyContent());
-            String profileImageUrl = event.replierProfileImageUrl();
+            String profileImageUrl = resolveNotificationImageUrl(event.replierProfileImageUrl());
 
-            Notification notification =
-                    Notification.builder().setBody(content).setImage(profileImageUrl).build();
+            Notification notification = createPushNotification(content, profileImageUrl);
             Message message =
                     Message.builder()
                             .setToken(receiver.getDeviceToken())
@@ -221,10 +221,9 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
 
         if (isAbleToSendNotification(receiver)) {
             String content = String.format(NEW_LIKE_NOTIFICATION, event.likerNickname());
-            String profileImageUrl = event.likerProfileImageUrl();
+            String profileImageUrl = resolveNotificationImageUrl(event.likerProfileImageUrl());
 
-            Notification notification =
-                    Notification.builder().setBody(content).setImage(profileImageUrl).build();
+            Notification notification = createPushNotification(content, profileImageUrl);
             Message message =
                     Message.builder()
                             .setToken(receiver.getDeviceToken())
@@ -253,13 +252,10 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
         Member receiver = memberUtil.getCurrentMember();
         String content =
                 String.format(TODAY_TEMPERATURE_NOTIFICATION, Math.round(request.temperature()));
+        String temperatureImageUrl = configuredTemperatureImageUrl;
 
         if (isAbleToSendNotification(receiver)) {
-            Notification notification =
-                    Notification.builder()
-                            .setBody(content)
-                            .setImage(TODAY_TEMPERATURE_IMAGE_URL)
-                            .build();
+            Notification notification = createPushNotification(content, temperatureImageUrl);
             Message message =
                     Message.builder()
                             .setToken(receiver.getDeviceToken())
@@ -270,7 +266,7 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
                     CodiveNotification.createCodiveNotification(
                             receiver,
                             content,
-                            TODAY_TEMPERATURE_IMAGE_URL,
+                            temperatureImageUrl,
                             "",
                             RedirectType.NONE,
                             NotificationType.TEMPERATURE_DAILY);
@@ -345,6 +341,32 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
                 .findByMemberIdAndTermId(member.getId(), TermInfo.PUSH_NOTIFICATION_RECEIVE.getId())
                 .map(MemberTerm::isAgreed)
                 .orElse(false);
+    }
+
+    private String resolveNotificationImageUrl(String profileImageUrl) {
+        if (profileImageUrl != null && !profileImageUrl.isBlank()) {
+            return profileImageUrl;
+        }
+
+        return resolveDefaultImageUrl();
+    }
+
+    private String resolveDefaultImageUrl() {
+        if (configuredDefaultProfileImageUrl != null
+                && !configuredDefaultProfileImageUrl.isBlank()) {
+            return configuredDefaultProfileImageUrl;
+        }
+
+        return "";
+    }
+
+    private Notification createPushNotification(String content, String imageUrl) {
+        Notification.Builder notificationBuilder = Notification.builder().setBody(content);
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            notificationBuilder.setImage(imageUrl);
+        }
+
+        return notificationBuilder.build();
     }
 
     @Async
