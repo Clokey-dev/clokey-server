@@ -50,7 +50,6 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
     private final ApplicationEventPublisher eventPublisher;
 
     private final MemberUtil memberUtil;
-    private final StorageUtil storageUtil;
 
     private static final String NEW_FOLLOWER_NOTIFICATION = "%s님이 회원님의 옷장을 팔로우하기 시작했습니다.";
     private static final String NEW_PENDING_FOLLOWER_NOTIFICATION = "%s님이 회원님의 옷장에 팔로우를 요청했습니다.";
