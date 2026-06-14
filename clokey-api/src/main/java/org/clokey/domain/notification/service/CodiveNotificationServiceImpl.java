@@ -256,6 +256,7 @@ public class CodiveNotificationServiceImpl implements CodiveNotificationService 
 
         if (isAbleToSendNotification(receiver)) {
             Notification notification = createPushNotification(content, temperatureImageUrl);
+
             Message message =
                     Message.builder()
                             .setToken(receiver.getDeviceToken())

@@ -48,7 +48,8 @@ import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
 import org.clokey.response.SliceResponse;
-import org.clokey.util.S3Util;
+import org.clokey.util.PresignedUrlResult;
+import org.clokey.util.StorageUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -80,7 +81,7 @@ class ClothServiceTest extends IntegrationTest {
     @Autowired private SituationRepository situationRepository;
 
     @MockitoBean private MemberUtil memberUtil;
-    @MockitoBean private S3Util s3Util;
+    @MockitoBean private StorageUtil storageUtil;
     @Autowired private ApplicationEvents applicationEvents;
 
     @Nested
@@ -109,18 +110,17 @@ class ClothServiceTest extends IntegrationTest {
                                             FileExtension.JPEG, "testMd5Hash1"),
                                     new ClothImagesUploadRequest.Payload(
                                             FileExtension.JPEG, "testMd5Hash2")));
-            given(s3Util.createPresignedUrl(any(), anyLong(), any(), eq("testMd5Hash1")))
-                    .willReturn("testUrl1");
-
-            given(s3Util.createPresignedUrl(any(), anyLong(), any(), eq("testMd5Hash2")))
-                    .willReturn("testUrl2");
+            given(storageUtil.createPresignedUrl(any(), anyLong(), any()))
+                    .willReturn(new PresignedUrlResult("testUploadUrl1", "testObjectUrl1"))
+                    .willReturn(new PresignedUrlResult("testUploadUrl2", "testObjectUrl2"));
 
             // when
             ClothImagesPresignedUrlResponse response =
                     clothAiService.getClothUploadPresignedUrls(request);
 
             // then
-            assertThat(response.urls()).containsExactly("testUrl1", "testUrl2");
+            assertThat(response.urls()).containsExactly("testUploadUrl1", "testUploadUrl2");
+            assertThat(response.objectUrls()).containsExactly("testObjectUrl1", "testObjectUrl2");
         }
     }
 

@@ -3,7 +3,6 @@ package org.clokey.domain.history.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import java.time.LocalDate;
@@ -50,7 +49,8 @@ import org.clokey.member.entity.Block;
 import org.clokey.member.entity.Member;
 import org.clokey.member.entity.OauthInfo;
 import org.clokey.member.enums.OauthProvider;
-import org.clokey.util.S3Util;
+import org.clokey.util.PresignedUrlResult;
+import org.clokey.util.StorageUtil;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -81,7 +81,7 @@ class HistoryServiceImplTest extends IntegrationTest {
     @Autowired private BlockRepository blockRepository;
 
     @MockitoBean private MemberUtil memberUtil;
-    @MockitoBean private S3Util s3Util;
+    @MockitoBean private StorageUtil storageUtil;
     @Autowired private ApplicationEvents applicationEvents;
 
     @Nested
@@ -109,17 +109,17 @@ class HistoryServiceImplTest extends IntegrationTest {
                                     new HistoryImagesUploadRequest.Payload(
                                             FileExtension.PNG, "testMd5Hash2")));
 
-            given(s3Util.createPresignedUrl(any(), anyLong(), any(), eq("testMd5Hash1")))
-                    .willReturn("testUrl1");
-            given(s3Util.createPresignedUrl(any(), anyLong(), any(), eq("testMd5Hash2")))
-                    .willReturn("testUrl2");
+            given(storageUtil.createPresignedUrl(any(), anyLong(), any()))
+                    .willReturn(new PresignedUrlResult("testUploadUrl1", "testObjectUrl1"))
+                    .willReturn(new PresignedUrlResult("testUploadUrl2", "testObjectUrl2"));
 
             // when
             HistoryImagesPresignedUrlResponse response =
                     historyService.getHistoryUploadPresignedUrls(request);
 
             // then
-            assertThat(response.urls()).containsExactly("testUrl1", "testUrl2");
+            assertThat(response.urls()).containsExactly("testUploadUrl1", "testUploadUrl2");
+            assertThat(response.objectUrls()).containsExactly("testObjectUrl1", "testObjectUrl2");
         }
     }
 

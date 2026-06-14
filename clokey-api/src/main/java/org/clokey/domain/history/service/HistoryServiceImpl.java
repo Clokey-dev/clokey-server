@@ -40,7 +40,8 @@ import org.clokey.history.entity.*;
 import org.clokey.member.entity.Member;
 import org.clokey.member.enums.Visibility;
 import org.clokey.report.enums.TargetType;
-import org.clokey.util.S3Util;
+import org.clokey.util.PresignedUrlResult;
+import org.clokey.util.StorageUtil;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +70,7 @@ public class HistoryServiceImpl implements HistoryService {
     private final ReportRepository reportRepository;
     private final MemberRepository memberRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final S3Util s3Util;
+    private final StorageUtil storageUtil;
 
     @Override
     @Transactional
@@ -105,7 +106,8 @@ public class HistoryServiceImpl implements HistoryService {
 
         for (HistoryCreateRequest.Payload payload : request.payloads()) {
             final HistoryImage historyImage =
-                    HistoryImage.createHistoryImage(payload.imageUrl(), history);
+                    HistoryImage.createHistoryImage(
+                            storageUtil.toPublicObjectUrl(payload.imageUrl()), history);
             images.add(historyImage);
 
             if (payload.clothTags() != null && !payload.clothTags().isEmpty()) {
@@ -164,18 +166,21 @@ public class HistoryServiceImpl implements HistoryService {
                 existingImages.stream()
                         .collect(
                                 Collectors.toMap(
-                                        HistoryImage::getImageUrl,
+                                        image -> storageUtil.toPublicObjectUrl(image.getImageUrl()),
                                         Function.identity(),
                                         (left, right) -> left));
 
         Set<String> requestedImageUrls =
                 request.payloads().stream()
-                        .map(HistoryUpdateRequest.Payload::imageUrl)
+                        .map(payload -> storageUtil.toPublicObjectUrl(payload.imageUrl()))
                         .collect(Collectors.toSet());
 
         List<HistoryImage> imagesToDelete =
                 existingImages.stream()
-                        .filter(image -> !requestedImageUrls.contains(image.getImageUrl()))
+                        .filter(
+                                image ->
+                                        !requestedImageUrls.contains(
+                                                storageUtil.toPublicObjectUrl(image.getImageUrl())))
                         .toList();
 
         if (!imagesToDelete.isEmpty()) {
@@ -186,7 +191,10 @@ public class HistoryServiceImpl implements HistoryService {
 
         Set<Long> keptImageIds =
                 existingImages.stream()
-                        .filter(image -> requestedImageUrls.contains(image.getImageUrl()))
+                        .filter(
+                                image ->
+                                        requestedImageUrls.contains(
+                                                storageUtil.toPublicObjectUrl(image.getImageUrl())))
                         .map(HistoryImage::getId)
                         .collect(Collectors.toSet());
 
@@ -198,12 +206,13 @@ public class HistoryServiceImpl implements HistoryService {
         List<HistoryClothTag> clothTags = new ArrayList<>();
 
         for (HistoryUpdateRequest.Payload payload : request.payloads()) {
+            String normalizedImageUrl = storageUtil.toPublicObjectUrl(payload.imageUrl());
             final HistoryImage historyImage =
                     existingImageMap.getOrDefault(
-                            payload.imageUrl(),
-                            HistoryImage.createHistoryImage(payload.imageUrl(), history));
+                            normalizedImageUrl,
+                            HistoryImage.createHistoryImage(normalizedImageUrl, history));
 
-            if (!existingImageMap.containsKey(payload.imageUrl())) {
+            if (!existingImageMap.containsKey(normalizedImageUrl)) {
                 newImages.add(historyImage);
             }
 
@@ -402,18 +411,19 @@ public class HistoryServiceImpl implements HistoryService {
             HistoryImagesUploadRequest request) {
         final Member currentMember = memberUtil.getCurrentMember();
 
-        List<String> presignedUrls =
+        List<PresignedUrlResult> presignedUrlResults =
                 request.payloads().stream()
                         .map(
                                 payload ->
-                                        s3Util.createPresignedUrl(
+                                        storageUtil.createPresignedUrl(
                                                 ImageType.HISTORY_IMAGE,
                                                 currentMember.getId(),
-                                                payload.fileExtension(),
-                                                payload.md5Hashes()))
+                                                payload.fileExtension()))
                         .toList();
 
-        return HistoryImagesPresignedUrlResponse.of(presignedUrls);
+        return HistoryImagesPresignedUrlResponse.of(
+                presignedUrlResults.stream().map(PresignedUrlResult::uploadUrl).toList(),
+                presignedUrlResults.stream().map(PresignedUrlResult::objectUrl).toList());
     }
 
     private HistoryImage getHistoryImageById(Long historyImageId) {
