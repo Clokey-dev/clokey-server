@@ -302,7 +302,7 @@ public class SearchServiceImpl implements SearchService {
 
         if (!untriedStyleIds.isEmpty()) {
             searchRecommendRepository
-                    .findBestHistoryForUntriedStyle(excludedMemberIds, untriedStyleIds)
+                    .findBestHistoryForUntriedStyle(excludedMemberIds, userUsedStyleIds)
                     .ifPresent(
                             row ->
                                     results.add(
