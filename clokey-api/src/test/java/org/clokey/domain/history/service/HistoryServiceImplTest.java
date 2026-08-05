@@ -128,6 +128,9 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @BeforeEach
         void setUp() {
+            given(storageUtil.toPublicObjectUrl(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
             Member member1 =
                     Member.createMember(
                             "testEmail1",
@@ -417,6 +420,9 @@ class HistoryServiceImplTest extends IntegrationTest {
 
         @BeforeEach
         void setUp() {
+            given(storageUtil.toPublicObjectUrl(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
             Member member1 =
                     Member.createMember(
                             "testEmail1",

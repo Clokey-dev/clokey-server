@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,11 +24,19 @@ public class DatabaseCleaner implements InitializingBean {
         entityManager.unwrap(Session.class).doWork(this::extractTableNames);
     }
 
-    private void extractTableNames(Connection conn) {
-        tableNames =
-                entityManager.getMetamodel().getEntities().stream()
-                        .map(e -> e.getName().replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase())
-                        .toList();
+    /**
+     * JPA 엔티티 메타모델만 사용하면 {@code @ElementCollection} 조인 테이블(예: cloth_season)처럼 별도 엔티티가 아닌 테이블은 누락되어
+     * 테스트 간 데이터가 leak 된다. 실제 DB에 존재하는 모든 테이블을 기준으로 truncate 대상을 결정한다.
+     */
+    private void extractTableNames(Connection conn) throws SQLException {
+        List<String> names = new ArrayList<>();
+        try (ResultSet rs =
+                conn.getMetaData().getTables(null, "PUBLIC", "%", new String[] {"TABLE"})) {
+            while (rs.next()) {
+                names.add(rs.getString("TABLE_NAME"));
+            }
+        }
+        tableNames = names;
     }
 
     public void execute() {

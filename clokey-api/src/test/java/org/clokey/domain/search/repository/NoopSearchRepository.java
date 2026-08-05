@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("test")
+@Profile("test & !meilisearch-it")
 @Primary
 public class NoopSearchRepository implements SearchRepository {
 

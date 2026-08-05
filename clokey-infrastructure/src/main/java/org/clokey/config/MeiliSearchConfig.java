@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @RequiredArgsConstructor
 @EnableMeilisearchRepositories(basePackages = {"org.clokey.domain.search.repository"})
-@Profile("!test")
+@Profile({"!test", "meilisearch-it"})
 public class MeiliSearchConfig extends MeilisearchConfiguration {
 
     private final MeilisearchProperties meilisearchProperties;
