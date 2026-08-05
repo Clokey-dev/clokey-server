@@ -11,8 +11,11 @@ import java.util.List;
 import org.clokey.cloth.enums.Season;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothDetectRequest;
 import org.clokey.domain.cloth.dto.request.ClothImagesUploadRequest;
+import org.clokey.domain.cloth.dto.request.ClothInfoExtractRequest;
 import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
+import org.clokey.domain.cloth.dto.request.HistoryStyleInferenceRequest;
 import org.clokey.domain.cloth.dto.response.*;
 import org.clokey.domain.cloth.service.ClothAiService;
 import org.clokey.domain.cloth.service.ClothService;
@@ -77,6 +80,190 @@ class ClothControllerTest {
                     .andExpect(jsonPath("$.message").value("요청 성공 및 리소스 생성됨"))
                     .andExpect(jsonPath("$.result.urls[0]").value("testPresignedUrl1"))
                     .andExpect(jsonPath("$.result.urls[1]").value("testPresignedUrl2"));
+        }
+    }
+
+    @Nested
+    class 옷_정보_추출_요청_시 {
+
+        @Test
+        void 유효한_요청이면_옷_정보를_반환한다() throws Exception {
+            // given
+            ClothInfoExtractRequest request =
+                    new ClothInfoExtractRequest(List.of("testClothImageUrl1"));
+
+            ClothInfoExtractResponse response =
+                    ClothInfoExtractResponse.of(
+                            List.of(
+                                    new ClothInfoExtractResponse.Payload(
+                                            "testClothImageUrl1",
+                                            List.of(Season.SPRING),
+                                            1L,
+                                            "testParentCategory",
+                                            2L,
+                                            "testCategory")));
+
+            given(clothAiService.extractClothInfo(request)).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/extract")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON201"))
+                    .andExpect(
+                            jsonPath("$.result.payloads[0].clothImageUrl")
+                                    .value("testClothImageUrl1"))
+                    .andExpect(jsonPath("$.result.payloads[0].categoryId").value(2))
+                    .andExpect(jsonPath("$.result.payloads[0].categoryName").value("testCategory"));
+        }
+
+        @Test
+        void 옷_이미지_URL_목록이_비어있으면_예외가_발생한다() throws Exception {
+            // given
+            ClothInfoExtractRequest request = new ClothInfoExtractRequest(List.of());
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/extract")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"))
+                    .andExpect(
+                            jsonPath("$.result.clothImageUrls").value("옷 이미지 URL 목록은 비워둘 수 없습니다."));
+        }
+
+        @Test
+        void 옷_이미지_URL이_11개를_초과하면_예외가_발생한다() throws Exception {
+            // given
+            ClothInfoExtractRequest request =
+                    new ClothInfoExtractRequest(
+                            List.of(
+                                    "url1", "url2", "url3", "url4", "url5", "url6", "url7", "url8",
+                                    "url9", "url10", "url11"));
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/extract")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"));
+        }
+    }
+
+    @Nested
+    class 기록_사진_스타일_추론_요청_시 {
+
+        @Test
+        void 유효한_요청이면_스타일을_반환한다() throws Exception {
+            // given
+            HistoryStyleInferenceRequest request =
+                    new HistoryStyleInferenceRequest("testHistoryImageUrl");
+
+            HistoryStyleInferenceResponse response =
+                    HistoryStyleInferenceResponse.of(
+                            1L,
+                            "testSituation",
+                            List.of(
+                                    new HistoryStyleInferenceResponse.StylePayload(
+                                            2L, "testStyle")));
+
+            given(clothAiService.inferHistoryStyle(request)).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/history-style")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON201"))
+                    .andExpect(jsonPath("$.result.situationId").value(1))
+                    .andExpect(jsonPath("$.result.situationName").value("testSituation"))
+                    .andExpect(jsonPath("$.result.styles[0].styleId").value(2));
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void 기록_이미지_URL이_없으면_예외가_발생한다(String historyImageUrl) throws Exception {
+            // given
+            HistoryStyleInferenceRequest request =
+                    new HistoryStyleInferenceRequest(historyImageUrl);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/history-style")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"));
+        }
+    }
+
+    @Nested
+    class 사진_옷_탐지_요청_시 {
+
+        @Test
+        void 유효한_요청이면_탐지된_옷을_반환한다() throws Exception {
+            // given
+            ClothDetectRequest request = new ClothDetectRequest("testImageUrl");
+
+            ClothDetectResponse response =
+                    ClothDetectResponse.of(
+                            List.of(new ClothDetectResponse.Payload("testUploadedUrl1")));
+
+            given(clothAiService.detectClothes(request)).willReturn(response);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/detect")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andExpect(jsonPath("$.code").value("COMMON201"))
+                    .andExpect(
+                            jsonPath("$.result.payloads[0].clothImageUrl")
+                                    .value("testUploadedUrl1"));
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @EmptySource
+        void 이미지_URL이_없으면_예외가_발생한다(String imageUrl) throws Exception {
+            // given
+            ClothDetectRequest request = new ClothDetectRequest(imageUrl);
+
+            // when & then
+            ResultActions perform =
+                    mockMvc.perform(
+                            post("/cloth-ai/detect")
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(objectMapper.writeValueAsString(request)));
+
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.isSuccess").value(false))
+                    .andExpect(jsonPath("$.code").value("COMMON400"));
         }
     }
 

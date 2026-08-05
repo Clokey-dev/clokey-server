@@ -18,16 +18,27 @@ import org.clokey.domain.category.exception.CategoryErrorCode;
 import org.clokey.domain.category.repository.CategoryRepository;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequest;
 import org.clokey.domain.cloth.dto.request.ClothCreateRequests;
+import org.clokey.domain.cloth.dto.request.ClothDetectRequest;
 import org.clokey.domain.cloth.dto.request.ClothImagesUploadRequest;
+import org.clokey.domain.cloth.dto.request.ClothInfoExtractRequest;
 import org.clokey.domain.cloth.dto.request.ClothUpdateRequest;
+import org.clokey.domain.cloth.dto.request.HistoryStyleInferenceRequest;
 import org.clokey.domain.cloth.dto.response.ClothDetailsResponse;
+import org.clokey.domain.cloth.dto.response.ClothDetectAiResponseDTO;
+import org.clokey.domain.cloth.dto.response.ClothDetectResponse;
 import org.clokey.domain.cloth.dto.response.ClothImagesPresignedUrlResponse;
+import org.clokey.domain.cloth.dto.response.ClothInfoExtractAiResponseDTO;
+import org.clokey.domain.cloth.dto.response.ClothInfoExtractResponse;
 import org.clokey.domain.cloth.dto.response.ClothListResponse;
 import org.clokey.domain.cloth.dto.response.ClothRecommendListResponse;
+import org.clokey.domain.cloth.dto.response.HistoryStyleInferenceAiResponseDTO;
+import org.clokey.domain.cloth.dto.response.HistoryStyleInferenceResponse;
+import org.clokey.domain.cloth.exception.ClothAiErrorCode;
 import org.clokey.domain.cloth.exception.ClothErrorCode;
 import org.clokey.domain.cloth.repository.ClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateClothRepository;
 import org.clokey.domain.coordinate.repository.CoordinateRepository;
+import org.clokey.domain.history.exception.HistoryErrorCode;
 import org.clokey.domain.history.repository.HistoryClothTagRepository;
 import org.clokey.domain.history.repository.HistoryImageRepository;
 import org.clokey.domain.history.repository.HistoryRepository;
@@ -50,6 +61,7 @@ import org.clokey.member.enums.OauthProvider;
 import org.clokey.response.SliceResponse;
 import org.clokey.util.PresignedUrlResult;
 import org.clokey.util.StorageUtil;
+import org.clokey.util.WebClientUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -63,6 +75,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 @RecordApplicationEvents
 class ClothServiceTest extends IntegrationTest {
@@ -82,6 +95,7 @@ class ClothServiceTest extends IntegrationTest {
 
     @MockitoBean private MemberUtil memberUtil;
     @MockitoBean private StorageUtil storageUtil;
+    @MockitoBean private WebClientUtil webClientUtil;
     @Autowired private ApplicationEvents applicationEvents;
 
     @Nested
@@ -125,6 +139,227 @@ class ClothServiceTest extends IntegrationTest {
     }
 
     @Nested
+    class 옷_정보를_추출할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testNickName",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+            memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
+        }
+
+        @Test
+        void 유효한_요청이면_옷_정보를_추출한다() {
+            // given
+            Category parentCategory = categoryRepository.save(Category.createCategory("상의", null));
+            Category category =
+                    categoryRepository.save(Category.createCategory("후드티", parentCategory));
+
+            ClothInfoExtractRequest request =
+                    new ClothInfoExtractRequest(List.of("testClothImageUrl1"));
+
+            given(storageUtil.doAllFilesExistByUrls(request.clothImageUrls())).willReturn(true);
+            given(storageUtil.createPresignedUrl(any(), anyLong(), any()))
+                    .willReturn(new PresignedUrlResult("testUploadUrl1", "testObjectUrl1"));
+            given(storageUtil.toPublicObjectUrl(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            ClothInfoExtractAiResponseDTO aiResponse =
+                    new ClothInfoExtractAiResponseDTO(
+                            true,
+                            "success",
+                            List.of(
+                                    new ClothInfoExtractAiResponseDTO.ResultItem(
+                                            List.of(
+                                                    new ClothInfoExtractAiResponseDTO.CategoryItem(
+                                                            category.getId(), "후드티")),
+                                            List.of(
+                                                    new ClothInfoExtractAiResponseDTO.SeasonItem(
+                                                            1L, "봄")),
+                                            "uploadedTestUrl1")),
+                            null);
+            given(
+                            webClientUtil.postToAiServer(
+                                    any(), any(), eq(ClothInfoExtractAiResponseDTO.class)))
+                    .willReturn(Mono.just(aiResponse));
+
+            // when
+            ClothInfoExtractResponse response = clothAiService.extractClothInfo(request);
+
+            // then
+            assertThat(response.payloads()).hasSize(1);
+            ClothInfoExtractResponse.Payload payload = response.payloads().get(0);
+            Assertions.assertAll(
+                    () -> assertThat(payload.clothImageUrl()).isEqualTo("uploadedTestUrl1"),
+                    () -> assertThat(payload.seasons()).containsExactly(Season.SPRING),
+                    () -> assertThat(payload.categoryId()).isEqualTo(category.getId()),
+                    () -> assertThat(payload.categoryName()).isEqualTo("후드티"),
+                    () -> assertThat(payload.parentCategoryId()).isEqualTo(parentCategory.getId()),
+                    () -> assertThat(payload.parentCategoryName()).isEqualTo("상의"));
+        }
+
+        @Test
+        void 존재하지_않는_이미지_URL이_포함되면_예외가_발생한다() {
+            // given
+            ClothInfoExtractRequest request =
+                    new ClothInfoExtractRequest(List.of("testClothImageUrl1"));
+            given(storageUtil.doAllFilesExistByUrls(request.clothImageUrls())).willReturn(false);
+
+            // when & then
+            assertThatThrownBy(() -> clothAiService.extractClothInfo(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothErrorCode.ClOTH_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void AI_서버_응답이_실패면_예외가_발생한다() {
+            // given
+            ClothInfoExtractRequest request =
+                    new ClothInfoExtractRequest(List.of("testClothImageUrl1"));
+            given(storageUtil.doAllFilesExistByUrls(request.clothImageUrls())).willReturn(true);
+            given(storageUtil.createPresignedUrl(any(), anyLong(), any()))
+                    .willReturn(new PresignedUrlResult("testUploadUrl1", "testObjectUrl1"));
+
+            ClothInfoExtractAiResponseDTO aiResponse =
+                    new ClothInfoExtractAiResponseDTO(false, "fail", null, "DETECT_EMPTY");
+            given(
+                            webClientUtil.postToAiServer(
+                                    any(), any(), eq(ClothInfoExtractAiResponseDTO.class)))
+                    .willReturn(Mono.just(aiResponse));
+
+            // when & then
+            assertThatThrownBy(() -> clothAiService.extractClothInfo(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(ClothAiErrorCode.AI_DETECT_EMPTY.getMessage());
+        }
+    }
+
+    @Nested
+    class 기록_사진_스타일을_추론할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testNickName",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+            memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
+        }
+
+        @Test
+        void 유효한_요청이면_스타일을_추론한다() {
+            // given
+            given(storageUtil.doesFileExistByUrl(any())).willReturn(true);
+
+            HistoryStyleInferenceAiResponseDTO aiResponse =
+                    new HistoryStyleInferenceAiResponseDTO(
+                            new HistoryStyleInferenceAiResponseDTO.Result(
+                                    List.of(
+                                            new HistoryStyleInferenceAiResponseDTO.StyleItem(
+                                                    1L, "캐주얼")),
+                                    List.of(
+                                            new HistoryStyleInferenceAiResponseDTO.SituationItem(
+                                                    2L, "데일리"))));
+            given(
+                            webClientUtil.postToAiServer(
+                                    any(), any(), eq(HistoryStyleInferenceAiResponseDTO.class)))
+                    .willReturn(Mono.just(aiResponse));
+
+            HistoryStyleInferenceRequest request =
+                    new HistoryStyleInferenceRequest("testHistoryImageUrl");
+
+            // when
+            HistoryStyleInferenceResponse response = clothAiService.inferHistoryStyle(request);
+
+            // then
+            Assertions.assertAll(
+                    () -> assertThat(response.situationId()).isEqualTo(2L),
+                    () -> assertThat(response.situationName()).isEqualTo("데일리"),
+                    () ->
+                            assertThat(response.styles())
+                                    .extracting("styleId", "styleName")
+                                    .containsExactly(
+                                            org.assertj.core.groups.Tuple.tuple(1L, "캐주얼")));
+        }
+
+        @Test
+        void 존재하지_않는_이미지_URL이면_예외가_발생한다() {
+            // given
+            given(storageUtil.doesFileExistByUrl(any())).willReturn(false);
+            HistoryStyleInferenceRequest request =
+                    new HistoryStyleInferenceRequest("testHistoryImageUrl");
+
+            // when & then
+            assertThatThrownBy(() -> clothAiService.inferHistoryStyle(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(HistoryErrorCode.HISTORY_IMAGE_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
+    class 사진에서_옷을_탐지할_때 {
+
+        @BeforeEach
+        void setUp() {
+            Member member =
+                    Member.createMember(
+                            "testEmail",
+                            "testNickName",
+                            OauthInfo.createOauthInfo("testOauthId", OauthProvider.KAKAO));
+            memberRepository.save(member);
+            given(memberUtil.getCurrentMember()).willReturn(member);
+        }
+
+        @Test
+        void 유효한_요청이면_옷을_탐지한다() {
+            // given
+            given(storageUtil.doesFileExistByUrl(any())).willReturn(true);
+            given(storageUtil.createPresignedUrl(any(), anyLong(), any()))
+                    .willReturn(new PresignedUrlResult("testUploadUrl1", "testObjectUrl1"));
+            given(storageUtil.toPublicObjectUrl(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
+
+            ClothDetectAiResponseDTO aiResponse =
+                    new ClothDetectAiResponseDTO(
+                            true,
+                            "success",
+                            new ClothDetectAiResponseDTO.Result(
+                                    2, 2, List.of("uploadedTestUrl1", "uploadedTestUrl2")),
+                            null);
+            given(webClientUtil.postToAiServer(any(), any(), eq(ClothDetectAiResponseDTO.class)))
+                    .willReturn(Mono.just(aiResponse));
+
+            ClothDetectRequest request = new ClothDetectRequest("testImageUrl");
+
+            // when
+            ClothDetectResponse response = clothAiService.detectClothes(request);
+
+            // then
+            assertThat(response.payloads())
+                    .extracting("clothImageUrl")
+                    .containsExactly("uploadedTestUrl1", "uploadedTestUrl2");
+        }
+
+        @Test
+        void 존재하지_않는_이미지_URL이면_예외가_발생한다() {
+            // given
+            given(storageUtil.doesFileExistByUrl(any())).willReturn(false);
+            ClothDetectRequest request = new ClothDetectRequest("testImageUrl");
+
+            // when & then
+            assertThatThrownBy(() -> clothAiService.detectClothes(request))
+                    .isInstanceOf(BaseCustomException.class)
+                    .hasMessage(HistoryErrorCode.HISTORY_IMAGE_NOT_FOUND.getMessage());
+        }
+    }
+
+    @Nested
     @Transactional
     class 옷을_생성할_때 {
 
@@ -138,6 +373,8 @@ class ClothServiceTest extends IntegrationTest {
 
             memberRepository.save(member);
             given(memberUtil.getCurrentMember()).willReturn(member);
+            given(storageUtil.toPublicObjectUrl(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
 
             Category parentCategory = Category.createCategory("testParentCategory", null);
             Category category = Category.createCategory("testCategory", parentCategory);
@@ -670,6 +907,8 @@ class ClothServiceTest extends IntegrationTest {
                             OauthInfo.createOauthInfo("testOauthId2", OauthProvider.KAKAO));
             memberRepository.saveAll(List.of(member1, member2));
             given(memberUtil.getCurrentMember()).willReturn(member1);
+            given(storageUtil.toPublicObjectUrl(any()))
+                    .willAnswer(invocation -> invocation.getArgument(0));
 
             Category parentCategory = Category.createCategory("testParentCategory", null);
             Category category = Category.createCategory("testCategory", parentCategory);

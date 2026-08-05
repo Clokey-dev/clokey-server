@@ -934,7 +934,7 @@ public class HistoryControllerTest {
     class 기록_소유_여부_확인_요청_시 {
 
         @Test
-        void testCheckHistoryOwnership() throws Exception {
+        void 유효한_요청이면_소유_여부를_반환한다() throws Exception {
             // given
             HistoryOwnershipCheckResponse testHistoryOwnershipCheckResponse =
                     HistoryOwnershipCheckResponse.of(true);
