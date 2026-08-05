@@ -21,7 +21,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-@Profile("!test")
+@Profile({"!test", "meilisearch-it"})
 public class MeiliSearchRepositoryImpl implements SearchRepository {
 
     private static final String HISTORY_INDEX = "histories";
