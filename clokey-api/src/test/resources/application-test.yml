@@ -11,11 +11,60 @@ spring:
     meilisearch:
       url: ${MEILISEARCH_ENDPOINT:http://localhost:7700}
       api-key: ${MEILISEARCH_KEY:dummy}
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: test-kakao-client-id
+            client-secret: test-kakao-client-secret
+            redirect-uri: "${app.base-url.dev}/login/oauth2/code/kakao"
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            scope:
+              - openid
+            provider: kakao
+          apple:
+            client-id: test-apple-client-id
+            client-secret: test-apple-client-secret
+            redirect-uri: "${app.base-url.dev}/login/oauth2/code/apple"
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            scope:
+              - openid
+              - email
+            provider: apple
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: sub
+            jwk-set-uri: https://kauth.kakao.com/.well-known/jwks.json
+          apple:
+            authorization-uri: https://appleid.apple.com/auth/authorize
+            token-uri: https://appleid.apple.com/auth/token
+            jwk-set-uri: https://appleid.apple.com/auth/keys
+            user-name-attribute: sub
+
+jwt:
+  access-token-secret: test-access-token-secret-key-for-clokey-test-profile
+  refresh-token-secret: test-refresh-token-secret-key-for-clokey-test-profile
+  access-token-expiration-time: 3600000
+  refresh-token-expiration-time: 1209600000
+  issuer: clokey-test
 
 oci:
   objectstorage:
     namespace: test-namespace
     bucket: test-bucket
+
+external:
+  api:
+    ai-server-ip: localhost:9999
+    cloth-inference-path: /test/cloth-inference
+    style-inference-path: /test/style-inference
+    cloth-detect-path: /test/cloth-detect
 
 firebase:
   type: dummy
@@ -32,3 +81,10 @@ firebase:
 swagger:
   username: swagger
   password: swagger
+
+app:
+  oauth:
+    redirect-scheme: clokey
+  base-url:
+    dev: http://localhost:8080
+    prod: http://localhost:8080
